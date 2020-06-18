@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>duplicatefinder</id>
+    <name>Duplicate Finder</name>
+    <summary>Find your duplicate files and remove them</summary>
+    <description><![CDATA[dd]]></description>
+    <version>0.0.1</version>
+    <licence>agpl</licence>
+    <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
+    <namespace>DuplicateFinder</namespace>
+    <category>files</category>
+    <category>tools</category>
+    <bugs>https://github.com/PaulLereverend/NextcloudDuplicateFinder</bugs>
+    <dependencies>
+        <nextcloud min-version="15" max-version="20"/>
+    </dependencies>
+    <navigations>
+        <navigation>
+            <name>Duplicate Finder</name>
+            <route>duplicatefinder.page.index</route>
+        </navigation>
+    </navigations>
+    <commands>
+		  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
+	</commands>
+</info>

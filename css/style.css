@@ -1,0 +1,34 @@
+.thumbnail{
+	width: 62px;
+	height: 62px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 62px;
+	display: inline-block;
+}
+.duplicates{
+	display: list-item;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-bottom: gray;
+	border-bottom-style: dotted;
+	border-bottom-width: 2px;
+}
+.element{
+	display: flex;
+    align-items: center;
+}
+.path{
+	margin-left: 10px;
+	font-weight: bold;
+}
+.hash{
+	margin-left: 10px;
+	font-size: small;
+}
+#container{
+	margin: 10px;
+}
+.button-delete{
+	height: 42px;
+}
