@@ -12,30 +12,33 @@ class ApiController extends Controller {
     public function files() {
         $files = $this->getFilesRecursive();
         $results = \OCA\Files\Helper::formatFileInfos($files);
-        $hashArr = array();
+        $sizeArr = array();
         foreach ($results as $key => $result) {
 			$path = $this->getRelativePath($files[$key]->getPath()). $result['name'];
-			if($info = Filesystem::getLocalFile($path)) {
-				$fileHash = hash_file('md5', $info);
-				if($fileHash){
-					$hashArr[$path] = $fileHash;
-				}
-			}
+            $sizeArr[$path] = $result['size'];
 		}
-		$duplicates = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
-		asort($duplicates);
-        $previousHash = 0;
-        $response = array();
+		$duplicates = array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr)));
 
-		foreach($duplicates as $filePath=>$fileHash) {
-			if($previousHash != $fileHash){
+        $hashArr = array();
+        foreach($duplicates as $filePath=>$size){
+            if($info = Filesystem::getLocalFile($filePath)) {
+                $fileHash = hash_file('md5', $info);
+				if($fileHash){
+					$hashArr[$filePath] = $fileHash;
+				}
             }
+        }
+
+        $duplicatesHash = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
+        asort($duplicatesHash);
+
+        $response = array();
+		foreach($duplicatesHash as $filePath=>$fileHash) {
             $file = array();
             $file['infos'] = \OCA\Files\Helper::formatFileInfo(FileSystem::getFileInfo($filePath));
             $file['hash'] = $fileHash;
             $file['path'] = $filePath;
             array_push($response, $file);
-			$previousHash = $fileHash;
         }
         return $response;
     }
@@ -49,7 +52,6 @@ class ApiController extends Controller {
                 $results[] = $file;
             }
         }
-
         return $results;
     }
 
