@@ -10,7 +10,8 @@ class ApiController extends Controller {
      * @NoAdminRequired
      */
     public function files() {
-        $results = \OCA\Files\Helper::formatFileInfos($this->getFilesRecursive());
+        $files = $this->getFilesRecursive();
+        $results = \OCA\Files\Helper::formatFileInfos($files);
         $hashArr = array();
         foreach ($results as $key => $result) {
 			$path = $this->getRelativePath($files[$key]->getPath()). $result['name'];
