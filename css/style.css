@@ -7,7 +7,6 @@
 	display: inline-block;
 }
 .duplicates{
-	display: list-item;
 	margin-bottom: 10px;
 	padding-bottom: 10px;
 	border-bottom: gray;
@@ -27,7 +26,7 @@
 	font-size: small;
 }
 #container{
-	margin: 10px;
+	margin: 5%;
 }
 .button-delete{
 	height: 42px;
