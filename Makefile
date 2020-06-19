@@ -75,8 +75,10 @@ ifeq (, $(composer))
 	curl -sS https://getcomposer.org/installer | php
 	mv composer.phar $(build_tools_directory)
 	php $(build_tools_directory)/composer.phar install --prefer-dist
+	php $(build_tools_directory)/composer.phar update --prefer-dist
 else
 	composer install --prefer-dist
+	composer update --prefer-dist
 endif
 
 # Installs npm dependencies
@@ -113,21 +115,20 @@ dist:
 source:
 	rm -rf $(source_build_directory)
 	mkdir -p $(source_build_directory)
-	tar cvzf $(source_package_name).tar.gz ../$(app_name) \
-	--exclude-vcs \
+	gtar cvz --exclude-vcs \
 	--exclude="../$(app_name)/build" \
 	--exclude="../$(app_name)/js/node_modules" \
 	--exclude="../$(app_name)/node_modules" \
 	--exclude="../$(app_name)/*.log" \
 	--exclude="../$(app_name)/js/*.log" \
+	-f $(source_package_name).tar.gz ../$(app_name) \
 
 # Builds the source package for the app store, ignores php and js tests
 .PHONY: appstore
 appstore:
 	rm -rf $(appstore_build_directory)
 	mkdir -p $(appstore_build_directory)
-	tar cvzf $(appstore_package_name).tar.gz ../$(app_name) \
-	--exclude-vcs \
+	gtar cvz --exclude-vcs \
 	--exclude="../$(app_name)/build" \
 	--exclude="../$(app_name)/tests" \
 	--exclude="../$(app_name)/Makefile" \
@@ -148,6 +149,7 @@ appstore:
 	--exclude="../$(app_name)/protractor\.*" \
 	--exclude="../$(app_name)/.*" \
 	--exclude="../$(app_name)/js/.*" \
+	-f $(appstore_package_name).tar.gz ../$(app_name) \
 
 .PHONY: test
 test: composer
