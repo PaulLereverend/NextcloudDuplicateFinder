@@ -1,12 +1,5 @@
-console.log('salut');
-
-/*var previewImg = new Image();
-const previewUrl = OC.generateUrl('/core/preview.png?') + $.param(params);
-previewImg.onload = $(this._containerActive).attr('style', 'background-image:url("' + url + '")');
-previewImg.src = previewUrl;
-*/
-var test = "salut";
 loadList();
+
 function loadList() {
     var baseUrl = OC.generateUrl('/apps/duplicatefinder');
     var element = document.getElementById('container');
@@ -26,7 +19,6 @@ function loadList() {
                 button.addEventListener("click", function () {
                     deleteElement(el.path, el.infos.id);
                 });
-                //button.setAttribute('onClick', 'deleteElement("' + el.path + '","' + el.infos.id + '")');
                 div.appendChild(button);
 
                 var label = document.createElement("div");
