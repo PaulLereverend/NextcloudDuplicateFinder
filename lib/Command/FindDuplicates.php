@@ -69,29 +69,37 @@ class FindDuplicates extends Base {
 			});
 		}
 		$results = \OCA\Files\Helper::formatFileInfos($files);
-		$hashArr = array();
-		foreach ($results as $key => $result) {
+
+		$sizeArr = array();
+        foreach ($results as $key => $result) {
 			$path = $this->getRelativePath($files[$key]->getPath()). $result['name'];
-			if($info = Filesystem::getLocalFile($path)) {
-				$fileHash = hash_file('md5', $info);
-				if($fileHash){
-					$hashArr[$path] = $fileHash;
-				}
-			}
+            $sizeArr[$path] = $result['size'];
 		}
-		$arr_unique = array_unique($hashArr);
-		$arr_duplicates = array_diff_assoc($hashArr, $arr_unique);
-		$duplicates = array_intersect($hashArr, $arr_duplicates);
-		asort($duplicates);
+		$duplicates = array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr)));
+
+        $hashArr = array();
+        foreach($duplicates as $filePath=>$size){
+            if($info = Filesystem::getLocalFile($filePath)) {
+                $fileHash = hash_file('md5', $info);
+				if($fileHash){
+					$hashArr[$filePath] = $fileHash;
+				}
+            }
+        }
+
+        $duplicatesHash = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
+        asort($duplicatesHash);
+
+
 		$previousHash = 0;
-		foreach($duplicates as $filePath=>$fileHash) {
+		foreach($duplicatesHash as $filePath=>$fileHash) {
 			if($previousHash != $fileHash){
 				$output->writeln("\/----".$fileHash."---\/");
 			}
 			$output->writeln($filePath);
 			$previousHash = $fileHash;
 		}
-		$output->writeln("end scan");
+		$output->writeln("...end scan");
 		return 0;
 	}
 	private function readFiles(string $user, $path){
