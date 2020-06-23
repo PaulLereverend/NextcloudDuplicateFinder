@@ -1,5 +1,7 @@
-loadList();
+var total_size = 0;
+var nb_element = 0;
 
+loadList();
 function loadList() {
     var baseUrl = OC.generateUrl('/apps/duplicatefinder');
     var element = document.getElementById('container');
@@ -17,8 +19,9 @@ function loadList() {
                 button.innerHTML = '<span class="icon icon-delete"></span>';
                 button.setAttribute('class', 'button-delete');
                 button.addEventListener("click", function () {
-                    deleteElement(el.path, el.infos.id);
+                    deleteElement(el.path, el.infos.id, el.infos.size);
                 });
+
                 div.appendChild(button);
 
                 var label = document.createElement("div");
@@ -32,14 +35,22 @@ function loadList() {
                 hash.innerHTML = el.hash;
                 label.appendChild(hash);
 
-
                 img.setAttribute('class', 'thumbnail');
                 if (el.infos.mimetype == 'image/jpeg' ||
                     el.infos.mimetype == 'image/png' ||
                     el.infos.mimetype == 'image/gif' ||
                     el.infos.mimetype == 'text/plain') {
-                    console.log('test');
-                    img.style.backgroundImage = "url('/index.php/core/preview?fileId=" + el.infos.id + "&x=500&y=500&forceIcon=0')";
+
+                    var params = {
+                        file: el.path,
+                        fileId: el.infos.id,
+                        x: 500,
+                        y: 500,
+                        forceIcon: 0
+                    };
+
+                    const previewUrl = OC.generateUrl('/core/preview.png?') + $.param(params);
+                    img.style.backgroundImage = "url('" + previewUrl + "')";
                 } else {
                     const iconUrl = OC.MimeType.getIconUrl(el.infos.mimetype);
                     img.style.backgroundImage = "url(" + iconUrl + ")";
@@ -58,19 +69,32 @@ function loadList() {
                     group.appendChild(div);
                 }
                 previous_hash = el.hash;
+                total_size += el.infos.size;
 
             });
+            document.getElementById('loader-container').style.display = 'none';
+            if (result.length == 0) {
+                document.getElementById('title').innerHTML = "0 duplicate file found";
+            } else {
+                nb_element = result.length;
+                updateTitle();
+            }
             element.appendChild(group);
-            console.log(result);
         });
 }
-function deleteElement(path, id) {
+function deleteElement(path, id, size) {
     let fileClient = OC.Files.getClient();
     fileClient.remove(path);
     document.getElementById(id).remove();
+    total_size -= size;
+    nb_element--;
+    updateTitle();
 }
 function getGroupeDiv() {
     let div = document.createElement("div");
     div.setAttribute('class', 'duplicates');
     return div;
+}
+function updateTitle() {
+    document.getElementById('title').innerHTML = nb_element + ' files found. Total: ' + Math.round(total_size / 1000000) + 'MB';
 }

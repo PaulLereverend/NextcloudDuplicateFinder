@@ -5,7 +5,7 @@
     <name>Duplicate Finder</name>
     <summary>Find your duplicate files and remove them</summary>
     <description><![CDATA[dd]]></description>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
     <namespace>DuplicateFinder</namespace>
