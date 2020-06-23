@@ -54,20 +54,28 @@ class FindDuplicates extends Base {
 		parent::configure();
 	}
 	protected function execute(InputInterface $input, OutputInterface $output): int {
+		$this->output = $output;
 		if ($this->encryptionManager->isEnabled()) {
-			$output->writeln('Encryption is enabled. Aborted.');
+			$this->output->writeln('Encryption is enabled. Aborted.');
 			return 1;
 		}
-		$output->writeln("Start scan...");
 		$inputPath = $input->getOption('path');
 		$user = $input->getOption('user');
 		if($user){
 			$files = $this->readFiles($user, $inputPath);
+			$this->checkDuplicates($files, $user);
 		}else{
 			$this->userManager->callForSeenUsers(function (IUser $user) {
 				$files = $this->readFiles($user->getUID(), $inputPath);
+				$this->checkDuplicates($files, $user->getUID());
 			});
 		}
+
+		return 0;
+	}
+	private function checkDuplicates($files, $username){
+		$this->output->writeln("Start scan... user: " . $username);
+
 		$results = \OCA\Files\Helper::formatFileInfos($files);
 
 		$sizeArr = array();
@@ -94,13 +102,15 @@ class FindDuplicates extends Base {
 		$previousHash = 0;
 		foreach($duplicatesHash as $filePath=>$fileHash) {
 			if($previousHash != $fileHash){
-				$output->writeln("\/----".$fileHash."---\/");
+				$this->output->writeln("\/----".$fileHash."---\/");
 			}
-			$output->writeln($filePath);
+			$this->output->writeln($filePath);
 			$previousHash = $fileHash;
 		}
-		$output->writeln("...end scan");
-		return 0;
+		if(count($duplicatesHash) == 0){
+			$this->output->writeln("No duplicate file");
+		}
+		$this->output->writeln("...end scan");
 	}
 	private function readFiles(string $user, $path){
 		if(!$path){
