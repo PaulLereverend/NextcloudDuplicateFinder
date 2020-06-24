@@ -3,7 +3,8 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>duplicatefinder</id>
     <name>Duplicate Finder</name>
-    <summary>Find your duplicate files and remove them</summary>
+    <summary>Save some space by finding your duplicate files</summary>
+    <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png</screenshot>
     <description><![CDATA[dd]]></description>
     <version>0.0.2</version>
     <licence>agpl</licence>

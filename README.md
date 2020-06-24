@@ -13,3 +13,5 @@ You can either use the command or the gui.
 
 
 ## Preview
+
+![alt text](https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png)
