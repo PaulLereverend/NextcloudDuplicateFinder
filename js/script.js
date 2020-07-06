@@ -36,11 +36,8 @@ function loadList() {
                 label.appendChild(hash);
 
                 img.setAttribute('class', 'thumbnail');
-                if (el.infos.mimetype == 'image/jpeg' ||
-                    el.infos.mimetype == 'image/png' ||
-                    el.infos.mimetype == 'image/gif' ||
-                    el.infos.mimetype == 'text/plain') {
-
+                if (el.infos.mimetype.substr(0, el.infos.mimetype.indexOf('/')) == 'image' ||
+                    el.infos.mimetype.substr(0, el.infos.mimetype.indexOf('/')) == 'video') {
                     var params = {
                         file: el.path,
                         fileId: el.infos.id,
