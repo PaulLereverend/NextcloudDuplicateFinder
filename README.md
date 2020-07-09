@@ -1,4 +1,4 @@
-# Extract
+# Duplicate Finder
 Place this app in ```nextcloud/apps/```
 
 You can either use the command or the gui. 
