@@ -63,6 +63,11 @@ function loadList() {
                         element.appendChild(group);
                     }
                     group = getGroupeDiv();
+                    // Show size
+                    size = document.createElement("div");
+                    size.setAttribute('class', 'filesize');
+                    size.innerHTML = OC.Util.humanFileSize(el.infos.size);
+                    group.prepend(size);
                     group.appendChild(div);
                 }
                 previous_hash = el.hash;
