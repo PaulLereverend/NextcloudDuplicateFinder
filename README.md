@@ -5,7 +5,10 @@ You can either use the command or the gui.
 
 ## Command usage
 
-  ```duplicates:find-all [options]```
+  ```occ duplicates:find-all [options]```
+  
+Depending on your NextCloud setup, the `occ` command may need to be called differently, such as `sudo php occ duplicates:find-all [options]` or `nextcloud.occ duplicates:find-all [options]`. Please refer to the [occ documentation](https://docs.nextcloud.com/server/15/admin_manual/configuration_server/occ_command.html) for more details
+
 
 ### Options
 - `-u --user` scan files of the specified user (-u admin)
