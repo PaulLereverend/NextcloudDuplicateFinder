@@ -20,13 +20,16 @@
 .path{
 	margin-left: 10px;
 	font-weight: bold;
+	float: left;
 }
 .hash{
+	clear: both;
 	margin-left: 10px;
 	font-size: small;
 }
 #container{
-	margin: 5%;
+	margin: 2%;
+	width: 100%;
 }
 .button-delete{
 	height: 42px;
@@ -48,5 +51,22 @@
 	margin: 50%;
 }
 #title{
-	width: 300px;
+	 width: 300px;
+}
+
+.element .icon {
+	display: inline-block;
+	vertical-align: middle;
+	background-size: 16px 16px;
+}
+
+.element .fileactions .action {
+	padding: 17px 14px;
+}
+
+.element .fileactions {
+	float: left;
+}
+#app{
+	width: 100%;
 }

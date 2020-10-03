@@ -2,6 +2,7 @@ var total_size = 0;
 var nb_element = 0;
 
 loadList();
+
 function loadList() {
     var baseUrl = OC.generateUrl('/apps/duplicatefinder');
     var element = document.getElementById('container');
@@ -29,6 +30,49 @@ function loadList() {
                 path.setAttribute('class', 'path');
                 path.innerHTML = el.path;
                 label.appendChild(path);
+
+                function get_icons(actions, el) {
+                    var icons = document.createElement("div");
+                    icons.setAttribute('class', 'fileactions');
+
+                    actions.forEach(icon_info => {
+                        var icon_link = document.createElement('a');
+                        icon_link.setAttribute('href', icon_info.url.call(null, el));
+                        icon_link.setAttribute('class', 'action permanent');
+                        icon_link.setAttribute('title', icon_info.description)
+
+                        var action_icon = document.createElement('span');
+                        action_icon.setAttribute('class', 'icon ' + icon_info.icon);
+                        icon_link.appendChild(action_icon);
+
+                        // var action_text = document.createElement('span');
+                        // action_text.innerText = icon_info.icon;
+                        // icon_link.appendChild(action_text);
+
+                        icons.appendChild(icon_link);
+                    });
+
+                    return icons;
+                }
+
+                // Get icons
+                var actions = [{
+                    'icon': 'icon-file',
+                    'url': function (el) {
+                        let path = el.path;
+                        let dir = OC.dirname(path);
+                        return OC.generateUrl('/apps/files/?dir='+ dir +'&openfile=' + el.infos.id);
+                    },
+                    'description': 'Show file'
+                }, {
+                    'icon': 'icon-details',
+                    'url': function (el) {
+                        return OC.generateUrl('/f/' + el.infos.id);
+                    },
+                    'description': 'Show details'
+                }];
+                var icons = get_icons(actions, el);
+                label.appendChild(icons);
 
                 var hash = document.createElement("h1");
                 hash.setAttribute('class', 'hash');
@@ -84,6 +128,7 @@ function loadList() {
             element.appendChild(group);
         });
 }
+
 function deleteElement(path, id, size) {
     let fileClient = OC.Files.getClient();
     fileClient.remove(path);
@@ -92,11 +137,13 @@ function deleteElement(path, id, size) {
     nb_element--;
     updateTitle();
 }
+
 function getGroupeDiv() {
     let div = document.createElement("div");
     div.setAttribute('class', 'duplicates');
     return div;
 }
+
 function updateTitle() {
-    document.getElementById('title').innerHTML = nb_element + ' files found. Total: ' + Math.round(total_size / 1000000) + 'MB';
+    document.getElementById('title').innerHTML = nb_element + ' files found. Total: ' + OC.Util.humanFileSize(total_size);
 }
