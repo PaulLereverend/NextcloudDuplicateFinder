@@ -10,6 +10,7 @@ function loadList() {
         .then(function (result) {
             let previous_hash = '';
 
+            result.sort((b, a) => parseFloat(a.infos.size) - parseFloat(b.infos.size));
             result.forEach(el => {
                 var div = document.createElement("div");
                 div.setAttribute('id', el.infos.id);
@@ -61,7 +62,7 @@ function loadList() {
                     'url': function (el) {
                         let path = el.path;
                         let dir = OC.dirname(path);
-                        return OC.generateUrl('/apps/files/?dir='+ dir +'&openfile=' + el.infos.id);
+                        return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + el.infos.id);
                     },
                     'description': 'Show file'
                 }, {
