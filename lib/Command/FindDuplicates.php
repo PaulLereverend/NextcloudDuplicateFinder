@@ -83,19 +83,21 @@ class FindDuplicates extends Base {
 			$path = $this->getRelativePath($files[$key]->getPath()). $result['name'];
             $sizeArr[$path] = $result['size'];
 		}
-		$duplicates = array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr)));
+		unset($result);
 
         $hashArr = array();
-        foreach($duplicates as $filePath=>$size){
+        foreach(array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr))) as $filePath=>$size){
             if($info = Filesystem::getLocalFile($filePath)) {
                 $fileHash = hash_file('md5', $info);
 				if($fileHash){
 					$hashArr[$filePath] = $fileHash;
 				}
             }
-        }
+		}
+		unset($sizeArr);
 
-        $duplicatesHash = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
+		$duplicatesHash = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
+		unset($hashArr);
         asort($duplicatesHash);
 
 

@@ -16,11 +16,12 @@ class ApiController extends Controller {
         foreach ($results as $key => $result) {
 			$path = $this->getRelativePath($files[$key]->getPath()). $result['name'];
             $sizeArr[$path] = $result['size'];
-		}
-		$duplicates = array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr)));
+        }
+        unset($files);
+        unset($results);
 
         $hashArr = array();
-        foreach($duplicates as $filePath=>$size){
+        foreach(array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr))) as $filePath=>$size){
             if($info = Filesystem::getLocalFile($filePath)) {
                 $fileHash = hash_file('md5', $info);
 				if($fileHash){
@@ -30,6 +31,7 @@ class ApiController extends Controller {
         }
 
         $duplicatesHash = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
+        unset($hashArr);
         asort($duplicatesHash);
 
         $response = array();
