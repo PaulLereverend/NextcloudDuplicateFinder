@@ -26,7 +26,7 @@ You can either use the command or the gui.
     <website>https://github.com/PaulLereverend/NextcloudDuplicateFinder</website>
     <bugs>https://github.com/PaulLereverend/NextcloudDuplicateFinder</bugs>
     <dependencies>
-        <nextcloud min-version="15" max-version="20"/>
+        <nextcloud min-version="15" max-version="21"/>
     </dependencies>
     <navigations>
         <navigation>
