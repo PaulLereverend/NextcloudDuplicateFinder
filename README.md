@@ -1,5 +1,5 @@
 # Duplicate Finder
-Place this app in ```nextcloud/apps/```
+Install app using the Nextcloud App Store inside your Nextcloud. See https://apps.nextcloud.com/apps/duplicatefinder
 
 You can either use the command or the gui. 
 
