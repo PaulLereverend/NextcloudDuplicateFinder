@@ -48,7 +48,7 @@
 	100% { transform: rotate(360deg); }
   }
 #loader-container{
-	margin: 50%;
+	margin: 1em 50% 1em 50%;
 }
 #title{
 	 width: 300px;
