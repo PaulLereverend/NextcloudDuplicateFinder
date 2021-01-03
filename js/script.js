@@ -71,13 +71,22 @@
 
   function deleteItem(item) {
     let fileClient = OC.Files.getClient();
-    fileClient.remove(item.path);
-    document.getElementById(item.infos.id).remove();
-    var itemIndex = items.findIndex(function(i) {
-      return i.infos.id === item.infos.id;
+    var itemEl = document.getElementById(item.infos.id);
+    var iconEl = itemEl.getElementsByClassName('icon-delete')[0];
+
+    iconEl.classList.replace('icon-delete', 'icon-loading');
+
+    fileClient.remove(item.path).then(function() {
+      itemEl.remove();
+      var itemIndex = items.findIndex(function(i) {
+        return i.infos.id === item.infos.id;
+      });
+      items.splice(itemIndex, 1);
+      updateTitleWithStats();
+    }).fail(function() {
+      iconEl.classList.replace('icon-loading', 'icon-delete');
+      OC.dialogs.alert('Error deleting the file: ' + item.path, 'Error')
     });
-    items.splice(itemIndex, 1);
-    updateTitleWithStats();
   }
 
 
