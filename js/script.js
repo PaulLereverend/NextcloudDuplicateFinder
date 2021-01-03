@@ -3,23 +3,15 @@
   var element = document.getElementById('container');
   var loader = document.getElementById('loader-container');
   var title = document.getElementById('title');
-  var items = [];
+  var groupedResult = {};
 
   function render() {
     loader.style.display = 'none';
 
-    if (items.length == 0) {
+    if (groupedResult.itemCount == 0) {
       updateTitle("0 duplicate file found");
     } else {
       updateTitleWithStats();
-
-      // Sort desending by size
-      items.sort((a, b) => b.infos.size - a.infos.size);
-
-      // Group items with same hash.
-      var groupedResult = groupBy(items, function(item) {
-        return item.hash;
-      });
 
       groupedResult.hashes.forEach(function(hash) {
         var groupItems = groupedResult.groupedItems[hash];
@@ -34,16 +26,9 @@
   }
 
   function updateTitleWithStats() {
-    var stats = getStats();
+    var spaceUsedByDublicateFiles = OC.Util.humanFileSize(groupedResult.totalSize - groupedResult.uniqueTotalSize);
 
-    updateTitle(stats.count + ' files found. Total: ' + OC.Util.humanFileSize(stats.totalSize))
-  }
-
-  function getStats() {
-    return {
-      count: items.length,
-      totalSize: items.map(item => item.infos.size).reduce((a, b) => a + b, 0)
-    }
+    updateTitle(groupedResult.itemCount + ' files found. Total: ' + OC.Util.humanFileSize(groupedResult.totalSize) + '. ' + spaceUsedByDublicateFiles + ' of space could be freed.')
   }
 
   function isImage(item) {
@@ -68,7 +53,6 @@
     return OC.MimeType.getIconUrl(item.infos.mimetype);
   }
 
-
   function deleteItem(item) {
     let fileClient = OC.Files.getClient();
     var itemEl = document.getElementById(item.infos.id);
@@ -77,11 +61,28 @@
     iconEl.classList.replace('icon-delete', 'icon-loading');
 
     fileClient.remove(item.path).then(function() {
-      itemEl.remove();
-      var itemIndex = items.findIndex(function(i) {
+      var itemGroup = groupedResult.groupedItems[item.hash];
+      var isLastItemInGroup = itemGroup.length === 1;
+      var itemIndex = itemGroup.findIndex(function(i) {
         return i.infos.id === item.infos.id;
       });
-      items.splice(itemIndex, 1);
+      itemGroup.splice(itemIndex, 1);
+
+      // If it was the last item, remove the whole group container.
+      if (isLastItemInGroup) {
+        itemEl.parentElement.remove();
+      }
+      else {
+        itemEl.remove();
+      }
+
+      // Update the stats
+      groupedResult.totalSize -= item.infos.size;
+      groupedResult.itemCount -= 1;
+      if (isLastItemInGroup) {
+        groupedResult.uniqueTotalSize -= item.infos.size;
+      }
+
       updateTitleWithStats();
     }).fail(function() {
       iconEl.classList.replace('icon-loading', 'icon-delete');
@@ -185,15 +186,21 @@
     return itemDiv;
   }
 
-  function groupBy(items, fn) {
+  function groupByHashWithStats(items) {
     var hashes = [];
     var groupedItems = {};
+    var totalSize = 0;
+    var uniqueTotalSize = 0;
+
     items.forEach(function(item) {
-      var key = fn(item);
+      var key = item.hash;
+
+      totalSize += item.infos.size;
 
       if (!groupedItems[key]) {
         groupedItems[key] = [];
         hashes.push(key);
+        uniqueTotalSize += item.infos.size;
       }
 
       groupedItems[key].push(item);
@@ -201,13 +208,23 @@
 
     return {
       hashes: hashes,
-      groupedItems: groupedItems
+      groupedItems: groupedItems,
+      totalSize: totalSize,
+      itemCount: items.length,
+      uniqueTotalSize: uniqueTotalSize,
     };
   };
 
   $.getJSON(baseUrl + '/files')
     .then(function(result) {
-      items = result;
+      var items = result;
+
+      // Sort desending by size
+      items.sort((a, b) => b.infos.size - a.infos.size);
+
+      // Group items with same hash.
+      groupedResult = groupByHashWithStats(items);
+
       render();
     });
 })();
