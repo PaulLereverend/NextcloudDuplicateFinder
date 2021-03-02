@@ -17,7 +17,7 @@ You can either use the command or the gui.
 - `-u --user` scan files of the specified user (-u admin)
 - `-p --path` limit scan to this path (--path="/alice/files/Photos")
     </description>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
     <namespace>DuplicateFinder</namespace>
