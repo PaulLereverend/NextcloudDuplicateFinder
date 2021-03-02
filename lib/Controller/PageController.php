@@ -30,6 +30,9 @@ class PageController extends Controller {
 		return new TemplateResponse('duplicatefinder', 'index');  // templates/index.php
 	}
 
+    /**
+     * @NoAdminRequired
+     */
 	public function files() {
         $files = $this->getFilesRecursive();
         $results = \OCA\Files\Helper::formatFileInfos($files);
