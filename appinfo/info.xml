@@ -6,8 +6,8 @@
     <summary>Save some space by finding your duplicate files</summary>
     <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png</screenshot>
     <description>Click on the icon and find if you have duplicate files.
-    
-You can either use the command or the gui. 
+
+You can either use the command or the gui.
 
 ## Command usage
 
@@ -17,7 +17,7 @@ You can either use the command or the gui.
 - `-u --user` scan files of the specified user (-u admin)
 - `-p --path` limit scan to this path (--path="/alice/files/Photos")
     </description>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
     <licence>agpl</licence>
     <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
     <namespace>DuplicateFinder</namespace>

@@ -1,23 +1,23 @@
 <?php
 
-namespace OCA\DuplicateFinderBis\Tests\Unit\Controller;
+namespace OCA\DuplicateFinder\Tests\Unit\Controller;
 
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
 use OCP\AppFramework\Http\TemplateResponse;
 
-use OCA\DuplicateFinderBis\Controller\PageController;
+use OCA\DuplicateFinder\Controller\PageController;
 
 
-class PageControllerTest extends PHPUnit_Framework_TestCase {
+class PageControllerTest extends TestCase {
 	private $controller;
 	private $userId = 'john';
 
-	public function setUp() {
+	public function setUp() : void {
 		$request = $this->getMockBuilder('OCP\IRequest')->getMock();
 
 		$this->controller = new PageController(
-			'duplicatefinderbis', $request, $this->userId
+			'duplicatefinder', $request, $this->userId
 		);
 	}
 
