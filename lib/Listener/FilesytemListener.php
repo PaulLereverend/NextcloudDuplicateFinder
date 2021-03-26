@@ -26,13 +26,13 @@ class FilesytemListener implements IEventListener {
     }elseif($event instanceOf NodeRenamedEvent){
       $this->fileInfoService->delete($event->getSource()->getPath());
       $target = $event->getTarget();
-      $this->fileInfoService->createOrUpdate($target->getOwner(), $target->getPath());
+      $this->fileInfoService->createOrUpdate($target->getPath(), $target->getOwner());
     }elseif($event instanceOf NodeCopiedEvent
       || $event instanceOf NodeCreatedEvent
       || $event instanceOf NodeWrittenEvent
       || $event instanceOf NodeTouchedEvent){
       $node = $event->getNode();
-			$this->fileInfoService->createOrUpdate($node->getOwner(), $node->getPath());
+			$this->fileInfoService->createOrUpdate($node->getPath(), $target->getOwner());
     }
   }
 }

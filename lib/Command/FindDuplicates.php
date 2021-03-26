@@ -5,12 +5,14 @@ use OC\Core\Command\Base;
 use OC\Files\Search\SearchQuery;
 use OC\Files\Search\SearchComparison;
 use OC\Files\Search\SearchOrder;
+use OC\Files\Utils\Scanner;
 use OCP\Encryption\IManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\Files\Search\ISearchComparison;
+use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IConfig;
 use OCP\IPreview;
 use OCP\IUser;
@@ -89,9 +91,18 @@ class FindDuplicates extends Base {
 	}
 
 	private function findDupplicates(string $user){
+		$scanner = new Scanner($user, null, \OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
+		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
+				$this->output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);
+				$file = $this->rootFolder->get($path);
+				$fileInfo = $this->fileInfoService->createOrUpdate($path, $file->getOwner());
+				$this->output->writeln(" => Hash: ".$fileInfo->getFileHash(), OutputInterface::VERBOSITY_VERBOSE);
+				$this->abortIfInterrupted();
+		});
+
 		$folder = $this->rootFolder->getUserFolder($user);
 		$this->output->writeln('Start Searching files for '.$user);
-		$this->findAndImportFiles($folder);
+		$scanner->scan($folder->getPath(), true, null);
 		$this->output->writeln('Finished Searching files');
 		$this->output->writeln("Duplicates for user '$user' are: ");
 		foreach($this->fileInfoService->getDuplicates($user) as $dup){
@@ -100,19 +111,6 @@ class FindDuplicates extends Base {
 				$this->output->writeln('     '.$f->getPath());
 			};
 		};
-	}
-
-	private function findAndImportFiles( $node){
-		$this->abortIfInterrupted();
-		if($node->getType() === "dir"){
-			foreach($node->getDirectoryListing() as $f){
-				$this->findAndImportFiles($f);
-			}
-		}else{
-			$this->output->write("Scanning ".$node->getPath(), false, OutputInterface::VERBOSITY_VERBOSE);
-			$fileInfo = $this->fileInfoService->createOrUpdate($node->getOwner(), $node->getPath());
-			$this->output->writeln(" => Hash: ".$fileInfo->getFileHash(), OutputInterface::VERBOSITY_VERBOSE);
-		}
 	}
 
 }

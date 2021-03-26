@@ -31,7 +31,7 @@ class FileInfoService {
     return $this->mapper->find($path);
   }
 
-  public function createOrUpdate(IUser $owner, string $path) {
+  public function createOrUpdate(string $path, ?IUser $owner = null) {
     $fileInfo = $this->getOrCreate($owner, $path);
     return $this->calculateHashes($fileInfo);
   }
@@ -47,7 +47,7 @@ class FileInfoService {
     try{
       $fileInfo = $this->mapper->find($path);
     }catch(\Exception $e){
-      $fileInfo = new FileInfo($path, $owner->getUID());
+      $fileInfo = new FileInfo($path, !is_null($owner) ? $owner->getUID(): null);
       $fileInfo->setKeepAsPrimary(true);
       $fileInfo = $this->mapper->insert($fileInfo);
       $fileInfo->setKeepAsPrimary(false);

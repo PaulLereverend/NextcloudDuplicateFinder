@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
-    <id>duplicatefinder</id>
-    <name>Duplicate Finder</name>
-    <summary>Save some space by finding your duplicate files</summary>
-    <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png</screenshot>
-    <description>Click on the icon and find if you have duplicate files.
+  <id>duplicatefinder</id>
+  <name>Duplicate Finder</name>
+  <summary>Save some space by finding your duplicate files</summary>
+  <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png</screenshot>
+  <description>Click on the icon and find if you have duplicate files.
 
 You can either use the command or the gui.
 
@@ -16,25 +16,28 @@ You can either use the command or the gui.
 ### Options
 - `-u --user` scan files of the specified user (-u admin)
 - `-p --path` limit scan to this path (--path="/alice/files/Photos")
-    </description>
-    <version>0.0.7</version>
-    <licence>agpl</licence>
-    <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
-    <namespace>DuplicateFinder</namespace>
-    <category>files</category>
-    <category>tools</category>
-    <website>https://github.com/PaulLereverend/NextcloudDuplicateFinder</website>
-    <bugs>https://github.com/PaulLereverend/NextcloudDuplicateFinder</bugs>
-    <dependencies>
-        <nextcloud min-version="15" max-version="21"/>
-    </dependencies>
-    <navigations>
-        <navigation>
-            <name>Duplicate Finder</name>
-            <route>duplicatefinder.page.index</route>
-        </navigation>
-    </navigations>
-    <commands>
-		  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
+  </description>
+  <version>0.0.7</version>
+  <licence>agpl</licence>
+  <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
+  <namespace>DuplicateFinder</namespace>
+  <category>files</category>
+  <category>tools</category>
+  <website>https://github.com/PaulLereverend/NextcloudDuplicateFinder</website>
+  <bugs>https://github.com/PaulLereverend/NextcloudDuplicateFinder</bugs>
+  <dependencies>
+    <nextcloud min-version="15" max-version="21"/>
+  </dependencies>
+  <navigations>
+    <navigation>
+      <name>Duplicate Finder</name>
+      <route>duplicatefinder.page.index</route>
+    </navigation>
+  </navigations>
+  <commands>
+	  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
 	</commands>
+  <background-jobs>
+    <job>OCA\DuplicateFinder\BackgroundJob\FindDuplicates</job>
+  </background-jobs>
 </info>
