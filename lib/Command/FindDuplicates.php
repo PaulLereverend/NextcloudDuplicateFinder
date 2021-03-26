@@ -14,6 +14,7 @@ use OCP\Files\NotFoundException;
 use OCP\Files\Search\ISearchComparison;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IConfig;
+use OCP\IDBConnection;
 use OCP\IPreview;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -41,17 +42,22 @@ class FindDuplicates extends Base {
 	/** @var IManager */
 	protected $encryptionManager;
 
+	/** @var IDBConnection */
+	protected $connection;
+
 	/** @var FileInfoService */
 	protected $fileInfoService;
 
 	public function __construct(IRootFolder $rootFolder,
 								IUserManager $userManager,
 								IManager $encryptionManager,
+								IDBConnection $connection,
 								FileInfoService $fileInfoService) {
 		parent::__construct();
 		$this->userManager = $userManager;
 		$this->rootFolder = $rootFolder;
 		$this->encryptionManager = $encryptionManager;
+		$this->connection = $connection;
 		$this->fileInfoService = $fileInfoService;
 	}
 
@@ -91,13 +97,17 @@ class FindDuplicates extends Base {
 	}
 
 	private function findDupplicates(string $user){
-		$scanner = new Scanner($user, null, \OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
+		$scanner = new Scanner($user, $this->connection, \OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
 		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
 				$this->output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);
 				$file = $this->rootFolder->get($path);
 				$fileInfo = $this->fileInfoService->createOrUpdate($path, $file->getOwner());
 				$this->output->writeln(" => Hash: ".$fileInfo->getFileHash(), OutputInterface::VERBOSITY_VERBOSE);
 				$this->abortIfInterrupted();
+				// Ensure that every scanned file is commited - not only after all files are scanned
+				$this->connection->commit();
+				$this->connection->beginTransaction();
+
 		});
 
 		$folder = $this->rootFolder->getUserFolder($user);
@@ -112,5 +122,4 @@ class FindDuplicates extends Base {
 			};
 		};
 	}
-
 }
