@@ -60,8 +60,10 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob {
 		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
 				$file = $this->rootFolder->get($path);
 				$fileInfo = $this->fileInfoService->createOrUpdate($path, $file->getOwner());
-				$this->connection->commit();
-				$this->connection->beginTransaction();
+				if($this->connection->inTransaction()){
+					$this->connection->commit();
+					$this->connection->beginTransaction();
+				}
 		});
 
 		$folder = $this->rootFolder->getUserFolder($user);

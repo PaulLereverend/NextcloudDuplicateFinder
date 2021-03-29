@@ -30,7 +30,7 @@ use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
 use OCA\DuplicateFinder\Utils\CMDUtils;
 
-class FindDuplicates extends Base {
+class ListDuplicates extends Base {
 
 	/** @var IUserManager */
 	protected $userManager;
@@ -70,11 +70,9 @@ class FindDuplicates extends Base {
 
 	protected function configure() {
 		$this
-			->setName('duplicates:find-all')
-			->setDescription('Find all duplicates files')
-			->addOption('recursive', 'r', InputOption::VALUE_OPTIONAL, 'scan folder recursively')
-			->addOption('user','u', InputOption::VALUE_OPTIONAL, 'scan files of the specified user')
-			->addOption('path','p', InputOption::VALUE_OPTIONAL, 'limit scan to this path, eg. --path="/alice/files/Photos"');
+			->setName('duplicates:list')
+			->setDescription('List all duplicates files')
+			->addOption('user','u', InputOption::VALUE_OPTIONAL, 'scan files of the specified user');
 
 		parent::configure();
 	}
@@ -85,7 +83,6 @@ class FindDuplicates extends Base {
 			$this->output->writeln('Encryption is enabled. Aborted.');
 			return 1;
 		}
-		$inputPath = $input->getOption('path');
 		$user = $input->getOption('user');
 
 		if($user){
@@ -93,36 +90,11 @@ class FindDuplicates extends Base {
 				$this->output->writeln('User '.$user.' is unkown.');
 				return 1;
 			}
-			$this->findDupplicates($user);
+			CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();}, $user->getUID());
 		}else{
-			$users =  $this->userManager->callForSeenUsers(function (IUser $user) {
-				$this->findDupplicates($user->getUID());
-			});
+			CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();});
 		}
 
 		return 0;
-	}
-
-	private function findDupplicates(string $user){
-		$scanner = new Scanner($user, $this->connection, \OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
-		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
-				$this->output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);
-				$file = $this->rootFolder->get($path);
-				$fileInfo = $this->fileInfoService->createOrUpdate($path, $file->getOwner());
-				$this->output->writeln(" => Hash: ".$fileInfo->getFileHash(), OutputInterface::VERBOSITY_VERBOSE);
-				$this->abortIfInterrupted();
-				// Ensure that every scanned file is commited - not only after all files are scanned
-				if($this->connection->inTransaction()){
-					$this->connection->commit();
-					$this->connection->beginTransaction();
-				}
-
-		});
-
-		$folder = $this->rootFolder->getUserFolder($user);
-		$this->output->writeln('Start Searching files for '.$user);
-		$scanner->scan($folder->getPath(), true, null);
-		$this->output->writeln('Finished Searching files');
-		CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();}, $user);
 	}
 }

@@ -36,8 +36,10 @@ You can either use the command or the gui.
   </navigations>
   <commands>
 	  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
+	  <command>OCA\DuplicateFinder\Command\ListDuplicates</command>
 	</commands>
   <background-jobs>
     <job>OCA\DuplicateFinder\BackgroundJob\FindDuplicates</job>
+    <job>OCA\DuplicateFinder\BackgroundJob\CleanUpDB</job>
   </background-jobs>
 </info>

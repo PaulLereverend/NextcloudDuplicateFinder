@@ -1,26 +1,34 @@
 <?php
 namespace OCA\DuplicateFinder\Service;
 
-use OCP\IDBConnection;
 use OCP\IUser;
-use OCP\Files\IRootFolder;
-use OCP\Files\NotFoundException;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
+use OCP\EventDispatcher\IEventDispatcher;
+use OCP\Files\IRootFolder;
+use OCP\Files\NotFoundException;
 
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileInfoMapper;
+use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 
 class FileInfoService {
 
+	/** @var IEventDispatcher */
+	private $eventDispatcher;
+
+  /** @var FileInfoMapper */
   private $mapper;
+
+  /** @var IRootFolder */
   private $rootFolder;
 
-  public function __construct(
-    FileInfoMapper $mapper,
-		IRootFolder $rootFolder){
+  public function __construct(FileInfoMapper $mapper,
+                          		IRootFolder $rootFolder,
+                          		IEventDispatcher $eventDispatcher){
     $this->mapper = $mapper;
     $this->rootFolder = $rootFolder;
+		$this->eventDispatcher = $eventDispatcher;
   }
 
   public function findAll() {
@@ -30,6 +38,14 @@ class FileInfoService {
   public function find(string $path) {
     return $this->mapper->find($path);
   }
+
+  public function findById(int $id) {
+    return $this->mapper->findById($id);
+  }
+
+	public function findByHash(string $hash) {
+		return $this->mapper->findByHash($hash);
+	}
 
   public function createOrUpdate(string $path, ?IUser $owner = null) {
     $fileInfo = $this->getOrCreate($owner, $path);
@@ -69,9 +85,11 @@ class FileInfoService {
     $file = $this->rootFolder->get($fileInfo->getPath());
     if($file){
       if($file->getMtime() > $fileInfo->getUpdatedAt()->getTimestamp()){
+				$oldHash = $fileInfo->getFileHash();
         $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
         $fileInfo->setUpdatedAt(new \DateTime());
         $this->update($fileInfo);
+        $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
       }
     }else{
       throw new \Exception("File ".$fileInfo->getId()." doesn't exists.");
@@ -79,25 +97,7 @@ class FileInfoService {
     return $fileInfo;
   }
 
-  public function getDuplicates(?string $owner){
-    $duplicates = $this->mapper->findDupplicates($owner);
-    /**
-     * If for some reason a delete or rename Event wasn't handled properly we cleanup this up here
-     */
-    for($i = 0; $i < count($duplicates); $i++){
-      for($j = 0; $j < count($duplicates[$i]); $j++){
-        try{
-          $this->rootFolder->get($duplicates[$i][$j]->getPath());
-        }catch(NotFoundException $e){
-          $this->delete($duplicates[$i][$j]->getPath());
-          unset($duplicates[$i][$j]);
-        }
-      }
-      $duplicates[$i] = array_filter($duplicates[$i]);
-      if(count($duplicates[$i]) < 2){
-        unset($duplicates[$i]);
-      }
-    }
-    return array_filter($duplicates);
+  public function getDuplicates(?string $owner, ?int $limit = null, ?int $offset = null){
+    return $this->mapper->findDupplicates($owner, $limit, $offset);
   }
 }
