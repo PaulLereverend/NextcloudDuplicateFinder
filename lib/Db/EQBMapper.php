@@ -1,35 +1,37 @@
 <?php
 namespace OCA\DuplicateFinder\Db;
 use OCP\AppFramework\Db\QBMapper;
+use OCP\AppFramework\Db\Entity;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 
 abstract class EQBMapper extends QBMapper{
 
-	public function delete(EEntity $entity): EEntity {
+	public function delete(Entity $entity): Entity {
     $entity = parent::delete($entity);
     $this->clearRelationalFields($entity);
     return $entity;
   }
 
-  public function insert(EEntity $entity): EEntity {
+  public function insert(Entity $entity): Entity {
     $entity = parent::insert($entity);
     $this->saveRelationalFields($entity);
     return $entity;
   }
 
-  public function update(EEntity $entity): EEntity {
+  public function update(Entity $entity): Entity {
     $entity = parent::update($entity);
     $this->clearRelationalFields($entity);
     $this->saveRelationalFields($entity);
     return $entity;
   }
 
-	protected function mapRowToEntity(array $row): EEntity {
+	protected function mapRowToEntity(array $row): Entity {
 		$entity = parent::mapRowToEntity($row);
 		return $this->loadRelationalFields($entity);
 	}
 
   protected function loadRelationalFields(EEntity $entity) {
+    $idType = $this->getParameterTypeForProperty($entity, 'id');
     foreach($entity->getRelationalFields() as $field => $v){
       $qb = $this->db->getQueryBuilder();
       $qb->select("*")
@@ -49,6 +51,7 @@ abstract class EQBMapper extends QBMapper{
   }
 
   protected function clearRelationalFields(EEntity $entity) {
+    $idType = $this->getParameterTypeForProperty($entity, 'id');
     foreach($entity->getRelationalFields() as $field => $v){
       $qb = $this->db->getQueryBuilder();
       $qb->delete($this->getTableName()."_".substr($field,0,1))
@@ -64,14 +67,14 @@ abstract class EQBMapper extends QBMapper{
     foreach($entity->getRelationalFields() as $field => $v){
       $method = 'get' . ucfirst($field);
       foreach($entity->$method() as $key => $value){
-        $qb = $this->db->getQueryBuilder();
-        $qb->insert($this->getTableName()."_".substr($field,0,1))
-          ->setValue("id", $qb->createNamedParameter($entity->getId(), $idType))
-          ->setValue("rid", $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT));
-				if($value !== null){
-					$qb->setValue("value", $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR));
+				if($value){
+					$qb = $this->db->getQueryBuilder();
+					$qb->insert($this->getTableName()."_".substr($field,0,1))
+					->setValue("id", $qb->createNamedParameter($entity->getId(), $idType))
+					->setValue("rid", $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
+					->setValue("value", $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR));
+					$qb->execute();
 				}
-        $qb->execute();
       }
     }
   }

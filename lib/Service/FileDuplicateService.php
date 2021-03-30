@@ -2,6 +2,7 @@
 namespace OCA\DuplicateFinder\Service;
 
 use OCP\IUser;
+use OCP\ILogger;
 use OCP\AppFramework\Db\DoesNotExistException;
 
 use OCA\DuplicateFinder\Db\FileDuplicate;
@@ -11,9 +12,13 @@ class FileDuplicateService {
 
   /** @var FileDuplicateMapper */
   private $mapper;
+  /** @var ILogger */
+  private $logger;
 
-  public function __construct(FileDuplicateMapper $mapper){
+  public function __construct(ILogger $logger,
+                              FileDuplicateMapper $mapper){
     $this->mapper = $mapper;
+    $this->logger = $logger;
   }
 
   public function findAll(?string $user = null) {
@@ -41,6 +46,9 @@ class FileDuplicateService {
     try{
       $fileDuplicate = $this->mapper->find($hash, $type);
     }catch(\Exception $e){
+      if(!($e instanceOf DoesNotExistException)){
+        $this->logger->logException($e, ["app" => "duplicatefinder"]);
+      }
       $fileDuplicate = new FileDuplicate($hash, $type);
       $fileDuplicate->setKeepAsPrimary(true);
       $fileDuplicate = $this->mapper->insert($fileDuplicate);

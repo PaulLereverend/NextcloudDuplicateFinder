@@ -35,15 +35,17 @@ class Version0000Date20210325183200 extends SimpleMigrationStep {
        * Column to store the hash of file
        * This erases the need to calculate the hash on every time the app is opend
        */
-      $table->addColumn('file_hash', 'text', [
+      $table->addColumn('file_hash', 'string', [
         'notnull' => false,
+        'length' => 200
       ]);
 
       /**
        * Column to store the hash of an image (without exif data)
        */
-      $table->addColumn('image_hash', 'text', [
-        'notnull' => false
+      $table->addColumn('image_hash', 'string', [
+        'notnull' => false,
+        'length' => 200
       ]);
 
       /** Stores the time where the hash is calculated */
@@ -71,19 +73,12 @@ class Version0000Date20210325183200 extends SimpleMigrationStep {
         'notnull' => true,
         'length' => 200,
       ]);
-      $table->addColumn('hash', 'text', [
+      $table->addColumn('hash', 'string', [
         'notnull' => true,
-      ]);
-      $table->addColumn('file_count', 'integer', [
-        'notnull' => true,
-        'default' => 0
-      ]);
-      $table->addColumn('count_per_user', 'text', [
-        'notnull' => false,
-        'default' => '{}'
+        'length' => 200
       ]);
       $table->setPrimaryKey(['id']);
-      $table->addIndex(['hash'], 'duplicatefinder_dh_idx');
+      $table->addIndex(['type','hash'], 'duplicatefinder_dh_idx');
     }
     return $schema;
   }

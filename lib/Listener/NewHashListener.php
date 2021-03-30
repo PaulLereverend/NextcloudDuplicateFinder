@@ -29,7 +29,7 @@ class NewHashListener implements IEventListener {
     if ($event instanceOf CalculatedHashEvent && $event->isChanged()) {
 			$fileInfo = $event->getFileInfo();
 			if(!$event->isNew()){
-				$this->fileInfoService->clearDuplicates($fileInfo->getId());
+				$this->fileDuplicateService->clearDuplicates($fileInfo->getId());
 			}
 			$this->updateDuplicates($fileInfo->getFileHash());
     }
