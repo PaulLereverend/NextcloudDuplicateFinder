@@ -18,11 +18,11 @@ class FileDuplicate extends EEntity{
 		}
 	}
 
-	public function addDupplicate(int $id, string $owner){
+	public function addDuplicate(int $id, string $owner){
 		$this->files[$id] = $owner;
 	}
 
-	public function removeDupplicate(int $id){
+	public function removeDuplicate(int $id){
 		unset($this->files[$id]);
 	}
 

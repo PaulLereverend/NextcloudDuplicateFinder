@@ -84,7 +84,7 @@ class FileInfoService {
   public function calculateHashes(FileInfo $fileInfo){
     $file = $this->rootFolder->get($fileInfo->getPath());
     if($file){
-      if($file->getMtime() > $fileInfo->getUpdatedAt()->getTimestamp()){
+      if($file->getMtime() > $fileInfo->getUpdatedAt()->getTimestamp() || $file->getUploadTime() > $fileInfo->getUpdatedAt()->getTimestamp()){
 				$oldHash = $fileInfo->getFileHash();
         $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
         $fileInfo->setUpdatedAt(new \DateTime());
@@ -98,6 +98,6 @@ class FileInfoService {
   }
 
   public function getDuplicates(?string $owner, ?int $limit = null, ?int $offset = null){
-    return $this->mapper->findDupplicates($owner, $limit, $offset);
+    return $this->mapper->findDuplicates($owner, $limit, $offset);
   }
 }

@@ -48,7 +48,7 @@ class FileInfoMapper extends QBMapper {
     return $this->findEntities($qb);
   }
 
-  public function findDupplicates(?string $owner, ?int $limit = null, ?int $offset = null){
+  public function findDuplicates(?string $owner, ?int $limit = null, ?int $offset = null){
     $duplicates = $this->db->getQueryBuilder();
     $duplicates->select('file_hash', $duplicates->func()->count('id'))
       ->from($this->getTableName())

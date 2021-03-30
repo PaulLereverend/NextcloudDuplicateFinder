@@ -10,24 +10,32 @@ use OCP\Files\Events\Node\NodeCreatedEvent;
 use OCP\Files\Events\Node\NodeWrittenEvent;
 use OCP\Files\Events\Node\NodeTouchedEvent;
 use OCA\DuplicateFinder\Service\FileInfoService;
+use OCA\DuplicateFinder\Service\FileDuplicateService;
 
 class FilesytemListener implements IEventListener {
 
 	/** @var FileInfoService */
 	private $fileInfoService;
+	/** @var FileDuplicateService */
+	private $fileDuplicateService;
 
-  public function __construct(FileInfoService $fileInfoService) {
+  public function __construct(FileInfoService $fileInfoService,
+															FileDuplicateService $fileDuplicateService) {
 		$this->fileInfoService = $fileInfoService;
+		$this->fileDuplicateService = $fileDuplicateService;
 	}
 
   public function handle(Event $event): void {
     if ($event instanceOf NodeDeletedEvent) {
-      $this->fileInfoService->delete($event->getNode()->getPath());
+			$node = $event->getNode();
+			$fileInfo = $this->fileInfoService->find($node->getPath());
+			$this->fileDuplicateService->clearDuplicates($fileInfo->getId());
+      $this->fileInfoService->delete($node->getPath());
     }elseif($event instanceOf NodeRenamedEvent){
       $fileInfo = $this->fileInfoService->find($event->getSource()->getPath());
       $target = $event->getTarget();
 			$fileInfo->setPath($target->getPath());
-			$fileInfo->setOwner($target->getOwner());
+			$fileInfo->setOwner($target->getOwner()->getUID());
       $this->fileInfoService->update($fileInfo);
     }elseif($event instanceOf NodeCopiedEvent
       || $event instanceOf NodeCreatedEvent

@@ -41,7 +41,7 @@ class FileDuplicateMapper extends EQBMapper {
       ->where(
         $qb->expr()->eq("rid", $qb->createNamedParameter($duplicateId, IQueryBuilder::PARAM_INT))
       );
-    $qb->execute();
+    $qb = $qb->execute();
     $duplicates = [];
     foreach($qb->fetchAll() as $row){
       $fQB = $this->db->getQueryBuilder();

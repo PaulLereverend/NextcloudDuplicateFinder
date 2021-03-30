@@ -93,17 +93,17 @@ class FindDuplicates extends Base {
 				$this->output->writeln('User '.$user.' is unkown.');
 				return 1;
 			}
-			$this->findDupplicates($user);
+			$this->findDuplicates($user);
 		}else{
 			$users =  $this->userManager->callForSeenUsers(function (IUser $user) {
-				$this->findDupplicates($user->getUID());
+				$this->findDuplicates($user->getUID());
 			});
 		}
 
 		return 0;
 	}
 
-	private function findDupplicates(string $user){
+	private function findDuplicates(string $user){
 		$scanner = new Scanner($user, $this->connection, \OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
 		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
 				$this->output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);

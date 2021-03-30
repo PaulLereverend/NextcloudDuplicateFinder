@@ -69,9 +69,13 @@ class FileDuplicateService {
 
   public function clearDuplicates(int $id){
     $fileDuplicates = $this->mapper->findByDuplicate($id);
-    foreach($fileDuplicates as $fileDupplicate){
+    foreach($fileDuplicates as $fileDuplicate){
       $fileDuplicate->removeDuplicate($id);
-      $this->update($fileDuplicate);
+      if($fileDuplicate->getCount() > 1 ){
+        $this->update($fileDuplicate);
+      }else{
+        $this->mapper->delete($fileDuplicate);
+      }
     }
   }
 }

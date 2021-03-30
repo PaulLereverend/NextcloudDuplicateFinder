@@ -42,7 +42,7 @@ class NewHashListener implements IEventListener {
 				$fileDuplicate = $this->fileDuplicateService->getOrCreate($hash, $type);
 				$fileDuplicate->clear();
 				foreach($duplicates as $duplicate){
-					$fileDuplicate->addDupplicate($duplicate->getId(), $duplicate->getOwner());
+					$fileDuplicate->addDuplicate($duplicate->getId(), $duplicate->getOwner());
 				}
 				$this->fileDuplicateService->update($fileDuplicate);
 			}catch(\Exception $e){
