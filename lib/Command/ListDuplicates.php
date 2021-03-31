@@ -90,7 +90,7 @@ class ListDuplicates extends Base {
 				$this->output->writeln('User '.$user.' is unkown.');
 				return 1;
 			}
-			CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();}, $user->getUID());
+			CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();}, $user);
 		}else{
 			CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();});
 		}

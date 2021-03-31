@@ -7,6 +7,7 @@ use OCP\EventDispatcher\IEventDispatcher;
 use OCP\ILogger;
 use OCP\IUserManager;
 use OCP\IUser;
+use OCP\IDBConnection;
 use OCA\DuplicateFinder\Service\FileInfoService;
 
 class FindDuplicates extends \OC\BackgroundJob\TimedJob {
@@ -21,6 +22,9 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob {
   /** @var FileInfoService*/
   private $fileInfoService;
 
+	/** @var IDBConnection */
+	protected $connection;
+
 
 	/**
 	 * @param IUserManager $userManager
@@ -34,6 +38,7 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob {
 		IEventDispatcher $dispatcher,
 		ILogger $logger,
 		IRootFolder $rootFolder,
+		IDBConnection $connection,
     FileInfoService $fileInfoService
 	) {
 		// Run every 5 days a full scan
@@ -42,16 +47,18 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob {
 		$this->dispatcher = $dispatcher;
 		$this->logger = $logger;
 		$this->rootFolder = $rootFolder;
+		$this->connection = $connection;
 		$this->fileInfoService = $fileInfoService;
 	}
 
 	/**
-	 * @param $argument
+	 * @param array $argument
 	 * @throws \Exception
 	 */
 	protected function run($argument) {
-    $users =  $this->userManager->callForSeenUsers(function (IUser $user) {
+    $users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
       $this->findDuplicates($user->getUID());
+			return true;
     });
 	}
 

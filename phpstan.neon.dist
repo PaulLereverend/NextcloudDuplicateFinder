@@ -1,0 +1,6 @@
+
+parameters:
+  inferPrivatePropertyTypeFromConstructor: true
+  treatPhpDocTypesAsCertain: false
+  bootstrapFiles:
+    - %currentWorkingDirectory%/../../lib/base.php

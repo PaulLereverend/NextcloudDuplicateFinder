@@ -2,3 +2,6 @@
 .DS_Store
 
 build/
+vendor/
+.phpunit.result.cache
+composer.lock

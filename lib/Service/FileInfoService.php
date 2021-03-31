@@ -63,7 +63,7 @@ class FileInfoService {
     try{
       $fileInfo = $this->mapper->find($path);
     }catch(\Exception $e){
-      $fileInfo = new FileInfo($path, !is_null($owner) ? $owner->getUID(): null);
+      $fileInfo = new FileInfo($path, $owner->getUID());
       $fileInfo->setKeepAsPrimary(true);
       $fileInfo = $this->mapper->insert($fileInfo);
       $fileInfo->setKeepAsPrimary(false);
@@ -83,16 +83,12 @@ class FileInfoService {
 
   public function calculateHashes(FileInfo $fileInfo){
     $file = $this->rootFolder->get($fileInfo->getPath());
-    if($file){
-      if($file->getMtime() > $fileInfo->getUpdatedAt()->getTimestamp() || $file->getUploadTime() > $fileInfo->getUpdatedAt()->getTimestamp()){
-				$oldHash = $fileInfo->getFileHash();
-        $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
-        $fileInfo->setUpdatedAt(new \DateTime());
-        $this->update($fileInfo);
-        $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
-      }
-    }else{
-      throw new \Exception("File ".$fileInfo->getId()." doesn't exists.");
+    if($file->getMtime() > $fileInfo->getUpdatedAt()->getTimestamp() || $file->getUploadTime() > $fileInfo->getUpdatedAt()->getTimestamp()){
+			$oldHash = $fileInfo->getFileHash();
+      $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
+      $fileInfo->setUpdatedAt(new \DateTime());
+      $this->update($fileInfo);
+      $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
     }
     return $fileInfo;
   }

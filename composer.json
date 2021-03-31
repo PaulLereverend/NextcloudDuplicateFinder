@@ -1,5 +1,5 @@
 {
-    "name": "Duplicate Finder Bis",
+    "name": "paullereverend/nextcloudduplicatefinder",
     "description": "Find your duplicate files and remove them",
     "type": "project",
     "license": "AGPL",
@@ -10,6 +10,7 @@
     ],
     "require": {},
     "require-dev": {
-        "phpunit/phpunit": "^5.4"
+        "phpunit/phpunit": "^5.4",
+        "phpstan/phpstan": "^0.12.82"
     }
 }

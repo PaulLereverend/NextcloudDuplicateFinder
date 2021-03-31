@@ -95,8 +95,9 @@ class FindDuplicates extends Base {
 			}
 			$this->findDuplicates($user);
 		}else{
-			$users =  $this->userManager->callForSeenUsers(function (IUser $user) {
+			$users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
 				$this->findDuplicates($user->getUID());
+				return true;
 			});
 		}
 

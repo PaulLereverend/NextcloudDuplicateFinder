@@ -2,6 +2,7 @@
 namespace OCA\DuplicateFinder\BackgroundJob;
 
 use OCP\Files\IRootFolder;
+use OCP\Files\NotFoundException;
 use OCA\DuplicateFinder\Service\FileInfoService;
 
 class CleanUpDB extends \OC\BackgroundJob\TimedJob {
@@ -26,7 +27,7 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob {
 	}
 
 	/**
-	 * @param $argument
+	 * @param array $argument
 	 * @throws \Exception
 	 */
 	protected function run($argument) {
@@ -38,7 +39,7 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob {
 			try{
 				$this->rootFolder->get($fileInfo->getPath());
 			}catch(NotFoundException $e){
-				$this->delete($fileInfo->getPath());
+				$this->fileInfoService->delete($fileInfo->getPath());
 			}
 		}
 	}

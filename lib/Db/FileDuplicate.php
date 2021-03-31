@@ -13,9 +13,7 @@ class FileDuplicate extends EEntity{
 		if(!is_null($hash)){
 			$this->setHash($hash);
 		}
-		if(!is_null($type)){
-			$this->setType($type);
-		}
+		$this->setType($type);
 	}
 
 	public function addDuplicate(int $id, string $owner){
