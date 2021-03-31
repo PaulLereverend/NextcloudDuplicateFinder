@@ -9,15 +9,20 @@ class CMDUtils {
     }else{
       $output->writeln("Duplicates for user '".$user."' are: ");
     }
-    $duplicates = $fileDuplicateService->findAll($user);
-    foreach($duplicates as $duplicate){
-      $output->writeln($duplicate->getHash()."(".$duplicate->getType().")");
-      foreach($duplicate->getFiles() as $id => $owner){
-        $file = $fileInfoService->findById($id);
-        $output->writeln('     '.$file->getPath());
-        $abortIfInterrupted();
-      };
-    }
+    $limit = 20;
+    $offset = 0;
+    do {
+      $duplicates = $fileDuplicateService->findAll($user, $limit, $offset);
+      foreach($duplicates as $duplicate){
+        $output->writeln($duplicate->getHash()."(".$duplicate->getType().")");
+        foreach($duplicate->getFiles() as $id => $owner){
+          $file = $fileInfoService->findById($id);
+          $output->writeln('     '.$file->getPath());
+          $abortIfInterrupted();
+        };
+      }
+      $offset += $limit;
+    }while(count($duplicates) === $limit);
   }
 
 }

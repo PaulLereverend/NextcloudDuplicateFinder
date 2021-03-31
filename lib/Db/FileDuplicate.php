@@ -20,10 +20,12 @@ class FileDuplicate extends EEntity{
 
 	public function addDuplicate(int $id, string $owner){
 		$this->files[$id] = $owner;
+		$this->markRelationalFieldUpdated("files", $id, $owner);
 	}
 
 	public function removeDuplicate(int $id){
 		unset($this->files[$id]);
+		$this->markRelationalFieldUpdated("files", $id);
 	}
 
 	public function clear(){

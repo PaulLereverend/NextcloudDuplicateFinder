@@ -31,19 +31,16 @@ class NewHashListener implements IEventListener {
 			if(!$event->isNew()){
 				$this->fileDuplicateService->clearDuplicates($fileInfo->getId());
 			}
-			$this->updateDuplicates($fileInfo->getFileHash());
+			$this->updateDuplicates($fileInfo);
     }
   }
 
-	private function updateDuplicates(string $hash, string $type = "file_hash"){
-		$duplicates = $this->fileInfoService->findByHash($hash, $type);
-		if(count($duplicates) > 1){
+	private function updateDuplicates(FileInfo $fileInfo, string $type = "file_hash"){
+		$count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
+		if($count > 1){
 			try{
-				$fileDuplicate = $this->fileDuplicateService->getOrCreate($hash, $type);
-				$fileDuplicate->clear();
-				foreach($duplicates as $duplicate){
-					$fileDuplicate->addDuplicate($duplicate->getId(), $duplicate->getOwner());
-				}
+				$fileDuplicate = $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
+				$fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
 				$this->fileDuplicateService->update($fileDuplicate);
 			}catch(\Exception $e){
 				$this->logger->logException($e);

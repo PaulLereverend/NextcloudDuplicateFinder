@@ -21,14 +21,18 @@ class FileInfoMapper extends QBMapper {
     return $this->findEntity($qb);
   }
 
-  public function findByHash(string $hash, string $type = "file_hash") {
+  public function countByHash(string $hash, string $type = "file_hash") {
     $qb = $this->db->getQueryBuilder();
-    $qb->select('*')
+    $qb->select('id')
       ->from($this->getTableName())
       ->where(
         $qb->expr()->eq($type, $qb->createNamedParameter($hash))
       );
-    return $this->findEntities($qb);
+    try{
+      return $qb->execute()->rowCount();
+    }catch(\Exception $e) {
+      print $e->getMessage()."\n".$e->getTraceAsString();
+    }
   }
 
   public function findById(int $id) {

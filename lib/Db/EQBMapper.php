@@ -20,7 +20,6 @@ abstract class EQBMapper extends QBMapper{
 
   public function update(Entity $entity): Entity {
     $entity = parent::update($entity);
-    $this->clearRelationalFields($entity);
     $this->saveRelationalFields($entity);
     return $entity;
   }
@@ -47,6 +46,7 @@ abstract class EQBMapper extends QBMapper{
 			$setter = 'set' . ucfirst($field);
 			$entity->$setter($values);
     }
+		$entity->resetUpdatedRelationalFields();
 		return $entity;
   }
 
@@ -64,17 +64,24 @@ abstract class EQBMapper extends QBMapper{
 
   protected function saveRelationalFields(EEntity $entity) {
     $idType = $this->getParameterTypeForProperty($entity, 'id');
+		$updatedRelations = $entity->getUpdatedRelationalFields();
     foreach($entity->getRelationalFields() as $field => $v){
-      $method = 'get' . ucfirst($field);
-      foreach($entity->$method() as $key => $value){
-				if($value){
-					$qb = $this->db->getQueryBuilder();
+      foreach($updatedRelations[$field] as $key => $value){
+				$qb = $this->db->getQueryBuilder();
+				if($value !== null){
 					$qb->insert($this->getTableName()."_".substr($field,0,1))
 					->setValue("id", $qb->createNamedParameter($entity->getId(), $idType))
 					->setValue("rid", $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
 					->setValue("value", $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR));
-					$qb->execute();
+				}else{
+		      $qb->delete($this->getTableName()."_".substr($field,0,1))
+		        ->where(
+		          $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType)),
+		          $qb->expr()->eq('rid', $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
+		        );
+		      $qb->execute();
 				}
+				$qb->execute();
       }
     }
   }

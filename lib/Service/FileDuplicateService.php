@@ -21,8 +21,8 @@ class FileDuplicateService {
     $this->logger = $logger;
   }
 
-  public function findAll(?string $user = null) {
-    return $this->mapper->findAll($user);
+  public function findAll(?string $user = null, ?int $limit = 20, ?int $offset = null) {
+    return $this->mapper->findAll($user, $limit, $offset);
   }
 
   public function find(string $hash, string $type = "file_hash") {

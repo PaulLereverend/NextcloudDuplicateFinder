@@ -43,8 +43,8 @@ class FileInfoService {
     return $this->mapper->findById($id);
   }
 
-	public function findByHash(string $hash) {
-		return $this->mapper->findByHash($hash);
+	public function countByHash(string $hash, string $type = "file_hash") {
+		return $this->mapper->countByHash($hash, $type);
 	}
 
   public function createOrUpdate(string $path, ?IUser $owner = null) {

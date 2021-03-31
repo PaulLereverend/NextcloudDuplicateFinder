@@ -9,7 +9,8 @@ class EEntity extends Entity implements JsonSerializable {
 
 	private $keepAsPrimary = false;
 	private $internalTypes = [];
-	protected $relationalFields = [];
+	private $_relationalFields = [];
+	private $_changedRelations = [];
 
 	protected function addInternalType(string $name, $type){
 		if($type === "date"){
@@ -20,9 +21,29 @@ class EEntity extends Entity implements JsonSerializable {
 			$this->addType($name, 'string');
 		}
 	}
-	
+
 	protected function addRelationalField(string $field){
-		$this->relationalFields[$field] = 1;
+		$this->_relationalFields[$field] = 1;
+		$this->_changedRelations[$field] = [];
+	}
+
+  public function resetUpdatedRelationalFields(){
+		$this->_changedRelations = [];
+	}
+
+	protected function markRelationalFieldUpdated(string $field, $key, $value = null){
+		$this->_changedRelations[$field][$key] = $value;
+	}
+
+	public function getRelationalFields(){
+		return $this->_relationalFields;
+	}
+
+	public function getUpdatedRelationalFields(?string $field = null){
+		if($field !== null){
+			return $this->_changedRelations[$field];
+		}
+		return $this->_changedRelations;
 	}
 
 	protected function markFieldUpdated($attribute) {

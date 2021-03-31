@@ -22,10 +22,17 @@ class FileDuplicateMapper extends EQBMapper {
     return $this->findEntity($qb);
   }
 
-  public function findAll(?string $user = null) {
+  public function findAll(?string $user = null, ?int $limit = null, ?int $offset = null) {
     $qb = $this->db->getQueryBuilder();
     $qb->select('d.id as id', 'type', 'hash')
       ->from($this->getTableName(), "d");
+    if($limit !== null){
+      $qb->setMaxResults($limit);
+    }
+    if($offset !== null){
+      $qb->setFirstResult($offset);
+    }
+
     if($user !== null){
       $qb->leftJoin("d", $this->getTableName()."_f", "f", $qb->expr()->eq('d.id', 'f.id'))
         ->where($qb->expr()->eq("value", $qb->createNamedParameter($user)))
