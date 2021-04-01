@@ -34,7 +34,12 @@ class EEntity extends Entity implements JsonSerializable {
 		$this->_changedRelations = [];
 	}
 
-	protected function markRelationalFieldUpdated(string $field,mixed $key,mixed $value = null):void{
+	/**
+	 * @param string $field
+	 * @param mixed $key
+	 * @param mixed $value
+	 */
+	protected function markRelationalFieldUpdated(string $field, $key, $value = null):void{
 		$this->_changedRelations[$field][$key] = $value;
 	}
 

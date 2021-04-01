@@ -3,8 +3,10 @@ namespace OCA\DuplicateFinder\Db;
 
 class FileDuplicate extends EEntity{
 
-	protected string $type;
-	protected string $hash;
+	/** @var string */
+	protected $type;
+	/** @var string|null */
+	protected $hash;
 	/** @var array<string> */
 	protected array $files = [];
 
