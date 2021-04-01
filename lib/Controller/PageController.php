@@ -2,17 +2,32 @@
 namespace OCA\DuplicateFinder\Controller;
 
 use OCP\IRequest;
+use OCP\Files\IRootFolder;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
 use OC\Files\Filesystem;
+use OCA\DuplicateFinder\Service\FileDuplicateService;
+use OCA\DuplicateFinder\Service\FileInfoService;
 
 class PageController extends Controller {
-	private $userId;
 
-	public function __construct($AppName, IRequest $request, $UserId){
+	/* *@var string */
+	private $userId;
+	private FileDuplicateService $fileDuplicateService;
+	private FileInfoService $fileInfoService;
+	private IRootFolder $rootFolder;
+
+	public function __construct(string $AppName, IRequest $request,
+															string $UserId,
+															FileDuplicateService $fileDuplicateService,
+															FileInfoService $fileInfoService,
+															IRootFolder $rootFolder){
 		parent::__construct($AppName, $request);
 		$this->userId = $UserId;
+		$this->fileInfoService = $fileInfoService;
+		$this->fileDuplicateService = $fileDuplicateService;
+		$this->rootFolder = $rootFolder;
 	}
 
 	/**
@@ -25,67 +40,34 @@ class PageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	public function index() {
+	public function index(): TemplateResponse {
 		//
 		return new TemplateResponse('duplicatefinder', 'index');  // templates/index.php
 	}
 
     /**
      * @NoAdminRequired
+		 * @return array<mixed>
      */
-	public function files() {
-        $files = $this->getFilesRecursive();
-        $results = \OCA\Files\Helper::formatFileInfos($files);
-        $sizeArr = array();
-        foreach ($results as $key => $result) {
-			$path = $this->getRelativePath($files[$key]->getPath()). $result['name'];
-            $sizeArr[$path] = $result['size'];
-        }
-        unset($files);
-        unset($results);
-
-        $hashArr = array();
-        foreach(array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr))) as $filePath=>$size){
-            if($info = Filesystem::getLocalFile($filePath)) {
-                $fileHash = hash_file('md5', $info);
-				if($fileHash){
-					$hashArr[$filePath] = $fileHash;
-				}
-            }
-        }
-
-        $duplicatesHash = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
-        unset($hashArr);
-        asort($duplicatesHash);
-
-        $response = array();
-		foreach($duplicatesHash as $filePath=>$fileHash) {
-            $file = array();
-            $file['infos'] = \OCA\Files\Helper::formatFileInfo(FileSystem::getFileInfo($filePath));
-            $file['hash'] = $fileHash;
-            $file['path'] = $filePath;
-            array_push($response, $file);
-        }
-        return $response;
-    }
-
-    private function getFilesRecursive(& $results = [], $path = '') {
-		\OC_Util::tearDownFS();
-		\OC_Util::setupFS($this->userId);
-        $files = FileSystem::getView()->getDirectoryContent($path);
-        foreach($files as $file) {
-            if ($file->getType() === 'dir') {
-                $this->getFilesRecursive($results, $path . '/' . $file->getName());
-            } else {
-                $results[] = $file;
-            }
-        }
-        return $results;
-    }
-
-    private function getRelativePath($path) {
-        $path = Filesystem::getView()->getRelativePath($path);
-        return substr($path, 0, strlen($path) - strlen(basename($path)));
-    }
+	public function files(?int $offset = null, ?int $limit = 20):array {
+		$response = array();
+		$duplicates = $this->fileDuplicateService->findAll($this->userId, $limit, $offset);
+		foreach($duplicates as $duplicate){
+			foreach($duplicate->getFiles() as $fileInfoId => $owner){
+				$fileInfo = $this->fileInfoService->findById($fileInfoId);
+				$node = $this->rootFolder->get($fileInfo->getPath());
+				$response[] = [
+					'hash' => $fileInfo->getFileHash(),
+					'path' => $fileInfo->getPath(),
+					'infos' => [
+						"id" => $node->getId(),
+						"size" => $node->getSize(),
+						"mimetype" => $node->getMimetype()
+					]
+				];
+			}
+		}
+    return $response;
+  }
 
 }
