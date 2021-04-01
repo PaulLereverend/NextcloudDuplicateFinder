@@ -44,7 +44,14 @@ class NewHashListener implements IEventListener {
 		if($count > 1){
 			try{
 				$fileDuplicate = $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
-				$fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
+				if($count > 2){
+					$fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
+				}else{
+					$files = $this->fileInfoService->findByHash($fileInfo->getFileHash(), $type);
+					foreach($files as $fileInfo){
+						$fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
+					}
+				}
 				$this->fileDuplicateService->update($fileDuplicate);
 			}catch(\Exception $e){
 				$this->logger->logException($e);

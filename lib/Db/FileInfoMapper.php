@@ -15,6 +15,9 @@ class FileInfoMapper extends QBMapper {
     parent::__construct($db, 'duplicatefinder_finfo', FileInfo::class);
   }
 
+  /**
+   * @throws \OCP\AppFramework\Db\DoesNotExistException
+   */
   public function find(string $path):FileInfo {
     $qb = $this->db->getQueryBuilder();
     $qb->select('*')
@@ -23,6 +26,19 @@ class FileInfoMapper extends QBMapper {
         $qb->expr()->eq('path', $qb->createNamedParameter($path))
       );
     return $this->findEntity($qb);
+  }
+
+  /**
+   * @return array<FileInfo>
+   */
+  public function findByHash(string $hash, string $type = "file_hash"): array {
+    $qb = $this->db->getQueryBuilder();
+    $qb->select('*')
+      ->from($this->getTableName())
+      ->where(
+        $qb->expr()->eq($type, $qb->createNamedParameter($hash))
+      );
+    return $this->findEntities($qb);
   }
 
   public function countByHash(string $hash, string $type = "file_hash"):int {

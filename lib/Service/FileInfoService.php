@@ -47,6 +47,13 @@ class FileInfoService {
     return $this->mapper->findById($id);
   }
 
+	/**
+	 * @return array<FileInfo>
+	 */
+	public function findByHash(string $hash, string $type = "file_hash"):array {
+		return $this->mapper->findByHash($hash, $type);
+	}
+
 	public function countByHash(string $hash, string $type = "file_hash"):int {
 		return $this->mapper->countByHash($hash, $type);
 	}
