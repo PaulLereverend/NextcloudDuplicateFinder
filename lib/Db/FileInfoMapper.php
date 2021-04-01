@@ -2,16 +2,20 @@
 namespace OCA\DuplicateFinder\Db;
 
 use OCP\IDBConnection;
+use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 
+/**
+ * @extends QBMapper<FileInfo>
+ */
 class FileInfoMapper extends QBMapper {
 
   public function __construct(IDBConnection $db) {
     parent::__construct($db, 'duplicatefinder_finfo', FileInfo::class);
   }
 
-  public function find(string $path) {
+  public function find(string $path):FileInfo {
     $qb = $this->db->getQueryBuilder();
     $qb->select('*')
       ->from($this->getTableName())
@@ -21,21 +25,21 @@ class FileInfoMapper extends QBMapper {
     return $this->findEntity($qb);
   }
 
-  public function countByHash(string $hash, string $type = "file_hash") {
+  public function countByHash(string $hash, string $type = "file_hash"):int {
     $qb = $this->db->getQueryBuilder();
     $qb->select('id')
       ->from($this->getTableName())
       ->where(
         $qb->expr()->eq($type, $qb->createNamedParameter($hash))
       );
-    try{
-      return $qb->execute()->rowCount();
-    }catch(\Exception $e) {
-      print $e->getMessage()."\n".$e->getTraceAsString();
+    $qb = $qb->execute();
+    if(!is_int($qb)){
+      return $qb->rowCount();
     }
+    return 0;
   }
 
-  public function findById(int $id) {
+  public function findById(int $id):FileInfo {
     $qb = $this->db->getQueryBuilder();
     $qb->select('*')
       ->from($this->getTableName())
@@ -45,47 +49,13 @@ class FileInfoMapper extends QBMapper {
     return $this->findEntity($qb);
   }
 
-  public function findAll() {
+  /**
+   * @return array<FileInfo>
+   */
+  public function findAll(): array {
     $qb = $this->db->getQueryBuilder();
     $qb->select('*')
       ->from($this->getTableName());
     return $this->findEntities($qb);
-  }
-
-  public function findDuplicates(?string $owner, ?int $limit = null, ?int $offset = null){
-    $duplicates = $this->db->getQueryBuilder();
-    $duplicates->select('file_hash', $duplicates->func()->count('id'))
-      ->from($this->getTableName())
-      ->groupBy('file_hash', "owner")
-      ->having('COUNT(id) > 1');
-    if($owner){
-      $duplicates = $duplicates->where(
-        $duplicates->expr()->eq('owner', $duplicates->createNamedParameter($owner))
-      );
-    }
-
-    if ($limit !== null) {
-			$duplicates->setMaxResults($limit);
-		}
-		if ($offset !== null) {
-			$duplicates->setFirstResult($offset);
-		}
-
-    $duplicates = $duplicates->execute();
-    $entities = [];
-    while ($row = $duplicates->fetch()) {
-      $qb = $this->db->getQueryBuilder();
-      $qb->select('*')
-        ->from($this->getTableName())
-        ->where($qb->expr()->eq('file_hash', $qb->createNamedParameter($row["file_hash"])));
-      if($owner){
-        $qb = $qb->andWhere(
-          $qb->expr()->eq('owner', $qb->createNamedParameter($owner))
-        );
-      }
-      $entities[] = $this->findEntities($qb);
-    }
-    $duplicates->closeCursor();
-    return $entities;
   }
 }

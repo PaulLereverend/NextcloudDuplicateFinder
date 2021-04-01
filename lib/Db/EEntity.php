@@ -7,12 +7,15 @@ use OCA\DuplicateFinder\Utils\JSONDateTime;
 
 class EEntity extends Entity implements JsonSerializable {
 
-	private $keepAsPrimary = false;
+	private bool $keepAsPrimary = false;
+	/** @var array<string> */
 	private $internalTypes = [];
+	/** @var array<mixed> */
 	private $_relationalFields = [];
+	/** @var array<array> */
 	private $_changedRelations = [];
 
-	protected function addInternalType(string $name, $type){
+	protected function addInternalType(string $name, string $type):void{
 		if($type === "date"){
 			$this->internalTypes[$name] = "date";
 			$this->addType($name, 'integer');
@@ -22,30 +25,39 @@ class EEntity extends Entity implements JsonSerializable {
 		}
 	}
 
-	protected function addRelationalField(string $field){
+	protected function addRelationalField(string $field):void{
 		$this->_relationalFields[$field] = 1;
 		$this->_changedRelations[$field] = [];
 	}
 
-  public function resetUpdatedRelationalFields(){
+  public function resetUpdatedRelationalFields():void{
 		$this->_changedRelations = [];
 	}
 
-	protected function markRelationalFieldUpdated(string $field, $key, $value = null){
+	protected function markRelationalFieldUpdated(string $field,mixed $key,mixed $value = null):void{
 		$this->_changedRelations[$field][$key] = $value;
 	}
 
-	public function getRelationalFields(){
+	/**
+	 * @return array<mixed>;
+	 */
+	public function getRelationalFields():array{
 		return $this->_relationalFields;
 	}
 
-	public function getUpdatedRelationalFields(?string $field = null){
+	/**
+	 * @return array<array>;
+	 */
+	public function getUpdatedRelationalFields(?string $field = null):array{
 		if($field !== null){
 			return $this->_changedRelations[$field];
 		}
 		return $this->_changedRelations;
 	}
 
+	/**
+	 * @return void;
+	 */
 	protected function markFieldUpdated($attribute) {
 		if(!isset($this->getRelationalFields()[$attribute])){
 			parent::markFieldUpdated($attribute);
@@ -54,6 +66,9 @@ class EEntity extends Entity implements JsonSerializable {
 
   /**
    * Method-Wrapper setter of the Entity to support new types (date, json)
+	 * @param string $name
+	 * @param array<mixed> $args
+	 * @return void
    */
   protected function setter($name, $args) {
     $type = $this->getFieldTypeByName($name);
@@ -69,6 +84,8 @@ class EEntity extends Entity implements JsonSerializable {
 
   /**
    * Method-Wrapper setter of the Entity to support new types (date, json)
+	 * @param string $name
+	 * @return mixed
    */
   protected function getter($name) {
     $result = parent::getter($name);
@@ -78,7 +95,7 @@ class EEntity extends Entity implements JsonSerializable {
     $type = $this->getFieldTypeByName($name);
     if($type === "date" && (is_null($result) || is_numeric($result))){
       // Use a custom DateTime object that serializes to a well-known date-time-format
-      $result = (new JSONDateTime())->setTimestamp($result);
+      $result = (new JSONDateTime())->setTimestamp((int)$result);
     }elseif($type === "json"){
       $result = json_decode($result);
     }
@@ -87,6 +104,8 @@ class EEntity extends Entity implements JsonSerializable {
 
   /**
    * Helper to prevent code dupplication in getter and setter
+	 * @param string $fieldName
+	 * @return string
    */
   private function getFieldTypeByName($fieldName) {
 		if(isset($this->internalTypes[$fieldName])){
@@ -102,7 +121,7 @@ class EEntity extends Entity implements JsonSerializable {
 
   /**
    * Dynamically Build the JSON-Array
-	 * @return array serialized data
+	 * @return array<mixed> serialized data
 	 * @throws \ReflectionException
 	 */
   public function jsonSerialize() {
@@ -121,10 +140,17 @@ class EEntity extends Entity implements JsonSerializable {
 		return $json;
   }
 
+	/**
+	 * @return bool
+	 */
 	public function keepAsPrimary(){
 		return $this->keepAsPrimary;
 	}
 
+	/**
+	 * @param bool $keepAsPrimary
+	 * @return void
+	 */
 	public function setKeepAsPrimary($keepAsPrimary){
 		$this->keepAsPrimary = $keepAsPrimary;
 	}

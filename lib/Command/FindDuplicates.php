@@ -68,7 +68,7 @@ class FindDuplicates extends Base {
 		$this->fileDuplicateService = $fileDuplicateService;
 	}
 
-	protected function configure() {
+	protected function configure(): void {
 		$this
 			->setName('duplicates:find-all')
 			->setDescription('Find all duplicates files')
@@ -89,11 +89,21 @@ class FindDuplicates extends Base {
 		$user = $input->getOption('user');
 
 		if($user){
-			if(!$this->userManager->userExists($user)){
-				$this->output->writeln('User '.$user.' is unkown.');
+			if($user === true){
+				$this->output->writeln('User parameter has an invalid value.');
 				return 1;
+			}elseif(is_string($user)){
+				$users = [$user];
+			}else{
+				$users = $user;
 			}
-			$this->findDuplicates($user);
+			foreach($users as $user){
+				if(!$this->userManager->userExists($user)){
+					$this->output->writeln('User '.$user.' is unkown.');
+					return 1;
+				}
+				$this->findDuplicates($user);
+			}
 		}else{
 			$users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
 				$this->findDuplicates($user->getUID());
@@ -104,7 +114,7 @@ class FindDuplicates extends Base {
 		return 0;
 	}
 
-	private function findDuplicates(string $user){
+	private function findDuplicates(string $user):void{
 		$scanner = new Scanner($user, $this->connection, \OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
 		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
 				$this->output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);

@@ -9,6 +9,10 @@ use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
 
+/**
+ * @template T of Event
+ * @implements IEventListener<T>
+ */
 class NewHashListener implements IEventListener {
 
 	/** @var FileInfoService */
@@ -35,7 +39,7 @@ class NewHashListener implements IEventListener {
     }
   }
 
-	private function updateDuplicates(FileInfo $fileInfo, string $type = "file_hash"){
+	private function updateDuplicates(FileInfo $fileInfo, string $type = "file_hash"): void{
 		$count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
 		if($count > 1){
 			try{

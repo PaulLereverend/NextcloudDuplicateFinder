@@ -68,7 +68,7 @@ class ListDuplicates extends Base {
 		$this->fileDuplicateService = $fileDuplicateService;
 	}
 
-	protected function configure() {
+	protected function configure():void {
 		$this
 			->setName('duplicates:list')
 			->setDescription('List all duplicates files')
@@ -86,11 +86,21 @@ class ListDuplicates extends Base {
 		$user = $input->getOption('user');
 
 		if($user){
-			if(!$this->userManager->userExists($user)){
-				$this->output->writeln('User '.$user.' is unkown.');
+			if($user === true){
+				$this->output->writeln('User parameter has an invalid value.');
 				return 1;
+			}elseif(is_string($user)){
+				$users = [$user];
+			}else{
+				$users = $user;
 			}
-			CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();}, $user);
+			foreach($users as $user){
+				if(!$this->userManager->userExists($user)){
+					$this->output->writeln('User '.$user.' is unkown.');
+					return 1;
+				}
+				CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();}, $user);
+			}
 		}else{
 			CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();});
 		}

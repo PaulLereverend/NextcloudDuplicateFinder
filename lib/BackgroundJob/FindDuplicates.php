@@ -52,17 +52,17 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob {
 	}
 
 	/**
-	 * @param array $argument
+	 * @param mixed $argument
 	 * @throws \Exception
 	 */
-	protected function run($argument) {
+	protected function run($argument):  mixed {
     $users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
       $this->findDuplicates($user->getUID());
 			return true;
     });
 	}
 
-	private function findDuplicates(string $user){
+	private function findDuplicates(string $user): void{
 		$scanner = new Scanner($user, null, $this->dispatcher, $this->logger);
 		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
 				$file = $this->rootFolder->get($path);

@@ -1,9 +1,13 @@
 <?php
 namespace OCA\DuplicateFinder\Utils;
 
+use Symfony\Component\Console\Output\OutputInterface;
+use OCA\DuplicateFinder\Service\FileInfoService;
+use OCA\DuplicateFinder\Service\FileDuplicateService;
+
 class CMDUtils {
 
-  public static function showDuplicates($fileDuplicateService, $fileInfoService, $output, $abortIfInterrupted, ?string $user = null){
+  public static function showDuplicates(FileDuplicateService $fileDuplicateService, FileInfoService $fileInfoService,OutputInterface $output,\Closure $abortIfInterrupted, ?string $user = null): void{
     if($user === null){
       $output->writeln("Duplicates are: ");
     }else{

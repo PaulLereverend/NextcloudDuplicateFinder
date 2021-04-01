@@ -5,13 +5,17 @@ use OCP\IDBConnection;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 
+
+/**
+ * @extends EQBMapper<FileDuplicate>
+ */
 class FileDuplicateMapper extends EQBMapper {
 
   public function __construct(IDBConnection $db) {
     parent::__construct($db, 'duplicatefinder_dups', FileDuplicate::class);
   }
 
-  public function find(string $hash, string $type = "file_hash") {
+  public function find(string $hash, string $type = "file_hash"): FileDuplicate {
     $qb = $this->db->getQueryBuilder();
     $qb->select('*')
       ->from($this->getTableName())
@@ -22,7 +26,10 @@ class FileDuplicateMapper extends EQBMapper {
     return $this->findEntity($qb);
   }
 
-  public function findAll(?string $user = null, ?int $limit = null, ?int $offset = null) {
+  /**
+   * @return array<FileDuplicate>
+   */
+  public function findAll(?string $user = null, ?int $limit = null, ?int $offset = null):array {
     $qb = $this->db->getQueryBuilder();
     $qb->select('d.id as id', 'type', 'hash')
       ->from($this->getTableName(), "d");
@@ -41,7 +48,10 @@ class FileDuplicateMapper extends EQBMapper {
     return $this->findEntities($qb);
   }
 
-  public function findByDuplicate(int $duplicateId) {
+  /**
+   * @return array<FileDuplicate>
+   */
+  public function findByDuplicate(int $duplicateId):array {
     $qb = $this->db->getQueryBuilder();
     $qb->select('*')
       ->from($this->getTableName()."_f")
@@ -50,6 +60,9 @@ class FileDuplicateMapper extends EQBMapper {
       );
     $qb = $qb->execute();
     $duplicates = [];
+    if(is_int($qb)){
+      return $duplicates;
+    }
     foreach($qb->fetchAll() as $row){
       $fQB = $this->db->getQueryBuilder();
       $fQB->select('*')

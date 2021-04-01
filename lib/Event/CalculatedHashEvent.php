@@ -8,7 +8,7 @@ class CalculatedHashEvent extends Event {
 
   /** @var FileInfo */
   private $fileInfo;
-  /** @var string */
+  /** @var ?string */
   private $oldHash;
 
   public function __construct(FileInfo $fileInfo, ?string $oldHash) {
@@ -29,7 +29,7 @@ class CalculatedHashEvent extends Event {
       return $this->fileInfo->getFileHash() !== $this->oldHash;
   }
 
-  public function getOldHash(): string {
+  public function getOldHash(): ?string {
       return $this->oldHash;
   }
 

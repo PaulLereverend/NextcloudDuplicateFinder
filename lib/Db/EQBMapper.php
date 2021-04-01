@@ -4,6 +4,11 @@ use OCP\AppFramework\Db\QBMapper;
 use OCP\AppFramework\Db\Entity;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 
+
+/**
+ * @template T of EEntity
+ * @template-extends QBMapper<T>
+ */
 abstract class EQBMapper extends QBMapper{
 
 	public function delete(Entity $entity): Entity {
@@ -24,12 +29,20 @@ abstract class EQBMapper extends QBMapper{
     return $entity;
   }
 
-	protected function mapRowToEntity(array $row): Entity {
+	/**
+	 * @param array<mixed> $row
+ 	 * @return T
+	 */
+	protected function mapRowToEntity(array $row) : Entity {
 		$entity = parent::mapRowToEntity($row);
 		return $this->loadRelationalFields($entity);
 	}
 
-  protected function loadRelationalFields(EEntity $entity) {
+	/**
+	 * @param T $entity
+	 * @return T
+	 */
+  protected function loadRelationalFields($entity) {
     $idType = $this->getParameterTypeForProperty($entity, 'id');
     foreach($entity->getRelationalFields() as $field => $v){
       $qb = $this->db->getQueryBuilder();
@@ -40,17 +53,27 @@ abstract class EQBMapper extends QBMapper{
         );
       $qb = $qb->execute();
 			$values = [];
-			foreach($qb->fetchAll() as $row){
-				$values[$row["rid"]] = $row["value"];
+			if(!is_int($qb)){
+				foreach($qb->fetchAll() as $row){
+					$values[$row["rid"]] = $row["value"];
+				}
+				$setter = 'set' . ucfirst($field);
+				$entity->$setter($values);
 			}
-			$setter = 'set' . ucfirst($field);
-			$entity->$setter($values);
     }
 		$entity->resetUpdatedRelationalFields();
 		return $entity;
   }
 
-  protected function clearRelationalFields(EEntity $entity) {
+
+	/**
+	 * @param T $entity
+	 * @return void
+	 */
+  protected function clearRelationalFields($entity):void {
+		if(!($entity instanceOf EEntity)){
+			return;
+		}
     $idType = $this->getParameterTypeForProperty($entity, 'id');
     foreach($entity->getRelationalFields() as $field => $v){
       $qb = $this->db->getQueryBuilder();
@@ -62,7 +85,14 @@ abstract class EQBMapper extends QBMapper{
     }
   }
 
-  protected function saveRelationalFields(EEntity $entity) {
+	/**
+	 * @param T $entity
+	 * @return void
+	 */
+  protected function saveRelationalFields(Entity $entity):void {
+		if(!($entity instanceOf EEntity)){
+			return;
+		}
     $idType = $this->getParameterTypeForProperty($entity, 'id');
 		$updatedRelations = $entity->getUpdatedRelationalFields();
     foreach($entity->getRelationalFields() as $field => $v){

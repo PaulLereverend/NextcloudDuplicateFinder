@@ -11,7 +11,7 @@ class Version0000Date20210325183200 extends SimpleMigrationStep {
   /**
   * @param IOutput $output
   * @param Closure $schemaClosure The `\Closure` returns a `ISchemaWrapper`
-  * @param array $options
+  * @param array<mixed> $options
   * @return null|ISchemaWrapper
   */
   public function changeSchema(IOutput $output, Closure $schemaClosure, array $options) {
@@ -62,7 +62,7 @@ class Version0000Date20210325183200 extends SimpleMigrationStep {
     return $schema;
   }
 
-  private function createDuplicatesTable(ISchemaWrapper $schema) {
+  private function createDuplicatesTable(ISchemaWrapper $schema):ISchemaWrapper {
     if (!$schema->hasTable('duplicatefinder_dups')) {
       $table = $schema->createTable('duplicatefinder_dups');
       $table->addColumn('id', 'integer', [
@@ -83,7 +83,7 @@ class Version0000Date20210325183200 extends SimpleMigrationStep {
     return $schema;
   }
 
-  private function createDuplicatesRelationTable(ISchemaWrapper $schema) {
+  private function createDuplicatesRelationTable(ISchemaWrapper $schema):ISchemaWrapper {
     if (!$schema->hasTable('duplicatefinder_dups_f')) {
       $table = $schema->createTable('duplicatefinder_dups_f');
       $table->addColumn('id', 'integer', [

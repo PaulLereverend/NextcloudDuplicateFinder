@@ -3,6 +3,7 @@ namespace OCA\DuplicateFinder\Service;
 
 use OCP\IUser;
 use OCP\ILogger;
+use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
 
 use OCA\DuplicateFinder\Db\FileDuplicate;
@@ -21,28 +22,25 @@ class FileDuplicateService {
     $this->logger = $logger;
   }
 
-  public function findAll(?string $user = null, ?int $limit = 20, ?int $offset = null) {
+  /**
+   * @return array<FileDuplicate>
+   */
+  public function findAll(?string $user = null, ?int $limit = 20, ?int $offset = null):array {
     return $this->mapper->findAll($user, $limit, $offset);
   }
 
-  public function find(string $hash, string $type = "file_hash") {
+  public function find(string $hash, string $type = "file_hash"):FileDuplicate {
     return $this->mapper->find($hash, $type);
   }
 
-  public function createOrUpdate(string $hash, string $owner, int $step = 1, string $type = "file_hash") {
-    $fileDuplicate = $this->getOrCreate($hash, $type);
-		$fileDuplicate->changeCount($owner, $step);
-    return $this->update($fileDuplicate);
-  }
-
-  public function update(FileDuplicate $fileDuplicate) {
+  public function update(FileDuplicate $fileDuplicate):Entity {
     $fileDuplicate->setKeepAsPrimary(true);
     $fileDuplicate = $this->mapper->update($fileDuplicate);
     $fileDuplicate->setKeepAsPrimary(false);
     return $fileDuplicate;
   }
 
-  public function getOrCreate(string $hash, string $type = "file_hash"){
+  public function getOrCreate(string $hash, string $type = "file_hash"):FileDuplicate{
     try{
       $fileDuplicate = $this->mapper->find($hash, $type);
     }catch(\Exception $e){
@@ -57,7 +55,7 @@ class FileDuplicateService {
     return $fileDuplicate;
   }
 
-  public function delete(string $hash, string $type = "file_hash") {
+  public function delete(string $hash, string $type = "file_hash"):?FileDuplicate {
     try {
       $fileDuplicate = $this->mapper->find($hash, $type);
       $this->mapper->delete($fileDuplicate);
@@ -67,7 +65,7 @@ class FileDuplicateService {
     }
   }
 
-  public function clearDuplicates(int $id){
+  public function clearDuplicates(int $id):void{
     $fileDuplicates = $this->mapper->findByDuplicate($id);
     foreach($fileDuplicates as $fileDuplicate){
       $fileDuplicate->removeDuplicate($id);

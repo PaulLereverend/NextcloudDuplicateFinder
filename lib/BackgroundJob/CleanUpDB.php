@@ -27,10 +27,10 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob {
 	}
 
 	/**
-	 * @param array $argument
+	 * @param  mixed $argument
 	 * @throws \Exception
 	 */
-	protected function run($argument) {
+	protected function run($argument): mixed {
 		/**
 		 * If for some reason a delete or rename Event wasn't handled properly we cleanup this up here
 		 */
@@ -39,7 +39,7 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob {
 			try{
 				$this->rootFolder->get($fileInfo->getPath());
 			}catch(NotFoundException $e){
-				$this->fileInfoService->delete($fileInfo->getPath());
+				$this->fileInfoService->delete($fileInfo);
 			}
 		}
 	}
