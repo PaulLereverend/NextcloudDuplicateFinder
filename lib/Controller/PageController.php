@@ -58,7 +58,7 @@ class PageController extends Controller {
 				$node = $this->rootFolder->get($fileInfo->getPath());
 				$response[] = [
 					'hash' => $fileInfo->getFileHash(),
-					'path' => $fileInfo->getPath(),
+					'path' => substr($fileInfo->getPath(), strlen("/".$this->userId."files/")),
 					'infos' => [
 						"id" => $node->getId(),
 						"size" => $node->getSize(),
