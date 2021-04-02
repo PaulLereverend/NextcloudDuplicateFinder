@@ -6,10 +6,12 @@
   <summary>Save some space by finding your duplicate files</summary>
   <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png</screenshot>
   <description>Click on the icon and find if you have duplicate files.
-
-You can either use the command or the gui.
+    
+You can either use the command or the cron job to do a full scan.
+Each time a new file is uploaded or a file is changed the app automatically checks if a duplicate of this file exists.
 
 ## Command usage
+If you increase the verbosity of the occ command, the file that is currently scanned and the hash will be displayed
 
   ```duplicates:find-all [options]```
 
