@@ -1,11 +1,19 @@
 (function() {
-  var baseUrl = OC.generateUrl('/apps/duplicatefinder');
+  var baseUrl = OC.generateUrl('/apps/duplicatefinder/api');
   var element = document.getElementById('container');
   var loader = document.getElementById('loader-container');
+  var loaderBtn = document.getElementById('loader-btn');
   var title = document.getElementById('title');
-  var groupedResult = {};
+  var groupedResult = {
+    groupedItems: [],
+    totalSize: 0,
+    itemCount: 0,
+    uniqueTotalSize: 0
+  };
+  var limit = 20;
+  var offset = 0;
 
-  function render() {
+  function render(items) {
     loader.style.display = 'none';
 
     if (groupedResult.itemCount == 0) {
@@ -13,10 +21,9 @@
     } else {
       updateTitleWithStats();
 
-      groupedResult.hashes.forEach(function(hash) {
-        var groupItems = groupedResult.groupedItems[hash];
-        var gruopDOM = getGroupElement(groupItems);
-        element.appendChild(gruopDOM);
+      items.forEach( (duplicate) => {
+        var groupDOM = getGroupElement(duplicate.files);
+        element.appendChild(groupDOM);
       });
     }
   }
@@ -32,39 +39,39 @@
   }
 
   function isImage(item) {
-    return item.infos.mimetype.substr(0, item.infos.mimetype.indexOf('/')) == 'image';
+    return item.mimetype.substr(0, item.mimetype.indexOf('/')) == 'image';
   }
 
   function isVideo(item) {
-    return item.infos.mimetype.substr(0, item.infos.mimetype.indexOf('/')) == 'video';
+    return item.mimetype.substr(0, item.mimetype.indexOf('/')) == 'video';
   }
 
   function getPreviewImage(item) {
     if (isImage(item) || isVideo(item)) {
       return OC.generateUrl('/core/preview.png?') + $.param({
         file: item.path,
-        fileId: item.infos.id,
+        fileId: item.id,
         x: 500,
         y: 500,
         forceIcon: 0
       });
     }
 
-    return OC.MimeType.getIconUrl(item.infos.mimetype);
+    return OC.MimeType.getIconUrl(item.mimetype);
   }
 
   function deleteItem(item) {
     let fileClient = OC.Files.getClient();
-    var itemEl = document.getElementById(item.infos.id);
+    var itemEl = document.getElementById(item.id);
     var iconEl = itemEl.getElementsByClassName('icon-delete')[0];
 
     iconEl.classList.replace('icon-delete', 'icon-loading');
 
     fileClient.remove(item.path).then(function() {
-      var itemGroup = groupedResult.groupedItems[item.hash];
+      var itemGroup = groupedResult.groupedItems[item.fileHash];
       var isLastItemInGroup = itemGroup.length === 1;
       var itemIndex = itemGroup.findIndex(function(i) {
-        return i.infos.id === item.infos.id;
+        return i.id === item.id;
       });
       itemGroup.splice(itemIndex, 1);
 
@@ -77,10 +84,10 @@
       }
 
       // Update the stats
-      groupedResult.totalSize -= item.infos.size;
+      groupedResult.totalSize -= item.size;
       groupedResult.itemCount -= 1;
       if (isLastItemInGroup) {
-        groupedResult.uniqueTotalSize -= item.infos.size;
+        groupedResult.uniqueTotalSize -= item.size;
       }
 
       updateTitleWithStats();
@@ -97,7 +104,7 @@
 
     var sizeDiv = document.createElement("div");
     sizeDiv.setAttribute('class', 'filesize');
-    sizeDiv.innerHTML = OC.Util.humanFileSize(groupItems[0].infos.size);
+    sizeDiv.innerHTML = OC.Util.humanFileSize(groupItems[0].size);
     groupContainer.appendChild(sizeDiv);
 
     groupItems.forEach(function(item) {
@@ -112,7 +119,7 @@
   function getItemElement(item) {
     // Item wrapper container
     var itemDiv = document.createElement("div");
-    itemDiv.setAttribute('id', item.infos.id);
+    itemDiv.setAttribute('id', item.id);
     itemDiv.setAttribute('class', 'element')
 
     // Delete button
@@ -145,14 +152,14 @@
         'url': function(item) {
           let dir = OC.dirname(item.path);
 
-          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + item.infos.id);
+          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + item.id);
         },
         'description': 'Show file'
       },
       {
         'icon': 'icon-details',
         'url': function(item) {
-          return OC.generateUrl('/f/' + item.infos.id);
+          return OC.generateUrl('/f/' + item.id);
         },
         'description': 'Show details'
       }
@@ -178,7 +185,7 @@
     // Item hash
     var hashContainer = document.createElement("h1");
     hashContainer.setAttribute('class', 'hash');
-    hashContainer.innerHTML = item.hash;
+    hashContainer.innerHTML = item.fileHash;
     labelContainer.appendChild(hashContainer);
 
     itemDiv.appendChild(labelContainer);
@@ -186,45 +193,43 @@
     return itemDiv;
   }
 
-  function groupByHashWithStats(items) {
-    var hashes = [];
-    var groupedItems = {};
-    var totalSize = 0;
-    var uniqueTotalSize = 0;
-
-    items.forEach(function(item) {
-      var key = item.hash;
-
-      totalSize += item.infos.size;
-
-      if (!groupedItems[key]) {
-        groupedItems[key] = [];
-        hashes.push(key);
-        uniqueTotalSize += item.infos.size;
-      }
-
-      groupedItems[key].push(item);
-    });
-
-    return {
-      hashes: hashes,
-      groupedItems: groupedItems,
-      totalSize: totalSize,
-      itemCount: items.length,
-      uniqueTotalSize: uniqueTotalSize,
-    };
-  };
-
-  $.getJSON(baseUrl + '/files')
+  function loadFiles(){
+    loader.style.display = 'inherit';
+      loaderBtn.style.display = 'none';
+    $.getJSON(baseUrl + '/v1/Duplicates?offset='+offset)
     .then(function(result) {
       var items = result;
 
       // Sort desending by size
-      items.sort((a, b) => b.infos.size - a.infos.size);
 
-      // Group items with same hash.
-      groupedResult = groupByHashWithStats(items);
+      groupedResult = {
+        groupedItems: groupedResult.groupedItems+items.data,
+        totalSize: 0,
+        itemCount: 0,
+        uniqueTotalSize: 0
+      };
 
-      render();
+      if(items.data.length > 0){
+        offset += items.data.length;
+        if(offset % limit === 0 ){
+          loaderBtn.style.display = 'inherit';
+        }
+      }else{
+        loaderBtn.removeEventListener("click", loadFiles);
+      }
+
+      items.data.forEach((duplicate) => {
+        duplicate.files = Object.values(duplicate.files);
+        groupedResult.totalSize += duplicate.files[0].size*duplicate.files.length;
+        groupedResult.itemCount += duplicate.files.length;
+        groupedResult.uniqueTotalSize += duplicate.files[0].size;
+      });
+      items.data.sort((a, b) => Math.abs((b.files[0].size*b.files.length) - (a.files[0].size*a.files.length)));
+
+      render(items.data);
     });
+  }
+
+  loadFiles();
+  loaderBtn.addEventListener("click", loadFiles);
 })();
