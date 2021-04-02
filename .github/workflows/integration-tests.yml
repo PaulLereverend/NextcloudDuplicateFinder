@@ -116,13 +116,6 @@ jobs:
           ./occ migrations:migrate duplicatefinder
           ./occ maintenance:repair
 
-      - name: Functional tests duplicate search
+      - name: Functional tests
         working-directory: ../server
-        run: |
-          ./occ duplicate:find-all
-          ./occ duplicate:find-all -u admin
-      - name: Functional tests duplicate list
-        working-directory: ../server
-        run: |
-          ./occ duplicate:list
-          ./occ duplicate:list -u admin
+        run: bats apps/duplicatefinder/tests/integration
