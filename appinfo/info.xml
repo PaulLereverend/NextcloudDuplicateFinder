@@ -30,18 +30,18 @@ If you increase the verbosity of the occ command, the file that is currently sca
   <dependencies>
     <nextcloud min-version="20" max-version="21"/>
   </dependencies>
+  <background-jobs>
+    <job>OCA\DuplicateFinder\BackgroundJob\FindDuplicates</job>
+    <job>OCA\DuplicateFinder\BackgroundJob\CleanUpDB</job>
+  </background-jobs>
+  <commands>
+	  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
+	  <command>OCA\DuplicateFinder\Command\ListDuplicates</command>
+	</commands>
   <navigations>
     <navigation>
       <name>Duplicate Finder</name>
       <route>duplicatefinder.page.index</route>
     </navigation>
   </navigations>
-  <commands>
-	  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
-	  <command>OCA\DuplicateFinder\Command\ListDuplicates</command>
-	</commands>
-  <background-jobs>
-    <job>OCA\DuplicateFinder\BackgroundJob\FindDuplicates</job>
-    <job>OCA\DuplicateFinder\BackgroundJob\CleanUpDB</job>
-  </background-jobs>
 </info>
