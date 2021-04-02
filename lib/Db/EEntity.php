@@ -12,9 +12,9 @@ class EEntity extends Entity implements JsonSerializable
     /** @var array<string> */
     private $internalTypes = [];
     /** @var array<mixed> */
-    private $_relationalFields = [];
+    private $relationalFields = [];
     /** @var array<array> */
-    private $_changedRelations = [];
+    private $changedRelations = [];
 
     protected function addInternalType(string $name, string $type):void
     {
@@ -29,13 +29,13 @@ class EEntity extends Entity implements JsonSerializable
 
     protected function addRelationalField(string $field):void
     {
-        $this->_relationalFields[$field] = 1;
-        $this->_changedRelations[$field] = [];
+        $this->relationalFields[$field] = 1;
+        $this->changedRelations[$field] = [];
     }
 
     public function resetUpdatedRelationalFields():void
     {
-        $this->_changedRelations = [];
+        $this->changedRelations = [];
     }
 
     /**
@@ -45,7 +45,7 @@ class EEntity extends Entity implements JsonSerializable
      */
     protected function markRelationalFieldUpdated(string $field, $key, $value = null):void
     {
-        $this->_changedRelations[$field][$key] = $value;
+        $this->changedRelations[$field][$key] = $value;
     }
 
     /**
@@ -53,7 +53,7 @@ class EEntity extends Entity implements JsonSerializable
      */
     public function getRelationalFields():array
     {
-        return $this->_relationalFields;
+        return $this->relationalFields;
     }
 
     /**
@@ -62,9 +62,9 @@ class EEntity extends Entity implements JsonSerializable
     public function getUpdatedRelationalFields(?string $field = null):array
     {
         if ($field !== null) {
-            return $this->_changedRelations[$field];
+            return $this->changedRelations[$field];
         }
-        return $this->_changedRelations;
+        return $this->changedRelations;
     }
 
     /**

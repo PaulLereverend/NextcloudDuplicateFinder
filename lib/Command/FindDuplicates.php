@@ -79,7 +79,12 @@ class FindDuplicates extends Base
             ->setDescription('Find all duplicates files')
             ->addOption('recursive', 'r', InputOption::VALUE_OPTIONAL, 'scan folder recursively')
             ->addOption('user', 'u', InputOption::VALUE_OPTIONAL, 'scan files of the specified user')
-            ->addOption('path', 'p', InputOption::VALUE_OPTIONAL, 'limit scan to this path, eg. --path="/alice/files/Photos"');
+            ->addOption(
+                'path',
+                'p',
+                InputOption::VALUE_OPTIONAL,
+                'limit scan to this path, eg. --path="/alice/files/Photos"'
+            );
 
         parent::configure();
     }

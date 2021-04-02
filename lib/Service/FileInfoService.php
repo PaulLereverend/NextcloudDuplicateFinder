@@ -114,7 +114,10 @@ class FileInfoService
     public function calculateHashes(FileInfo $fileInfo):FileInfo
     {
         $file = $this->rootFolder->get($fileInfo->getPath());
-        if ($file->getMtime() > $fileInfo->getUpdatedAt()->getTimestamp() || $file->getUploadTime() > $fileInfo->getUpdatedAt()->getTimestamp()) {
+        if ($file->getMtime() >
+            $fileInfo->getUpdatedAt()->getTimestamp()
+          || $file->getUploadTime() >
+            $fileInfo->getUpdatedAt()->getTimestamp()) {
             $oldHash = $fileInfo->getFileHash();
             $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
             $fileInfo->setUpdatedAt(new \DateTime());
@@ -124,8 +127,12 @@ class FileInfoService
         return $fileInfo;
     }
 
-    public function scanFiles(string $user, ?string $path = null, ?\Closure $abortIfInterrupted = null, ?OutputInterface $output = null): void
-    {
+    public function scanFiles(
+        string $user,
+        ?string $path = null,
+        ?\Closure $abortIfInterrupted = null,
+        ?OutputInterface $output = null
+    ): void {
         $scanPath = $this->rootFolder->getUserFolder($user)->getPath();
         if (!is_null($path)) {
             $scanPath .= DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR);

@@ -8,8 +8,13 @@ use OCA\DuplicateFinder\Service\FileDuplicateService;
 class CMDUtils
 {
 
-    public static function showDuplicates(FileDuplicateService $fileDuplicateService, FileInfoService $fileInfoService, OutputInterface $output, \Closure $abortIfInterrupted, ?string $user = null): void
-    {
+    public static function showDuplicates(
+        FileDuplicateService $fileDuplicateService,
+        FileInfoService $fileInfoService,
+        OutputInterface $output,
+        \Closure $abortIfInterrupted,
+        ?string $user = null
+    ): void {
         if ($user === null) {
             $output->writeln("Duplicates are: ");
         } else {
