@@ -1,7 +1,7 @@
 # Affero General Public License version 3
 # @copyright nextcloud/news
 name: Integration Tests
-on: [push pull_request]
+on: [push, pull_request]
 
 env:
   POSTGRES_PASSWORD: nc_test_db
