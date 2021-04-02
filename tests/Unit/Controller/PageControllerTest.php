@@ -6,18 +6,21 @@ use PHPUnit\Framework\TestCase;
 
 use OCP\AppFramework\Http\TemplateResponse;
 
+use OCP\IRequest;
+use OCP\Files\IRootFolder;
 use OCA\DuplicateFinder\Controller\PageController;
-
+use OCA\DuplicateFinder\Service\FileDuplicateService;
+use OCA\DuplicateFinder\Service\FileInfoService;
 
 class PageControllerTest extends TestCase {
 	private $controller;
 	private $userId = 'john';
 
 	public function setUp() : void {
-		$request = $this->getMockBuilder('OCP\IRequest')->getMock();
-
-		$this->controller = new PageController(
-			'duplicatefinder', $request, $this->userId
+		$this->controller = new PageController('duplicatefinder',
+			$this->createMock(IRequest::class), $this->userId,
+			$this->createMock(FileDuplicateService::class), $this->createMock(FileInfoService::class),
+			$this->createMock(IRootFolder::class)
 		);
 	}
 
