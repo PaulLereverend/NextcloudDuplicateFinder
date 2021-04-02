@@ -53,6 +53,7 @@ class FileInfoService
     public function enrich(FileInfo $fileInfo):FileInfo
     {
         $node = $this->rootFolder->get($fileInfo->getPath());
+        $fileInfo->setNodeId($node->getId());
         $fileInfo->setMimetype($node->getMimetype());
         $fileInfo->setSize($node->getSize());
         return $fileInfo;

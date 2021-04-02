@@ -22,7 +22,7 @@
       updateTitleWithStats();
 
       items.forEach( (duplicate) => {
-        var groupDOM = getGroupElement(duplicate.files);
+        var groupDOM = getGroupElement(duplicate);
         element.appendChild(groupDOM);
       });
     }
@@ -49,8 +49,8 @@
   function getPreviewImage(item) {
     if (isImage(item) || isVideo(item)) {
       return OC.generateUrl('/core/preview.png?') + $.param({
-        file: item.path,
-        fileId: item.id,
+        file: normalizeItemPath(item.path),
+        fileId: item.nodeId,
         x: 500,
         y: 500,
         forceIcon: 0
@@ -60,46 +60,57 @@
     return OC.MimeType.getIconUrl(item.mimetype);
   }
 
-  function deleteItem(item) {
+  function normalizeItemPath(path){
+    return path.match(/\/([^\/]*)\/files(\/.*)/)[2];
+  }
+
+  function deleteItem(item, e) {
     let fileClient = OC.Files.getClient();
-    var itemEl = document.getElementById(item.id);
-    var iconEl = itemEl.getElementsByClassName('icon-delete')[0];
-
+    var iconEl;
+    if(e.target.className === "icon icon-delete"){
+      iconEl = e.target;
+    }else{
+      iconEl = e.target.getElementsByClassName('icon-delete')[0];
+    }
     iconEl.classList.replace('icon-delete', 'icon-loading');
+    var isLastItemInGroup = false;
 
-    fileClient.remove(item.path).then(function() {
-      var itemGroup = groupedResult.groupedItems[item.fileHash];
-      var isLastItemInGroup = itemGroup.length === 1;
-      var itemIndex = itemGroup.findIndex(function(i) {
-        return i.id === item.id;
+
+    fileClient.remove(normalizeItemPath(item.path)).then(function() {
+      groupedResult.groupedItems.forEach((grp, i) => {
+        grp.files.forEach((file, j) => {
+          if(file.path === item.path){
+            if(document.getElementById(grp.id+"-file-"+file.id) !== null){
+              document.getElementById(grp.id+"-file-"+file.id).remove();
+            }
+            groupedResult.totalSize -= item.size;
+            groupedResult.itemCount -= 1;
+            grp.files.splice(j, 1);
+          }
+        });
+        if(grp.files.length <= 1){
+          if(document.getElementById("grp-"+grp.id) !== null){
+            document.getElementById("grp-"+grp.id).remove();
+          }
+          groupedResult.totalSize -= item.size;
+          groupedResult.itemCount -= 1;
+          groupedResult.uniqueTotalSize -= item.size;
+          groupedResult.groupedItems.splice(i, 1);
+        }
       });
-      itemGroup.splice(itemIndex, 1);
-
-      // If it was the last item, remove the whole group container.
-      if (isLastItemInGroup) {
-        itemEl.parentElement.remove();
-      }
-      else {
-        itemEl.remove();
-      }
-
-      // Update the stats
-      groupedResult.totalSize -= item.size;
-      groupedResult.itemCount -= 1;
-      if (isLastItemInGroup) {
-        groupedResult.uniqueTotalSize -= item.size;
-      }
 
       updateTitleWithStats();
     }).fail(function() {
       iconEl.classList.replace('icon-loading', 'icon-delete');
-      OC.dialogs.alert('Error deleting the file: ' + item.path, 'Error')
+      OC.dialogs.alert('Error deleting the file: ' + normalizeItemPath(item.path), 'Error')
     });
   }
 
 
-  function getGroupElement(groupItems) {
+  function getGroupElement(group) {
+    let groupItems = group.files;
     let groupContainer = document.createElement("div");
+    groupContainer.setAttribute('id', "grp-"+group.id);
     groupContainer.setAttribute('class', 'duplicates');
 
     var sizeDiv = document.createElement("div");
@@ -108,7 +119,7 @@
     groupContainer.appendChild(sizeDiv);
 
     groupItems.forEach(function(item) {
-      var itemDiv = getItemElement(item);
+      var itemDiv = getItemElement(item, group.id);
       groupContainer.appendChild(itemDiv);
     });
 
@@ -116,18 +127,18 @@
   }
 
 
-  function getItemElement(item) {
+  function getItemElement(item, grpId) {
     // Item wrapper container
     var itemDiv = document.createElement("div");
-    itemDiv.setAttribute('id', item.id);
+    itemDiv.setAttribute('id', grpId+"-file-"+item.id);
     itemDiv.setAttribute('class', 'element')
 
     // Delete button
     var deleteButton = document.createElement("button");
     deleteButton.innerHTML = '<span class="icon icon-delete"></span>';
     deleteButton.setAttribute('class', 'button-delete');
-    deleteButton.addEventListener("click", function() {
-      deleteItem(item);
+    deleteButton.addEventListener("click", function(e) {
+      deleteItem(item, e);
     });
     itemDiv.appendChild(deleteButton);
 
@@ -143,23 +154,23 @@
     // Item path
     var itemPath = document.createElement("h1");
     itemPath.setAttribute('class', 'path');
-    itemPath.innerHTML = item.path;
+    itemPath.innerHTML = normalizeItemPath(item.path);
     labelContainer.appendChild(itemPath);
 
     var actions = [
       {
         'icon': 'icon-file',
         'url': function(item) {
-          let dir = OC.dirname(item.path);
+          let dir = OC.dirname(normalizeItemPath(item.path));
 
-          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + item.id);
+          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + item.nodeId);
         },
         'description': 'Show file'
       },
       {
         'icon': 'icon-details',
         'url': function(item) {
-          return OC.generateUrl('/f/' + item.id);
+          return OC.generateUrl('/f/' + item.nodeId);
         },
         'description': 'Show details'
       }
@@ -203,7 +214,7 @@
       // Sort desending by size
 
       groupedResult = {
-        groupedItems: groupedResult.groupedItems+items.data,
+        groupedItems: groupedResult.groupedItems.concat(items.data),
         totalSize: 0,
         itemCount: 0,
         uniqueTotalSize: 0
