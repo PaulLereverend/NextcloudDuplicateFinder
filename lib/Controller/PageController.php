@@ -13,11 +13,14 @@ use OCA\DuplicateFinder\Service\FileInfoService;
 class PageController extends Controller
 {
 
-    /* *@var string */
+    /** @var string */
     private $userId;
-    private FileDuplicateService $fileDuplicateService;
-    private FileInfoService $fileInfoService;
-    private IRootFolder $rootFolder;
+    /** @var FileDuplicateService */
+    private $fileDuplicateService;
+    /** @var FileInfoService */
+    private $fileInfoService;
+    /** @var IRootFolder */
+    private $rootFolder;
 
     public function __construct(
         string $AppName,

@@ -20,6 +20,7 @@ class NewHashListener implements IEventListener
     private $fileInfoService;
     /** @var FileDuplicateService */
     private $fileDuplicateService;
+    /** @var Ilogger */
     private $logger;
 
     public function __construct(

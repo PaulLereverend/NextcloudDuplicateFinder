@@ -8,7 +8,8 @@ use OCA\DuplicateFinder\Utils\JSONDateTime;
 class EEntity extends Entity implements JsonSerializable
 {
 
-    private bool $keepAsPrimary = false;
+    /** @var bool */
+    private $keepAsPrimary = false;
     /** @var array<string> */
     private $internalTypes = [];
     /** @var array<mixed> */
