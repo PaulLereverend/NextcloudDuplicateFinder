@@ -36,8 +36,17 @@ class FileDuplicateService
     public function enrich(FileDuplicate $duplicate):FileDuplicate
     {
         foreach ($duplicate->getFiles() as $fileId => $owner) {
-            $fileInfo = $this->fileInfoService->findById($fileId, true);
-            $duplicate->addDuplicate($fileId, $fileInfo);
+            try {
+                $fileInfo = $this->fileInfoService->findById($fileId, true);
+                $duplicate->addDuplicate($fileId, $fileInfo);
+            } catch (DoesNotExistException $e) {
+                $duplicate->resetUpdatedRelationalFields();
+                $duplicate->removeDuplicate($fileId);
+                $this->update($duplicate);
+                $this->logger->info("Removed stale entry ".$fileId
+                  ." for duplicate ".$duplicate->getId()." - "
+                  .$duplicate->getHash()." - ".$duplicate->getType());
+            }
         }
         return $duplicate;
     }

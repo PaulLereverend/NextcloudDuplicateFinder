@@ -27,12 +27,16 @@ class FileDuplicate extends EEntity
      */
     public function addDuplicate(int $id, $value):void
     {
-        $this->files[$id] = $value;
         if ($value instanceof FileInfo) {
-            $this->markRelationalFieldUpdated("files", $id, $value->getOwner());
+            if ($this->files[$id] !== $value->getOwner()) {
+                $this->markRelationalFieldUpdated("files", $id, $value->getOwner());
+            }
         } else {
-            $this->markRelationalFieldUpdated("files", $id, $value);
+            if ($this->files[$id] !== $value) {
+                $this->markRelationalFieldUpdated("files", $id, $value);
+            }
         }
+        $this->files[$id] = $value;
     }
 
     public function removeDuplicate(int $id):void

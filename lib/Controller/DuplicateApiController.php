@@ -3,6 +3,7 @@ namespace OCA\DuplicateFinder\Controller;
 
 use OCP\IRequest;
 use OCP\IUserSession;
+use OCP\ILogger;
 use OCP\Files\IRootFolder;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
@@ -24,6 +25,8 @@ class DuplicateApiController extends ApiController
     private $fileInfoService;
     /** @var IRootFolder */
     private $rootFolder;
+    /** @var ILogger */
+    private $logger;
 
     public function __construct(
         $appName,
@@ -31,13 +34,15 @@ class DuplicateApiController extends ApiController
         ?IUserSession $userSession,
         FileDuplicateService $fileDuplicateService,
         FileInfoService $fileInfoService,
-        IRootFolder $rootFolder
+        IRootFolder $rootFolder,
+        ILogger $logger
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
         $this->rootFolder = $rootFolder;
+        $this->logger = $logger;
     }
 
 
@@ -63,6 +68,7 @@ class DuplicateApiController extends ApiController
         if ($e instanceof NotAuthenticatedException) {
             return $this->error($e, Http::STATUS_FORBIDDEN);
         }
+        $this->logger->logException($e, ["app" => "duplicatefinder"]);
         return $this->error(new \Exception("Unknown Exception occured"), Http::STATUS_NOT_IMPLEMENTED);
     }
 

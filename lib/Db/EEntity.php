@@ -52,7 +52,9 @@ class EEntity extends Entity implements JsonSerializable
 
     public function resetUpdatedRelationalFields():void
     {
-        $this->changedRelations = [];
+        foreach ($this->changedRelations as $field => $value) {
+            $this->changedRelations[$field] = [];
+        }
     }
 
     /**
