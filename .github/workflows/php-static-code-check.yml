@@ -39,9 +39,9 @@ jobs:
           check-code: true
           force: true
 
-      - name: Prep code scanning
+      - name: PHPUnit
         working-directory: ../server/apps/duplicatefinder
-        run: make test
+        run: make phpunit
 
       - name: PHPCS
         working-directory: ../server/apps/duplicatefinder

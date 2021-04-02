@@ -155,14 +155,17 @@ appstore:
 	-f $(appstore_package_name).tar.gz ../$(app_name) \
 
 .PHONY: test
-test: composer
+test: phpunit phpcs phpstan
+
+.PHONY: phpunit
+phpunit: composer
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
 
 .PHONY: phpcs
-phpcs:
+phpcs: composer
 	./vendor/bin/phpcs --standard=PSR2 lib
 
 .PHONY: phpstan
-phpstan:
+phpstan: composer
 	./vendor/bin/phpstan analyse --level=8 lib
