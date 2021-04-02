@@ -53,9 +53,10 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob {
 
 	/**
 	 * @param mixed $argument
+	 * @return void
 	 * @throws \Exception
 	 */
-	protected function run($argument):  mixed {
+	protected function run($argument): void {
     $users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
       $this->findDuplicates($user->getUID());
 			return true;
