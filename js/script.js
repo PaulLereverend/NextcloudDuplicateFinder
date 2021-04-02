@@ -211,14 +211,6 @@
     .then(function(result) {
       var items = result;
 
-      // Sort desending by size
-
-      groupedResult = {
-        groupedItems: groupedResult.groupedItems.concat(items.data),
-        totalSize: 0,
-        itemCount: 0,
-        uniqueTotalSize: 0
-      };
 
       if(items.data.length > 0){
         offset += items.data.length;
@@ -229,13 +221,21 @@
         loaderBtn.removeEventListener("click", loadFiles);
       }
 
-      items.data.forEach((duplicate) => {
+      items.data.forEach((duplicate, i) => {
         duplicate.files = Object.values(duplicate.files);
-        groupedResult.totalSize += duplicate.files[0].size*duplicate.files.length;
-        groupedResult.itemCount += duplicate.files.length;
-        groupedResult.uniqueTotalSize += duplicate.files[0].size;
+        if(duplicate.files.length>0){
+          groupedResult.totalSize += duplicate.files[0].size*duplicate.files.length;
+          groupedResult.itemCount += duplicate.files.length;
+          groupedResult.uniqueTotalSize += duplicate.files[0].size;
+        }else {
+          console.log("Deleting ", i, duplicate);
+          items.data.splice(i, 1);
+        }
       });
+      console.log("Items are", items.data);
+      // Sort desending by size
       items.data.sort((a, b) => Math.abs((b.files[0].size*b.files.length) - (a.files[0].size*a.files.length)));
+      groupedResult.groupedItems.concat(items.data);
 
       render(items.data);
     });
