@@ -15,24 +15,28 @@ use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 use OCA\DuplicateFinder\Listener\FilesytemListener;
 use OCA\DuplicateFinder\Listener\NewHashListener;
 
-class Application extends App implements IBootstrap {
+class Application extends App implements IBootstrap
+{
 
-  public function __construct() {
-      parent::__construct('duplicatefinder');
-  }
+    public function __construct()
+    {
+        parent::__construct('duplicatefinder');
+    }
 
-  public function register(IRegistrationContext $context): void {
+    public function register(IRegistrationContext $context): void
+    {
 
-    $context->registerEventListener(NodeDeletedEvent::class, FilesytemListener::class);
-    $context->registerEventListener(NodeRenamedEvent::class, FilesytemListener::class);
-    $context->registerEventListener(NodeCopiedEvent::class, FilesytemListener::class);
-    $context->registerEventListener(NodeCreatedEvent::class, FilesytemListener::class);
-    $context->registerEventListener(NodeWrittenEvent::class, FilesytemListener::class);
-    $context->registerEventListener(NodeTouchedEvent::class, FilesytemListener::class);
-    $context->registerEventListener(CalculatedHashEvent::class, NewHashListener::class);
-  }
+        $context->registerEventListener(NodeDeletedEvent::class, FilesytemListener::class);
+        $context->registerEventListener(NodeRenamedEvent::class, FilesytemListener::class);
+        $context->registerEventListener(NodeCopiedEvent::class, FilesytemListener::class);
+        $context->registerEventListener(NodeCreatedEvent::class, FilesytemListener::class);
+        $context->registerEventListener(NodeWrittenEvent::class, FilesytemListener::class);
+        $context->registerEventListener(NodeTouchedEvent::class, FilesytemListener::class);
+        $context->registerEventListener(CalculatedHashEvent::class, NewHashListener::class);
+    }
 
-  public function boot(IBootContext $context): void {
-      //Dummy Required by IBootstrap
-  }
+    public function boot(IBootContext $context): void
+    {
+        //Dummy Required by IBootstrap
+    }
 }

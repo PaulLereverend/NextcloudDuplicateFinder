@@ -13,49 +13,54 @@ use OCA\DuplicateFinder\Service\FileDuplicateService;
  * @template T of Event
  * @implements IEventListener<T>
  */
-class NewHashListener implements IEventListener {
+class NewHashListener implements IEventListener
+{
 
-	/** @var FileInfoService */
-	private $fileInfoService;
-	/** @var FileDuplicateService */
-	private $fileDuplicateService;
-	private $logger;
+    /** @var FileInfoService */
+    private $fileInfoService;
+    /** @var FileDuplicateService */
+    private $fileDuplicateService;
+    private $logger;
 
-  public function __construct(FileInfoService $fileInfoService,
-															FileDuplicateService $fileDuplicateService,
-															ILogger $logger) {
-		$this->fileInfoService = $fileInfoService;
-		$this->fileDuplicateService = $fileDuplicateService;
-		$this->logger = $logger;
-	}
-
-  public function handle(Event $event): void {
-    if ($event instanceOf CalculatedHashEvent && $event->isChanged()) {
-			$fileInfo = $event->getFileInfo();
-			if(!$event->isNew()){
-				$this->fileDuplicateService->clearDuplicates($fileInfo->getId());
-			}
-			$this->updateDuplicates($fileInfo);
+    public function __construct(
+        FileInfoService $fileInfoService,
+        FileDuplicateService $fileDuplicateService,
+        ILogger $logger
+    ) {
+        $this->fileInfoService = $fileInfoService;
+        $this->fileDuplicateService = $fileDuplicateService;
+        $this->logger = $logger;
     }
-  }
 
-	private function updateDuplicates(FileInfo $fileInfo, string $type = "file_hash"): void{
-		$count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
-		if($count > 1){
-			try{
-				$fileDuplicate = $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
-				if($count > 2){
-					$fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
-				}else{
-					$files = $this->fileInfoService->findByHash($fileInfo->getFileHash(), $type);
-					foreach($files as $fileInfo){
-						$fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
-					}
-				}
-				$this->fileDuplicateService->update($fileDuplicate);
-			}catch(\Exception $e){
-				$this->logger->logException($e);
-			}
-		}
-	}
+    public function handle(Event $event): void
+    {
+        if ($event instanceof CalculatedHashEvent && $event->isChanged()) {
+            $fileInfo = $event->getFileInfo();
+            if (!$event->isNew()) {
+                $this->fileDuplicateService->clearDuplicates($fileInfo->getId());
+            }
+            $this->updateDuplicates($fileInfo);
+        }
+    }
+
+    private function updateDuplicates(FileInfo $fileInfo, string $type = "file_hash"): void
+    {
+        $count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
+        if ($count > 1) {
+            try {
+                $fileDuplicate = $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
+                if ($count > 2) {
+                    $fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
+                } else {
+                    $files = $this->fileInfoService->findByHash($fileInfo->getFileHash(), $type);
+                    foreach ($files as $fileInfo) {
+                        $fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
+                    }
+                }
+                $this->fileDuplicateService->update($fileDuplicate);
+            } catch (\Exception $e) {
+                $this->logger->logException($e);
+            }
+        }
+    }
 }
