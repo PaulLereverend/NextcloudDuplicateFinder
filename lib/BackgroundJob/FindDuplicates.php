@@ -18,11 +18,10 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
     private $dispatcher;
     /** @var ILogger */
     private $logger;
-  /** @var IRootFolder */
+    /** @var IRootFolder */
     private $rootFolder;
-  /** @var FileInfoService*/
+    /** @var FileInfoService*/
     private $fileInfoService;
-
     /** @var IDBConnection */
     protected $connection;
 

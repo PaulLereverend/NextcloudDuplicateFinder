@@ -16,6 +16,14 @@ class EEntity extends Entity implements JsonSerializable
     private $relationalFields = [];
     /** @var array<array> */
     private $changedRelations = [];
+    /** @var array<array<bool>> */
+    private $internalProperties = [
+        "keepAsPrimary" => [true, true],
+        "internalTypes" => [true, true],
+        "relationalFields" => [true, true],
+        "changedRelations" => [true, true],
+        "internalProperties" => [true, true]
+    ];
 
     protected function addInternalType(string $name, string $type):void
     {
@@ -26,6 +34,14 @@ class EEntity extends Entity implements JsonSerializable
             $this->internalTypes[$name] = "json";
             $this->addType($name, 'string');
         }
+    }
+
+    protected function addInternalProperty(
+        string $name,
+        bool $excludeFromJSON = false,
+        bool $excludeFromDB = true
+    ):void {
+        $this->internalProperties[$name] = [$excludeFromJSON, $excludeFromDB];
     }
 
     protected function addRelationalField(string $field):void
@@ -58,6 +74,14 @@ class EEntity extends Entity implements JsonSerializable
     }
 
     /**
+     * @return array<array<bool>>
+     */
+    public function getInternalProperties():array
+    {
+        return $this->internalProperties;
+    }
+
+    /**
      * @return array<array>;
      */
     public function getUpdatedRelationalFields(?string $field = null):array
@@ -73,7 +97,9 @@ class EEntity extends Entity implements JsonSerializable
      */
     protected function markFieldUpdated($attribute)
     {
-        if (!isset($this->getRelationalFields()[$attribute])) {
+        if (!isset($this->getRelationalFields()[$attribute])
+          && !(isset($this->getInternalProperties()[$attribute])
+            && $this->getInternalProperties()[$attribute][1])) {
             parent::markFieldUpdated($attribute);
         }
     }
@@ -147,6 +173,10 @@ class EEntity extends Entity implements JsonSerializable
         $reflection = new \ReflectionClass($this);
         $json = [];
         foreach ($properties as $property => $value) {
+            if (isset($this->getInternalProperties()[$property])
+              && $this->getInternalProperties()[$property][0]) {
+                continue;
+            }
             if ($this->getFieldTypeByName($property) !== "bool") {
                 $methodName = "get";
             } else {

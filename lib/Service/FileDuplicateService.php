@@ -8,29 +8,52 @@ use OCP\AppFramework\Db\DoesNotExistException;
 
 use OCA\DuplicateFinder\Db\FileDuplicate;
 use OCA\DuplicateFinder\Db\FileDuplicateMapper;
+use OCA\DuplicateFinder\Service\FileInfoService;
 
 class FileDuplicateService
 {
 
-  /** @var FileDuplicateMapper */
+    /** @var FileDuplicateMapper */
     private $mapper;
-  /** @var ILogger */
+    /** @var ILogger */
     private $logger;
+    /** @var FileInfoService */
+    private $fileInfoService;
 
     public function __construct(
         ILogger $logger,
-        FileDuplicateMapper $mapper
+        FileDuplicateMapper $mapper,
+        FileInfoService $fileInfoService
     ) {
         $this->mapper = $mapper;
         $this->logger = $logger;
+        $this->fileInfoService = $fileInfoService;
     }
 
-  /**
-   * @return array<FileDuplicate>
-   */
-    public function findAll(?string $user = null, ?int $limit = 20, ?int $offset = null):array
+    /**
+     * @return FileDuplicate
+     */
+    public function enrich(FileDuplicate $duplicate):FileDuplicate
     {
-        return $this->mapper->findAll($user, $limit, $offset);
+        foreach ($duplicate->getFiles() as $fileId => $owner) {
+            $fileInfo = $this->fileInfoService->findById($fileId, true);
+            $duplicate->addDuplicate($fileId, $fileInfo);
+        }
+        return $duplicate;
+    }
+
+    /**
+     * @return array<FileDuplicate>
+     */
+    public function findAll(?string $user = null, ?int $limit = 20, ?int $offset = null, bool $enrich = false):array
+    {
+        $entities = $this->mapper->findAll($user, $limit, $offset);
+        if ($enrich) {
+            foreach ($entities as $entity) {
+                $entity = $this->enrich($entity);
+            }
+        }
+        return $entities;
     }
 
     public function find(string $hash, string $type = "file_hash"):FileDuplicate

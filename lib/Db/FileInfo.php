@@ -14,10 +14,16 @@ class FileInfo extends EEntity
     protected $imageHash;
     /** @var integer */
     protected $updatedAt;
+    /** @var string */
+    protected $mimetype;
+    /** @var integer */
+    protected $size;
 
     public function __construct(?string $path = null, ?string $owner = null)
     {
         $this->addInternalType('updatedAt', 'date');
+        $this->addInternalProperty("mimetype");
+        $this->addInternalProperty("size");
 
         if (!is_null($path)) {
             $this->setPath($path);

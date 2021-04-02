@@ -48,21 +48,46 @@ class FileInfoService
     }
 
     /**
+     * @return FileInfo
+     */
+    public function enrich(FileInfo $fileInfo):FileInfo
+    {
+        $node = $this->rootFolder->get($fileInfo->getPath());
+        $fileInfo->setMimetype($node->getMimetype());
+        $fileInfo->setSize($node->getSize());
+        return $fileInfo;
+    }
+
+    /**
      * @return array<FileInfo>
      */
-    public function findAll():array
+    public function findAll(bool $enrich = false):array
     {
-        return $this->mapper->findAll();
+        $entities = $this->mapper->findAll();
+        if ($enrich) {
+            foreach ($entities as $entity) {
+                $entity = $this->enrich($entity);
+            }
+        }
+        return $entities;
     }
 
-    public function find(string $path):FileInfo
+    public function find(string $path, bool $enrich = false):FileInfo
     {
-        return $this->mapper->find($path);
+        $entity = $this->mapper->find($path);
+        if ($enrich) {
+            $entity = $this->enrich($entity);
+        }
+        return $entity;
     }
 
-    public function findById(int $id):FileInfo
+    public function findById(int $id, bool $enrich = false):FileInfo
     {
-        return $this->mapper->findById($id);
+        $entity = $this->mapper->findById($id);
+        if ($enrich) {
+            $entity = $this->enrich($entity);
+        }
+        return $entity;
     }
 
     /**

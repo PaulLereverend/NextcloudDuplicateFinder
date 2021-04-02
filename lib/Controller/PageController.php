@@ -55,7 +55,7 @@ class PageController extends Controller
 
     /**
      * @NoAdminRequired
-         * @return array<mixed>
+     * @return array<mixed>
      */
     public function files(?int $offset = null, ?int $limit = 20):array
     {

@@ -7,9 +7,9 @@ use OCA\DuplicateFinder\Service\FileInfoService;
 
 class CleanUpDB extends \OC\BackgroundJob\TimedJob
 {
-  /** @var IRootFolder */
+    /** @var IRootFolder */
     private $rootFolder;
-  /** @var FileInfoService*/
+    /** @var FileInfoService*/
     private $fileInfoService;
 
 

@@ -8,7 +8,7 @@ class FileDuplicate extends EEntity
     protected $type;
     /** @var string|null */
     protected $hash;
-    /** @var array<string> */
+    /** @var array<string|FileInfo> */
     protected $files = [];
 
     public function __construct(?string $hash = null, string $type = "file_hash")
@@ -21,10 +21,18 @@ class FileDuplicate extends EEntity
         $this->setType($type);
     }
 
-    public function addDuplicate(int $id, string $owner):void
+    /**
+     * @param int $id
+     * @param string|FileInfo $value
+     */
+    public function addDuplicate(int $id, $value):void
     {
-        $this->files[$id] = $owner;
-        $this->markRelationalFieldUpdated("files", $id, $owner);
+        $this->files[$id] = $value;
+        if ($value instanceof FileInfo) {
+            $this->markRelationalFieldUpdated("files", $id, $value->getOwner());
+        } else {
+            $this->markRelationalFieldUpdated("files", $id, $value);
+        }
     }
 
     public function removeDuplicate(int $id):void
@@ -39,7 +47,7 @@ class FileDuplicate extends EEntity
     }
 
   /**
-     * @return array<string>
+     * @return array<string|FileInfo>
      */
     public function getFiles():array
     {
