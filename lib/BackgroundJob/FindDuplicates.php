@@ -58,23 +58,8 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob {
 	 */
 	protected function run($argument): void {
     $users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
-      $this->findDuplicates($user->getUID());
+			$this->fileInfoService->scanFiles($user->getUID());
 			return true;
     });
-	}
-
-	private function findDuplicates(string $user): void{
-		$scanner = new Scanner($user, null, $this->dispatcher, $this->logger);
-		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
-				$file = $this->rootFolder->get($path);
-				$fileInfo = $this->fileInfoService->createOrUpdate($path, $file->getOwner());
-				if($this->connection->inTransaction()){
-					$this->connection->commit();
-					$this->connection->beginTransaction();
-				}
-		});
-
-		$folder = $this->rootFolder->getUserFolder($user);
-		$scanner->scan($folder->getPath(), true, null);
 	}
 }

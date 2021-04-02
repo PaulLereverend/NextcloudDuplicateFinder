@@ -5,7 +5,6 @@ use OC\Core\Command\Base;
 use OC\Files\Search\SearchQuery;
 use OC\Files\Search\SearchComparison;
 use OC\Files\Search\SearchOrder;
-use OC\Files\Utils\Scanner;
 use OCP\Encryption\IManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -52,6 +51,8 @@ class FindDuplicates extends Base {
 
 	/** @var FileDuplicateService */
 	protected $fileDuplicateService;
+	/** @var array<string>|null */
+	protected $inputPath;
 
 	public function __construct(IRootFolder $rootFolder,
 								IUserManager $userManager,
@@ -85,55 +86,61 @@ class FindDuplicates extends Base {
 			$this->output->writeln('Encryption is enabled. Aborted.');
 			return 1;
 		}
+
 		$inputPath = $input->getOption('path');
+		if(is_bool($inputPath)){
+			$this->output->writeln('<error>The given path is invalid.<error>');
+		}elseif(is_string($inputPath)){
+			$this->inputPath = [$inputPath];
+		}else{
+			$this->inputPath = $inputPath;
+		}
 		$user = $input->getOption('user');
 
-		if($user){
-			if($user === true){
-				$this->output->writeln('User parameter has an invalid value.');
-				return 1;
-			}elseif(is_string($user)){
-				$users = [$user];
-			}else{
-				$users = $user;
-			}
-			foreach($users as $user){
-				if(!$this->userManager->userExists($user)){
-					$this->output->writeln('User '.$user.' is unkown.');
+		try {
+			if($user){
+				if($user === true){
+					$this->output->writeln('User parameter has an invalid value.');
 					return 1;
+				}elseif(is_string($user)){
+					$users = [$user];
+				}else{
+					$users = $user;
 				}
-				$this->findDuplicates($user);
+				foreach($users as $user){
+					if(!$this->userManager->userExists($user)){
+						$this->output->writeln('User '.$user.' is unkown.');
+						return 1;
+					}
+					$this->findDuplicates($user);
+				}
+			}else{
+				$users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
+					$this->findDuplicates($user->getUID());
+					return true;
+				});
 			}
-		}else{
-			$users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
-				$this->findDuplicates($user->getUID());
-				return true;
-			});
+		}catch(NotFoundException $e){
+			$this->output->writeln('<error>The given path doesn\'t exists.<error>');
 		}
 
 		return 0;
 	}
 
 	private function findDuplicates(string $user):void{
-		$scanner = new Scanner($user, $this->connection, \OC::$server->query(IEventDispatcher::class), \OC::$server->getLogger());
-		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) {
-				$this->output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);
-				$file = $this->rootFolder->get($path);
-				$fileInfo = $this->fileInfoService->createOrUpdate($path, $file->getOwner());
-				$this->output->writeln(" => Hash: ".$fileInfo->getFileHash(), OutputInterface::VERBOSITY_VERBOSE);
-				$this->abortIfInterrupted();
-				// Ensure that every scanned file is commited - not only after all files are scanned
-				if($this->connection->inTransaction()){
-					$this->connection->commit();
-					$this->connection->beginTransaction();
-				}
-
-		});
-
-		$folder = $this->rootFolder->getUserFolder($user);
-		$this->output->writeln('Start Searching files for '.$user);
-		$scanner->scan($folder->getPath(), true, null);
-		$this->output->writeln('Finished Searching files');
+		if(is_null($this->inputPath)){
+			$this->fileInfoService->scanFiles($user, null,
+				function (){$this->abortIfInterrupted();},
+				$this->output);
+		}else{
+			foreach($this->inputPath as $inputPath){
+				$this->fileInfoService->scanFiles($user,
+					$inputPath,
+					function (){$this->abortIfInterrupted();},
+					$this->output
+				);
+			}
+		}
 		CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function() {$this->abortIfInterrupted();}, $user);
 	}
 }

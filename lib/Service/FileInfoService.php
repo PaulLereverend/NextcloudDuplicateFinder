@@ -2,12 +2,16 @@
 namespace OCA\DuplicateFinder\Service;
 
 use OCP\IUser;
+use OCP\ILogger;
+use OCP\IDBConnection;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
+use OC\Files\Utils\Scanner;
+use Symfony\Component\Console\Output\OutputInterface;
 
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileInfoMapper;
@@ -23,13 +27,21 @@ class FileInfoService {
 
   /** @var IRootFolder */
   private $rootFolder;
+  /** @var ILogger */
+  private $logger;
+  /** @var IDBConnection */
+  private $connection;
 
   public function __construct(FileInfoMapper $mapper,
                           		IRootFolder $rootFolder,
-                          		IEventDispatcher $eventDispatcher){
+                          		IEventDispatcher $eventDispatcher,
+															ILogger $logger,
+															IDBConnection $connection){
     $this->mapper = $mapper;
     $this->rootFolder = $rootFolder;
 		$this->eventDispatcher = $eventDispatcher;
+		$this->logger = $logger;
+		$this->connection = $connection;
   }
 
 	/**
@@ -98,4 +110,37 @@ class FileInfoService {
     }
     return $fileInfo;
   }
+
+	public function scanFiles(string $user, ?string $path = null, ?\Closure $abortIfInterrupted = null, ?OutputInterface $output = null): void{
+		$scanPath = $this->rootFolder->getUserFolder($user)->getPath();
+		if(!is_null($path)){
+			$scanPath .= DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR);
+		}
+		$scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
+		$scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) use($abortIfInterrupted,$output){
+			if(!is_null($output)){
+				$output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);
+			}
+			$file = $this->rootFolder->get($path);
+			$fileInfo = $this->createOrUpdate($path, $file->getOwner());
+			if($output){
+				$output->writeln(" => Hash: ".$fileInfo->getFileHash(), OutputInterface::VERBOSITY_VERBOSE);
+			}
+			if($abortIfInterrupted){
+				$abortIfInterrupted();
+			}
+			// Ensure that every scanned file is commited - not only after all files are scanned
+			if($this->connection->inTransaction()){
+				$this->connection->commit();
+				$this->connection->beginTransaction();
+			}
+		});
+		if($output){
+			$output->writeln('Start Searching files for '.$user." in Path ".$scanPath);
+		}
+		$scanner->scan($scanPath, true);
+		if($output){
+			$output->writeln('Finished Searching files');
+		}
+	}
 }
