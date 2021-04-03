@@ -73,8 +73,6 @@
       iconEl = e.target.getElementsByClassName('icon-delete')[0];
     }
     iconEl.classList.replace('icon-delete', 'icon-loading');
-    var isLastItemInGroup = false;
-
 
     fileClient.remove(normalizeItemPath(item.path)).then(function() {
       groupedResult.groupedItems.forEach((grp, i) => {
@@ -228,11 +226,9 @@
           groupedResult.itemCount += duplicate.files.length;
           groupedResult.uniqueTotalSize += duplicate.files[0].size;
         }else {
-          console.log("Deleting ", i, duplicate);
           items.data.splice(i, 1);
         }
       });
-      console.log("Items are", items.data);
       // Sort desending by size
       items.data.sort((a, b) => Math.abs((b.files[0].size*b.files.length) - (a.files[0].size*a.files.length)));
       groupedResult.groupedItems.concat(items.data);
