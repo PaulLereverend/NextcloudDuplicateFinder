@@ -13,7 +13,7 @@ use OCA\DuplicateFinder\Service\FileInfoService;
 class PageController extends Controller
 {
 
-    /** @var string */
+    /** @var string|null */
     private $userId;
     /** @var FileDuplicateService */
     private $fileDuplicateService;
@@ -25,7 +25,7 @@ class PageController extends Controller
     public function __construct(
         string $AppName,
         IRequest $request,
-        string $UserId,
+        ?string $UserId,
         FileDuplicateService $fileDuplicateService,
         FileInfoService $fileInfoService,
         IRootFolder $rootFolder
