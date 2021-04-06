@@ -25,8 +25,7 @@ class FileInfo extends EEntity
     {
         $this->addInternalType('updatedAt', 'date');
         $this->addInternalProperty("nodId");
-        $this->addInternalProperty("mimetype");
-        $this->addInternalProperty("size");
+        $this->addType("size", "integer");
 
         if (!is_null($path)) {
             $this->setPath($path);

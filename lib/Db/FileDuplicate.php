@@ -28,11 +28,11 @@ class FileDuplicate extends EEntity
     public function addDuplicate(int $id, $value):void
     {
         if ($value instanceof FileInfo) {
-            if ($this->files[$id] !== $value->getOwner()) {
+            if (!isset($this->files[$id]) || $this->files[$id] !== $value->getOwner()) {
                 $this->markRelationalFieldUpdated("files", $id, $value->getOwner());
             }
         } else {
-            if ($this->files[$id] !== $value) {
+            if (!isset($this->files[$id]) || $this->files[$id] !== $value) {
                 $this->markRelationalFieldUpdated("files", $id, $value);
             }
         }

@@ -44,7 +44,7 @@ class FilesytemListener implements IEventListener
             $this->fileInfoService->update($fileInfo);
         } elseif ($event instanceof AbstractNodeEvent) {
             $node = $event->getNode();
-            $this->fileInfoService->createOrUpdate($node->getPath(), $node->getOwner());
+            $fileInfo = $this->fileInfoService->save($node->getPath());
         }
     }
 }

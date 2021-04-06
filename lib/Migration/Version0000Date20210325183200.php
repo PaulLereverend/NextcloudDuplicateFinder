@@ -41,6 +41,13 @@ class Version0000Date20210325183200 extends SimpleMigrationStep
             'notnull' => false,
             'length' => 200
             ]);
+            $table->addColumn('size', 'integer', [
+              'notnull' => false,
+            ]);
+            $table->addColumn('mimetype', 'string', [
+              'notnull' => false,
+              'length' => 200
+            ]);
 
           /**
            * Column to store the hash of an image (without exif data)

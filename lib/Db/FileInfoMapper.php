@@ -2,14 +2,12 @@
 namespace OCA\DuplicateFinder\Db;
 
 use OCP\IDBConnection;
-use OCP\AppFramework\Db\Entity;
-use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 
 /**
- * @extends QBMapper<FileInfo>
+ * @extends EQBMapper<FileInfo>
  */
-class FileInfoMapper extends QBMapper
+class FileInfoMapper extends EQBMapper
 {
 
     public function __construct(IDBConnection $db)
@@ -47,17 +45,29 @@ class FileInfoMapper extends QBMapper
 
     public function countByHash(string $hash, string $type = "file_hash"):int
     {
+        return $this->countBy($type, $hash);
+    }
+
+    public function countBySize(int $size):int
+    {
+        return $this->countBy("size", $size, IQueryBuilder::PARAM_INT);
+    }
+
+    /**
+     * @return array<FileInfo>
+     */
+    public function findBySize(int $size, bool $onlyEmptyHash = true) : array
+    {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
+        $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq($type, $qb->createNamedParameter($hash))
+            $qb->expr()->eq("size", $qb->createNamedParameter($size), IQueryBuilder::PARAM_INT)
         );
-        $qb = $qb->execute();
-        if (!is_int($qb)) {
-            return $qb->rowCount();
+        if ($onlyEmptyHash) {
+            $qb->andWhere($qb->expr()->isNull("file_hash"));
         }
-        return 0;
+        return $this->findEntities($qb);
     }
 
     public function findById(int $id):FileInfo

@@ -123,4 +123,25 @@ abstract class EQBMapper extends QBMapper
             }
         }
     }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     * @param int $type
+     * @return int
+     */
+    protected function countBy(string $field, $value, int $type = IQueryBuilder::PARAM_STR):int
+    {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+        ->from($this->getTableName())
+        ->where(
+            $qb->expr()->eq($field, $qb->createNamedParameter($value), $type)
+        );
+        $qb = $qb->execute();
+        if (!is_int($qb)) {
+            return $qb->rowCount();
+        }
+        return 0;
+    }
 }

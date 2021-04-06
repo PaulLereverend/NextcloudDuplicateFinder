@@ -16,21 +16,20 @@ use Symfony\Component\Console\Output\OutputInterface;
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileInfoMapper;
 use OCA\DuplicateFinder\Event\CalculatedHashEvent;
+use OCA\DuplicateFinder\Event\NewFileInfoEvent;
 
 class FileInfoService
 {
 
     /** @var IEventDispatcher */
     private $eventDispatcher;
-
-  /** @var FileInfoMapper */
+    /** @var FileInfoMapper */
     private $mapper;
-
-  /** @var IRootFolder */
+    /** @var IRootFolder */
     private $rootFolder;
-  /** @var ILogger */
+    /** @var ILogger */
     private $logger;
-  /** @var IDBConnection */
+    /** @var IDBConnection */
     private $connection;
 
     public function __construct(
@@ -99,34 +98,45 @@ class FileInfoService
         return $this->mapper->findByHash($hash, $type);
     }
 
+    /**
+     * @return array<FileInfo>
+     */
+    public function findBySize(int $size, bool $onlyEmptyHash = true):array
+    {
+        return $this->mapper->findBySize($size, $onlyEmptyHash);
+    }
+
     public function countByHash(string $hash, string $type = "file_hash"):int
     {
         return $this->mapper->countByHash($hash, $type);
     }
 
-    public function createOrUpdate(string $path, IUser $owner):FileInfo
+    public function countBySize(int $size):int
     {
-        $fileInfo = $this->getOrCreate($owner, $path);
-        return $this->calculateHashes($fileInfo);
+        return $this->mapper->countBySize($size);
     }
 
     public function update(FileInfo $fileInfo):FileInfo
     {
+        $fileInfo = $this->updateFileMeta($fileInfo);
         $fileInfo->setKeepAsPrimary(true);
         $fileInfo = $this->mapper->update($fileInfo);
         $fileInfo->setKeepAsPrimary(false);
         return $fileInfo;
     }
 
-    public function getOrCreate(IUser $owner, string $path):FileInfo
+    public function save(string $path):FileInfo
     {
         try {
             $fileInfo = $this->mapper->find($path);
+            $fileInfo = $this->update($fileInfo);
         } catch (\Exception $e) {
-            $fileInfo = new FileInfo($path, $owner->getUID());
+            $fileInfo = new FileInfo($path);
+            $fileInfo = $this->updateFileMeta($fileInfo);
             $fileInfo->setKeepAsPrimary(true);
             $fileInfo = $this->mapper->insert($fileInfo);
             $fileInfo->setKeepAsPrimary(false);
+            $this->eventDispatcher->dispatchTyped(new NewFileInfoEvent($fileInfo));
         }
         return $fileInfo;
     }
@@ -137,14 +147,30 @@ class FileInfoService
         return $fileInfo;
     }
 
-    public function calculateHashes(FileInfo $fileInfo):FileInfo
+    public function updateFileMeta(FileInfo $fileInfo) : FileInfo
     {
         $file = $this->rootFolder->get($fileInfo->getPath());
-        if ($file->getMtime() >
+        $fileInfo->setSize($file->getSize());
+        $fileInfo->setMimetype($file->getMimetype());
+        try {
+            $fileInfo->setOwner($file->getOwner()->getUID());
+        } catch (\Throwable $e) {
+            //Even though  this should not happen - the result of getOwner can be null
+            $this->logger->error("There is a problem with the owner of ".$fileInfo->getPath());
+            $this->logger->logException($e, ["app" => "duplicatefinder"]);
+        }
+        return $fileInfo;
+    }
+
+    public function calculateHashes(FileInfo $fileInfo):FileInfo
+    {
+        $oldHash = $fileInfo->getFileHash();
+        $file = $this->rootFolder->get($fileInfo->getPath());
+        if (empty($oldHash)
+          || $file->getMtime() >
             $fileInfo->getUpdatedAt()->getTimestamp()
           || $file->getUploadTime() >
             $fileInfo->getUpdatedAt()->getTimestamp()) {
-            $oldHash = $fileInfo->getFileHash();
             $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
             $fileInfo->setUpdatedAt(new \DateTime());
             $this->update($fileInfo);
@@ -166,13 +192,9 @@ class FileInfoService
         $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
         $scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) use ($abortIfInterrupted, $output) {
             if (!is_null($output)) {
-                $output->write("Scanning ".$path, false, OutputInterface::VERBOSITY_VERBOSE);
+                $output->writeln("Scanning ".$path, OutputInterface::VERBOSITY_VERBOSE);
             }
-            $file = $this->rootFolder->get($path);
-            $fileInfo = $this->createOrUpdate($path, $file->getOwner());
-            if ($output) {
-                $output->writeln(" => Hash: ".$fileInfo->getFileHash(), OutputInterface::VERBOSITY_VERBOSE);
-            }
+            $fileInfo = $this->save($path);
             if ($abortIfInterrupted) {
                 $abortIfInterrupted();
             }
