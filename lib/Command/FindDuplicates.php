@@ -125,9 +125,8 @@ class FindDuplicates extends Base
                     $this->findDuplicates($user);
                 }
             } else {
-                $users =  $this->userManager->callForAllUsers(function (IUser $user): bool {
+                $users =  $this->userManager->callForAllUsers(function (IUser $user): void {
                     $this->findDuplicates($user->getUID());
-                    return true;
                 });
             }
         } catch (NotFoundException $e) {
