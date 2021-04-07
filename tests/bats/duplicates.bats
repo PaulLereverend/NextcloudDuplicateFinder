@@ -3,8 +3,10 @@
 TESTSUITE="Duplicates"
 
 setup() {
-  export OC_PASS="test3588347"
-  ./occ user:add --password-from-env  --display-name="Test User" tuser
+  if [[ -z $(./occ user:list | grep "tuser:") ]]; then
+    export OC_PASS="test3588347"
+    ./occ user:add --password-from-env  --display-name="Test User" tuser
+  fi
 
   mkdir -p data/{admin,tuser}/files/tests
   #Include 0 to have one file per user (edge case where duplicate exist only because of one file per user)
