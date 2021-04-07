@@ -46,7 +46,8 @@ class FileDuplicateMapper extends EQBMapper
         if ($user !== null) {
             $qb->leftJoin("d", $this->getTableName()."_f", "f", $qb->expr()->eq('d.id', 'f.id'))
             ->where($qb->expr()->eq("value", $qb->createNamedParameter($user)))
-            ->groupBy('d.id');
+            ->groupBy('d.id')
+            ->having('COUNT(d.id) > 1');
         }
         return $this->findEntities($qb);
     }

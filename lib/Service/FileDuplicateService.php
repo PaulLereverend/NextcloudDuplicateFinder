@@ -57,8 +57,13 @@ class FileDuplicateService
     public function findAll(?string $user = null, ?int $limit = 20, ?int $offset = null, bool $enrich = false):array
     {
         $entities = $this->mapper->findAll($user, $limit, $offset);
-        if ($enrich) {
-            foreach ($entities as $entity) {
+        foreach ($entities as $entity) {
+            foreach ($entity->getFiles() as $fileId => $owner) {
+                if (!is_null($user)  && $user !== $owner) {
+                    $entity->removeDuplicate($fileId);
+                }
+            }
+            if ($enrich) {
                 $entity = $this->enrich($entity);
             }
         }
