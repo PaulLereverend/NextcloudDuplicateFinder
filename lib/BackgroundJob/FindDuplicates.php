@@ -58,7 +58,7 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
      */
     protected function run($argument): void
     {
-        $users =  $this->userManager->callForSeenUsers(function (IUser $user): bool {
+        $users =  $this->userManager->callForAllUsers(function (IUser $user): bool {
             $this->fileInfoService->scanFiles($user->getUID());
             return true;
         });
