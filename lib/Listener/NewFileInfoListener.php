@@ -31,14 +31,19 @@ class NewFileInfoListener implements IEventListener
 
     public function handle(Event $event): void
     {
-        if ($event instanceof NewFileInfoEvent) {
-            $fileInfo = $event->getFileInfo();
-            if ($this->fileInfoService->countBySize($fileInfo->getSize())>1) {
-                $files = $this->fileInfoService->findBySize($fileInfo->getSize());
-                foreach ($files as $finfo) {
-                    $this->fileInfoService->calculateHashes($finfo);
+        try {
+            if ($event instanceof NewFileInfoEvent) {
+                $fileInfo = $event->getFileInfo();
+                if ($this->fileInfoService->countBySize($fileInfo->getSize())>1) {
+                    $files = $this->fileInfoService->findBySize($fileInfo->getSize());
+                    foreach ($files as $finfo) {
+                        $this->fileInfoService->calculateHashes($finfo);
+                    }
                 }
             }
+        } catch (\Throwable $e) {
+            $this->logger->error("Failed to handle NewFileInfoEvent .", ["exception"=> $e]);
+            $this->logger->logException($e, ["app"=>"duplicatefinder"]);
         }
     }
 }

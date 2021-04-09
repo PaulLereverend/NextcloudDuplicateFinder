@@ -76,7 +76,12 @@ class ListDuplicates extends Base
         $this
             ->setName('duplicates:list')
             ->setDescription('List all duplicates files')
-            ->addOption('user', 'u', InputOption::VALUE_OPTIONAL, 'scan files of the specified user');
+            ->addOption(
+                'user',
+                'u',
+                InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
+                'scan files of the specified user'
+            );
 
         parent::configure();
     }

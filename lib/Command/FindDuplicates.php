@@ -77,12 +77,17 @@ class FindDuplicates extends Base
         $this
             ->setName('duplicates:find-all')
             ->setDescription('Find all duplicates files')
-            ->addOption('recursive', 'r', InputOption::VALUE_OPTIONAL, 'scan folder recursively')
-            ->addOption('user', 'u', InputOption::VALUE_OPTIONAL, 'scan files of the specified user')
+            ->addOption('recursive', 'r', InputOption::VALUE_NONE, 'scan folder recursively')
+            ->addOption(
+                'user',
+                'u',
+                InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
+                'scan files of the specified user'
+            )
             ->addOption(
                 'path',
                 'p',
-                InputOption::VALUE_OPTIONAL,
+                InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
                 'limit scan to this path, eg. --path="/alice/files/Photos"'
             );
 
@@ -102,7 +107,7 @@ class FindDuplicates extends Base
             $this->output->writeln('<error>The given path is invalid.<error>');
         } elseif (is_string($inputPath)) {
             $this->inputPath = [$inputPath];
-        } else {
+        } elseif (!empty($inputPath)) {
             $this->inputPath = $inputPath;
         }
         $user = $input->getOption('user');

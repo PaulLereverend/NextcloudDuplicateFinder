@@ -31,7 +31,7 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob
      * @param  mixed $argument
      * @throws \Exception
      */
-    protected function run($argument): mixed
+    protected function run($argument): void
     {
         /**
          * If for some reason a delete or rename Event wasn't handled properly we cleanup this up here

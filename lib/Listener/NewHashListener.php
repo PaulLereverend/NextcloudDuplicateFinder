@@ -35,12 +35,17 @@ class NewHashListener implements IEventListener
 
     public function handle(Event $event): void
     {
-        if ($event instanceof CalculatedHashEvent && $event->isChanged()) {
-            $fileInfo = $event->getFileInfo();
-            if (!$event->isNew()) {
-                $this->fileDuplicateService->clearDuplicates($fileInfo->getId());
+        try {
+            if ($event instanceof CalculatedHashEvent && $event->isChanged()) {
+                $fileInfo = $event->getFileInfo();
+                if (!$event->isNew()) {
+                    $this->fileDuplicateService->clearDuplicates($fileInfo->getId());
+                }
+                $this->updateDuplicates($fileInfo);
             }
-            $this->updateDuplicates($fileInfo);
+        } catch (\Throwable $e) {
+            $this->logger->error("Failed to handle new hash event .", ["exception"=> $e]);
+            $this->logger->logException($e, ["app"=>"duplicatefinder"]);
         }
     }
 
