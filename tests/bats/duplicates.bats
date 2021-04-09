@@ -1,5 +1,4 @@
 #!/usr/bin/env bats
-
 TESTSUITE="Duplicates"
 
 setup() {
@@ -27,10 +26,14 @@ setup() {
   [ "$status" -eq 0 ]
 
   if [[ $(echo "$output" | grep "file_hash" | wc -l ) -ne 25
-      || "$(echo "$output" | grep "/admin/files/tests/" | sha256sum | awk '{ print $1 }')" != "2aaa6522e780936689141b004dddfbcd4306eb843072e8976fad24fdf1d03ca8" ]]; then
-    ret_status=$?
-    echo "Output is other than expected"
-    return $ret_status
+      || "$(echo "$output" | grep "/admin/files/tests/" | sha256sum | awk '{ print $1 }')" != "508d4c65b4498a6df106d97848e065328461a1049326664ab870f8e639710ffd" ]]; then
+    echo "Output is other than expected."
+    echo "Count: $(echo "$output" | grep "file_hash" | wc -l )"
+    echo "Exepected: 508d4c65b4498a6df106d97848e065328461a1049326664ab870f8e639710ffd"
+    echo "Result:    $(echo "$output" | grep "/admin/files/tests/" | sha256sum | awk '{ print $1 }')"
+    echo "$output"
+
+    return 1
   fi
 }
 
@@ -40,9 +43,12 @@ setup() {
 
   if [[ $(echo "$output" | grep "file_hash" | wc -l ) -ne 25
       || "$(echo "$output" | grep "/admin/files/tests/" | sha256sum | awk '{ print $1 }')" != "58d7d38903a42b7a92849784c596548a720888bd59f799c08f94523d59ae4164" ]]; then
-    ret_status=$?
-    echo "Output is other than expected"
-    return $ret_status
+    echo "Output is other than expected:"
+    echo "Count: $(echo "$output" | grep "file_hash" | wc -l )"
+    echo "Exepected: 58d7d38903a42b7a92849784c596548a720888bd59f799c08f94523d59ae4164"
+    echo "Result:    $(echo "$output" | grep "/admin/files/tests/" | sha256sum | awk '{ print $1 }')"
+    echo "$output"
+    return 1
   fi
 }
 
@@ -52,8 +58,8 @@ setup() {
   [ "$status" -eq 0 ]
 
   if [[ $(echo "$output" | grep "admin" | wc -l ) -ne 0 ]]; then
-    ret_status=$?
-    echo "Output is other than expected"
-    return $ret_status
+    echo "Output is other than expected:"
+    echo "$output"
+    return 1
   fi
 }
