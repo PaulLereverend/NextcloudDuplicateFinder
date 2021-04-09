@@ -147,6 +147,11 @@ class FileInfoService
         return $fileInfo;
     }
 
+    public function clear():void
+    {
+        $this->mapper->clear();
+    }
+
     public function updateFileMeta(FileInfo $fileInfo) : FileInfo
     {
         $file = $this->rootFolder->get($fileInfo->getPath());
@@ -205,11 +210,11 @@ class FileInfoService
             }
         });
         if ($output) {
-            $output->writeln('Start Searching files for '.$user." in Path ".$scanPath);
+            $output->writeln('Start searching files for '.$user." in path ".$scanPath);
         }
         $scanner->scan($scanPath, true);
         if ($output) {
-            $output->writeln('Finished Searching files');
+            $output->writeln('Finished searching files');
         }
     }
 }

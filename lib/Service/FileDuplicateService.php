@@ -110,6 +110,11 @@ class FileDuplicateService
         }
     }
 
+    public function clear():void
+    {
+        $this->mapper->clear();
+    }
+
     public function clearDuplicates(int $id):void
     {
         $fileDuplicates = $this->mapper->findByDuplicate($id);

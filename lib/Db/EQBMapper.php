@@ -144,4 +144,14 @@ abstract class EQBMapper extends QBMapper
         }
         return 0;
     }
+
+    public function clear(?string $table = null):void
+    {
+        $qb = $this->db->getQueryBuilder();
+        if (is_null($table)) {
+            $qb->delete($this->getTableName())->execute();
+        } else {
+            $qb->delete($table)->execute();
+        }
+    }
 }

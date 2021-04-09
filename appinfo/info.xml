@@ -37,6 +37,7 @@ If you increase the verbosity of the occ command, the file that is currently sca
   <commands>
 	  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
 	  <command>OCA\DuplicateFinder\Command\ListDuplicates</command>
+	  <command>OCA\DuplicateFinder\Command\ClearDuplicates</command>
 	</commands>
   <navigations>
     <navigation>

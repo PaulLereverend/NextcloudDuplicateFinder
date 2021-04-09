@@ -79,4 +79,10 @@ class FileDuplicateMapper extends EQBMapper
         }
         return $duplicates;
     }
+
+    public function clear(?string $table = null):void
+    {
+        parent::clear($this->getTableName()."_f");
+        parent::clear();
+    }
 }
