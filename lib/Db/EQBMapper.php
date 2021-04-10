@@ -1,6 +1,11 @@
 <?php
 namespace OCA\DuplicateFinder\Db;
 
+use Doctrine\DBAL\Platforms\SqlitePlatform;
+use Doctrine\DBAL\Platforms\PostgreSQL94Platform;
+use Doctrine\DBAL\Platforms\PostgreSQL100Platform;
+
+
 use OCP\AppFramework\Db\QBMapper;
 use OCP\AppFramework\Db\Entity;
 use OCP\DB\QueryBuilder\IQueryBuilder;
@@ -140,7 +145,13 @@ abstract class EQBMapper extends QBMapper
         );
         $qb = $qb->execute();
         if (!is_int($qb)) {
-            return $qb->rowCount();
+            if (!$this->db->getDatabasePlatform() instanceof SqlitePlatform
+              && !$this->db->getDatabasePlatform() instanceof PostgreSQL94Platform
+            ) {
+                return $qb->rowCount();
+            } else {
+                return count($qb->fetchAll());
+            }
         }
         return 0;
     }
