@@ -23,11 +23,11 @@ class CMDUtils
         $limit = 20;
         $offset = 0;
         do {
-            $duplicates = $fileDuplicateService->findAll($user, $limit, $offset);
+            $duplicates = $fileDuplicateService->findAll($user, $limit, $offset, true);
             foreach ($duplicates as $duplicate) {
                 $output->writeln($duplicate->getHash()."(".$duplicate->getType().")");
-                foreach ($duplicate->getFiles() as $id => $owner) {
-                    $file = $fileInfoService->findById($id);
+                foreach ($duplicate->getFiles() as $id => $file) {
+                    //$file = $fileInfoService->findById($id);
                     $output->writeln('     '.$file->getPath());
                     $abortIfInterrupted();
                 };

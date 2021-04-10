@@ -29,10 +29,18 @@ class FileDuplicateMapper extends EQBMapper
     }
 
   /**
+   * @param string|null $user
+   * @param int|null $limit
+   * @param int|null $offset
+   * @param array<array<string>> $orderBy
    * @return array<FileDuplicate>
    */
-    public function findAll(?string $user = null, ?int $limit = null, ?int $offset = null):array
-    {
+    public function findAll(
+        ?string $user = null,
+        ?int $limit = null,
+        ?int $offset = null,
+        ?array $orderBy = [["hash"],["type"]]
+    ):array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('d.id as id', 'type', 'hash')
         ->from($this->getTableName(), "d");
@@ -48,6 +56,11 @@ class FileDuplicateMapper extends EQBMapper
             ->where($qb->expr()->eq("value", $qb->createNamedParameter($user)))
             ->groupBy('d.id')
             ->having('COUNT(d.id) > 1');
+        }
+        if ($orderBy !== null) {
+            foreach ($orderBy as $order) {
+                $qb->addOrderBy($order[0], isset($order[1]) ? $order[1] : null);
+            }
         }
         return $this->findEntities($qb);
     }

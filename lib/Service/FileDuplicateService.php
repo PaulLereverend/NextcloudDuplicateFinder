@@ -6,6 +6,7 @@ use OCP\ILogger;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
 
+use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileDuplicate;
 use OCA\DuplicateFinder\Db\FileDuplicateMapper;
 use OCA\DuplicateFinder\Service\FileInfoService;
@@ -52,11 +53,21 @@ class FileDuplicateService
     }
 
     /**
+     * @param string|null $user
+     * @param int|null $limit
+     * @param int|null $offset
+     * @param bool $enrich
+     * @param array<array<string>> $orderBy
      * @return array<FileDuplicate>
      */
-    public function findAll(?string $user = null, ?int $limit = 20, ?int $offset = null, bool $enrich = false):array
-    {
-        $entities = $this->mapper->findAll($user, $limit, $offset);
+    public function findAll(
+        ?string $user = null,
+        ?int $limit = 20,
+        ?int $offset = null,
+        bool $enrich = false,
+        ?array $orderBy = [["hash"],["type"]]
+    ):array {
+        $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
         foreach ($entities as $entity) {
             foreach ($entity->getFiles() as $fileId => $owner) {
                 if (!is_null($user)  && $user !== $owner) {
@@ -65,6 +76,11 @@ class FileDuplicateService
             }
             if ($enrich) {
                 $entity = $this->enrich($entity);
+                $files = $entity->getFiles();
+                uasort($files, function (FileInfo $a, FileInfo $b) {
+                    return strnatcmp($a->getPath(), $b->getPath());
+                });
+                $entity->setFiles($files);
             }
         }
         return $entities;
