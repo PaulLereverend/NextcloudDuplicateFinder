@@ -2,7 +2,6 @@
 namespace OCA\DuplicateFinder\BackgroundJob;
 
 use OC\Files\Utils\Scanner;
-use OCP\Files\IRootFolder;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\ILogger;
 use OCP\IUserManager;
@@ -18,8 +17,6 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
     private $dispatcher;
     /** @var ILogger */
     private $logger;
-    /** @var IRootFolder */
-    private $rootFolder;
     /** @var FileInfoService*/
     private $fileInfoService;
     /** @var IDBConnection */
@@ -30,14 +27,12 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
      * @param IUserManager $userManager
      * @param IEventDispatcher $dispatcher
      * @param ILogger $logger
-     * @param IRootFolder $rootFolder
      * @param FileInfoService $fileInfoService
      */
     public function __construct(
         IUserManager $userManager,
         IEventDispatcher $dispatcher,
         ILogger $logger,
-        IRootFolder $rootFolder,
         IDBConnection $connection,
         FileInfoService $fileInfoService
     ) {
@@ -46,7 +41,6 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
         $this->userManager = $userManager;
         $this->dispatcher = $dispatcher;
         $this->logger = $logger;
-        $this->rootFolder = $rootFolder;
         $this->connection = $connection;
         $this->fileInfoService = $fileInfoService;
     }

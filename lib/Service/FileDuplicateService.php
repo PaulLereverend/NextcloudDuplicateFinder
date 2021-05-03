@@ -5,6 +5,7 @@ use OCP\IUser;
 use OCP\ILogger;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\Files\NotFoundException;
 
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileDuplicate;
@@ -40,7 +41,7 @@ class FileDuplicateService
             try {
                 $fileInfo = $this->fileInfoService->findById($fileId, true);
                 $duplicate->addDuplicate($fileId, $fileInfo);
-            } catch (DoesNotExistException $e) {
+            } catch (DoesNotExistException|NotFoundException $e) {
                 $duplicate->resetUpdatedRelationalFields();
                 $duplicate->removeDuplicate($fileId);
                 $this->update($duplicate);

@@ -64,10 +64,11 @@ class PageController extends Controller
         foreach ($duplicates as $duplicate) {
             foreach ($duplicate->getFiles() as $fileInfoId => $owner) {
                 $fileInfo = $this->fileInfoService->findById($fileInfoId);
+                $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
                 $node = $this->rootFolder->get($fileInfo->getPath());
                 $response[] = [
                     'hash' => $fileInfo->getFileHash(),
-                    'path' => substr($fileInfo->getPath(), strlen("/".$this->userId."files/")),
+                    'path' => substr($fileInfo->getPath(), strlen($userFolder->getPath())),
                     'infos' => [
                         "id" => $node->getId(),
                         "size" => $node->getSize(),

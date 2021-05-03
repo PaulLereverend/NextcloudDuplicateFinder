@@ -8,7 +8,6 @@ use OC\Files\Search\SearchOrder;
 use OCP\Encryption\IManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
-use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\Files\Search\ISearchComparison;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -35,9 +34,6 @@ class FindDuplicates extends Base
     /** @var IUserManager */
     protected $userManager;
 
-    /** @var IRootFolder */
-    protected $rootFolder;
-
     /** @var OutputInterface */
     protected $output;
 
@@ -56,7 +52,6 @@ class FindDuplicates extends Base
     protected $inputPath;
 
     public function __construct(
-        IRootFolder $rootFolder,
         IUserManager $userManager,
         IManager $encryptionManager,
         IDBConnection $connection,
@@ -65,7 +60,6 @@ class FindDuplicates extends Base
     ) {
         parent::__construct();
         $this->userManager = $userManager;
-        $this->rootFolder = $rootFolder;
         $this->encryptionManager = $encryptionManager;
         $this->connection = $connection;
         $this->fileInfoService = $fileInfoService;
@@ -77,7 +71,6 @@ class FindDuplicates extends Base
         $this
             ->setName('duplicates:find-all')
             ->setDescription('Find all duplicates files')
-            ->addOption('recursive', 'r', InputOption::VALUE_NONE, 'scan folder recursively')
             ->addOption(
                 'user',
                 'u',
@@ -88,7 +81,7 @@ class FindDuplicates extends Base
                 'path',
                 'p',
                 InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-                'limit scan to this path, eg. --path="/alice/files/Photos"'
+                'limit scan to this path, eg. --path="./Photos"'
             );
 
         parent::configure();

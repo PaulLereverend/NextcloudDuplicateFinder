@@ -8,6 +8,7 @@ use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\EventDispatcher\IEventDispatcher;
+use OCP\Files\Node;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OC\Files\Utils\Scanner;
@@ -51,7 +52,7 @@ class FileInfoService
      */
     public function enrich(FileInfo $fileInfo):FileInfo
     {
-        $node = $this->rootFolder->get($fileInfo->getPath());
+        $node = $this->getNode($fileInfo);
         $fileInfo->setNodeId($node->getId());
         $fileInfo->setMimetype($node->getMimetype());
         $fileInfo->setSize($node->getSize());
@@ -154,7 +155,7 @@ class FileInfoService
 
     public function updateFileMeta(FileInfo $fileInfo) : FileInfo
     {
-        $file = $this->rootFolder->get($fileInfo->getPath());
+        $file = $this->getNode($fileInfo);
         $fileInfo->setSize($file->getSize());
         $fileInfo->setMimetype($file->getMimetype());
         try {
@@ -170,7 +171,7 @@ class FileInfoService
     public function calculateHashes(FileInfo $fileInfo):FileInfo
     {
         $oldHash = $fileInfo->getFileHash();
-        $file = $this->rootFolder->get($fileInfo->getPath());
+        $file = $this->getNode($fileInfo);
         if (empty($oldHash)
           || $file->getMtime() >
             $fileInfo->getUpdatedAt()->getTimestamp()
@@ -194,6 +195,7 @@ class FileInfoService
         if (!is_null($path)) {
             $scanPath .= DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR);
         }
+
         $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
         $scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) use ($abortIfInterrupted, $output) {
             if (!is_null($output)) {
@@ -212,9 +214,25 @@ class FileInfoService
         if ($output) {
             $output->writeln('Start searching files for '.$user." in path ".$scanPath);
         }
-        $scanner->scan($scanPath, true);
+
+        try {
+            $scanner->scan($scanPath, true);
+        } catch (NotFoundException $e) {
+            if ($output) {
+                $output->writeln("<error>The given path doesn't exists.</error>");
+            }
+        }
         if ($output) {
             $output->writeln('Finished searching files');
         }
+    }
+
+    private function getNode(FileInfo $fileInfo): Node
+    {
+        if (!is_null($fileInfo->getOwner())) {
+            // Ensure that user folder has been initialized
+            $this->rootFolder->getUserFolder($fileInfo->getOwner());
+        }
+        return $this->rootFolder->get($fileInfo->getPath());
     }
 }

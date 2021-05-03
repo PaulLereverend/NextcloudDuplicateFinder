@@ -9,7 +9,6 @@ use OC\Files\Utils\Scanner;
 use OCP\Encryption\IManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
-use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\Files\Search\ISearchComparison;
 use OCP\EventDispatcher\IEventDispatcher;

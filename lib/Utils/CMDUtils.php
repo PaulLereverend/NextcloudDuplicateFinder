@@ -27,8 +27,9 @@ class CMDUtils
             foreach ($duplicates as $duplicate) {
                 $output->writeln($duplicate->getHash()."(".$duplicate->getType().")");
                 foreach ($duplicate->getFiles() as $id => $file) {
-                    //$file = $fileInfoService->findById($id);
-                    $output->writeln('     '.$file->getPath());
+                    if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
+                        $output->writeln('     '.$file->getPath());
+                    }
                     $abortIfInterrupted();
                 };
             }

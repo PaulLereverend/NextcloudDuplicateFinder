@@ -9,7 +9,6 @@ use OC\Files\Utils\Scanner;
 use OCP\Encryption\IManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
-use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use OCP\Files\Search\ISearchComparison;
 use OCP\EventDispatcher\IEventDispatcher;
@@ -36,9 +35,6 @@ class ListDuplicates extends Base
     /** @var IUserManager */
     protected $userManager;
 
-    /** @var IRootFolder */
-    protected $rootFolder;
-
     /** @var OutputInterface */
     protected $output;
 
@@ -55,7 +51,6 @@ class ListDuplicates extends Base
     protected $fileDuplicateService;
 
     public function __construct(
-        IRootFolder $rootFolder,
         IUserManager $userManager,
         IManager $encryptionManager,
         IDBConnection $connection,
@@ -64,7 +59,6 @@ class ListDuplicates extends Base
     ) {
         parent::__construct();
         $this->userManager = $userManager;
-        $this->rootFolder = $rootFolder;
         $this->encryptionManager = $encryptionManager;
         $this->connection = $connection;
         $this->fileInfoService = $fileInfoService;

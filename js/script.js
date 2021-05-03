@@ -230,7 +230,14 @@
         }
       });
       // Sort desending by size
-      items.data.sort((a, b) => Math.abs((b.files[0].size*b.files.length) - (a.files[0].size*a.files.length)));
+      items.data.sort((a, b) => {
+        if(Array.isArray(b.files) && Array.isArray(a.files)
+          && b.files.length > 0 && a.files.length > 0){
+          return Math.abs((b.files[0].size*b.files.length) - (a.files[0].size*a.files.length));
+        } else {
+          return -1;
+        }
+      });
       groupedResult.groupedItems.concat(items.data);
 
       render(items.data);

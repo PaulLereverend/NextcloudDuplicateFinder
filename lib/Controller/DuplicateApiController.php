@@ -4,7 +4,6 @@ namespace OCA\DuplicateFinder\Controller;
 use OCP\IRequest;
 use OCP\IUserSession;
 use OCP\ILogger;
-use OCP\Files\IRootFolder;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -23,8 +22,6 @@ class DuplicateApiController extends ApiController
     private $fileDuplicateService;
     /** @var FileInfoService */
     private $fileInfoService;
-    /** @var IRootFolder */
-    private $rootFolder;
     /** @var ILogger */
     private $logger;
 
@@ -34,14 +31,12 @@ class DuplicateApiController extends ApiController
         ?IUserSession $userSession,
         FileDuplicateService $fileDuplicateService,
         FileInfoService $fileInfoService,
-        IRootFolder $rootFolder,
         ILogger $logger
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
-        $this->rootFolder = $rootFolder;
         $this->logger = $logger;
     }
 
