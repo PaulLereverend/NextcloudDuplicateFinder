@@ -11,7 +11,7 @@ setup() {
   run ./occ -v duplicates:list -u admin
   [ "$status" -eq 0 ]
 
-  expectedHash="d562d1652d009b7744fee753d40851a3910e2bd1bf6891c8244182fd965dfd31"
+  expectedHash="64cd2cb5d74a5d5ca5896b9192a9447eef0380bd41285442251eda2787bfc202"
   evaluateHashResult "${expectedHash}" 25 "${output}"
 }
 
@@ -19,7 +19,7 @@ setup() {
   run ./occ -v duplicates:list
   [ "$status" -eq 0 ]
 
-  expectedHash="c974b701ec1109694a4b301587976d02391116625a2bc727b915021cd47b144a"
+  expectedHash="37df47434c76bd4387c975aba58906ea1c0e86be6e8e7d3f7ad329017f5a9187"
   evaluateHashResult "${expectedHash}" 26 "${output}"
 }
 

@@ -2,7 +2,7 @@ export OC_PASS="test3588347"
 
 evaluateHashResult(){
   expectedHash="$1"
-  realHash="$(echo "$3" | sha256sum | awk '{ print $1 }')"
+  realHash="$(echo "$3" | sort -h | sha256sum | awk '{ print $1 }')"
   if [[ $(echo "$3" | grep "file_hash" | wc -l ) -ne $2
       || "${realHash}" != "${expectedHash}" ]]; then
     echo "Output is other than expected:"
