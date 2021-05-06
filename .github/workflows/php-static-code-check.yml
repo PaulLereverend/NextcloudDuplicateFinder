@@ -1,7 +1,11 @@
 # Affero General Public License version 3
 # @copyright nextcloud/news
 name: PHP Static Code analysis
-on: [push, pull_request]
+on:
+  push:
+    paths: '**.php'
+  pull_request:
+    paths: '**.php'
 jobs:
   static-phpstan-analysis:
     runs-on: ubuntu-latest

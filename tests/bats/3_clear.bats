@@ -8,7 +8,8 @@ setup() {
 }
 
 @test "[$TESTSUITE] Clear all" {
-  ./occ duplicates:clear -f
+  run ./occ duplicates:clear -f
+  [ "$status" -eq 0 ]
   run ./occ -v duplicates:list
   [ "$status" -eq 0 ]
 
