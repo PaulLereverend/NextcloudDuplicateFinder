@@ -65,7 +65,7 @@ class NewHashListener implements IEventListener
                 }
                 $this->fileDuplicateService->update($fileDuplicate);
             } catch (\Exception $e) {
-                $this->logger->logException($e);
+                $this->logger->logException($e, ["app" => "duplicatefinder"]);
             }
         }
     }

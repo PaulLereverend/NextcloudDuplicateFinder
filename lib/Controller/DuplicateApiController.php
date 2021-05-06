@@ -77,6 +77,7 @@ class DuplicateApiController extends ApiController
             $duplicates = $this->fileDuplicateService->findAll($this->getUserId(), $limit, $offset, true);
             return $this->success($duplicates);
         } catch (\Exception $e) {
+            $this->logger->logException($e, ["app" => "duplicatefinder"]);
             return $this->handleException($e);
         }
     }

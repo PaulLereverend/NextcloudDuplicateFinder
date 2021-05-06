@@ -16,6 +16,7 @@ use OCP\IDBConnection;
 use OCP\IPreview;
 use OCP\IUser;
 use OCP\IUserManager;
+use OCP\ILogger;
 use OCP\AppFramework\Http\DataResponse;
 use OCA\Files\Helper;
 use OC\Files\Filesystem;
@@ -50,13 +51,16 @@ class FindDuplicates extends Base
     protected $fileDuplicateService;
     /** @var array<string>|null */
     protected $inputPath;
+    /** @var ILogger */
+    private $logger;
 
     public function __construct(
         IUserManager $userManager,
         IManager $encryptionManager,
         IDBConnection $connection,
         FileInfoService $fileInfoService,
-        FileDuplicateService $fileDuplicateService
+        FileDuplicateService $fileDuplicateService,
+        ILogger $logger
     ) {
         parent::__construct();
         $this->userManager = $userManager;
@@ -64,6 +68,7 @@ class FindDuplicates extends Base
         $this->connection = $connection;
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
+        $this->logger = $logger;
     }
 
     protected function configure(): void
@@ -128,6 +133,7 @@ class FindDuplicates extends Base
                 });
             }
         } catch (NotFoundException $e) {
+            $this->logger->logException($e, ["app" => "duplicatefinder"]);
             $this->output->writeln('<error>The given path doesn\'t exists.<error>');
         }
 

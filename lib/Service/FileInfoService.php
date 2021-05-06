@@ -191,9 +191,19 @@ class FileInfoService
         ?\Closure $abortIfInterrupted = null,
         ?OutputInterface $output = null
     ): void {
-        $scanPath = $this->rootFolder->getUserFolder($user)->getPath();
+        $userFolder = $this->rootFolder->getUserFolder($user);
+        $scanPath = $userFolder->getPath();
         if (!is_null($path)) {
             $scanPath .= DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR);
+            if (!$userFolder->nodeExists(ltrim($path, DIRECTORY_SEPARATOR))) {
+                if ($output) {
+                    $output->writeln(
+                        'Skipped '.$scanPath.' because it doesn\'t exists.',
+                        OutputInterface::VERBOSITY_VERBOSE
+                    );
+                }
+                return;
+            }
         }
 
         $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
@@ -218,6 +228,7 @@ class FileInfoService
         try {
             $scanner->scan($scanPath, true);
         } catch (NotFoundException $e) {
+            $this->logger->logException($e, ["app" => "duplicatefinder"]);
             if ($output) {
                 $output->writeln("<error>The given path doesn't exists.</error>");
             }
@@ -229,10 +240,12 @@ class FileInfoService
 
     private function getNode(FileInfo $fileInfo): Node
     {
-        if (!is_null($fileInfo->getOwner())) {
-            // Ensure that user folder has been initialized
-            $this->rootFolder->getUserFolder($fileInfo->getOwner());
+        if ($fileInfo->getOwner()) {
+            $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
+            $relativePath = substr($fileInfo->getPath(), strlen($userFolder->getPath()));
+            return $userFolder->get($relativePath);
+        } else {
+            return $this->rootFolder->get($fileInfo->getPath());
         }
-        return $this->rootFolder->get($fileInfo->getPath());
     }
 }
