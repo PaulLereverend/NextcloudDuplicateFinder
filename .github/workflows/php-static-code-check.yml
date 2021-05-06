@@ -14,9 +14,9 @@ jobs:
     name: "phpstan: DuplicateFinder - Nextcloud Version ${{ matrix.nextcloud }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
       - name: Set up php
-        uses: shivammathur/setup-php@master
+        uses: shivammathur/setup-php@v2
         with:
           php-version: 7.4
           extensions: pdo_sqlite,pdo_mysql,pdo_pgsql,gd,zip
