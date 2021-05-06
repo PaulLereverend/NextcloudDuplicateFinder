@@ -28,7 +28,6 @@ jobs:
         ports:
           - 5432:5432 # Maps tcp port 5432 on service container to the host
     strategy:
-      max-parallel: 1
       matrix:
         php-versions: ['7.3', '7.4']
         nextcloud: ['stable20', 'stable21']
