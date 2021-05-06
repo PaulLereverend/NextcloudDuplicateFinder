@@ -1,6 +1,6 @@
 load helper.sh
 
-rm -rf data/{admin,tuser,tuser2}/files/tests/* data/tuser/files/tests2/*
+rm -rf data/{admin,tuser}/files/tests/* data/tuser/files/tests2/*
 ./occ app:disable duplicatefinder
 # Select a password that is random enough
 
