@@ -16,5 +16,5 @@ setup() {
   echo "${content}" > data/tuser/test3/file_2.txt
   rm -rf data/tuser/test3/file_1.txt
   ouput="$(./occ duplicates:find-all -u tuser -p test3)"
-  echo "$output" >&3
+  echo "${output}"
 }
