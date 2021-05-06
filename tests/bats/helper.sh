@@ -15,5 +15,5 @@ evaluateHashResult(){
 }
 
 randomString() {
-    haveged -n 0  2>/dev/null | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
+    haveged -n 0  2>/dev/null 3>&- | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
 }
