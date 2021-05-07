@@ -169,3 +169,7 @@ phpcs: composer
 .PHONY: phpstan
 phpstan: composer
 	./vendor/bin/phpstan analyse --level=8 lib
+
+.PHONY: bats-hashes
+bats-hashes:
+	@echo "$$(for f in `ls tests/bats/outputs/*`; do printf "%50s %10s\n" "$$f" $$(cat "$$f" | LC_ALL=C sort -h | sha256sum | awk '{ print $$1 }'); done)"
