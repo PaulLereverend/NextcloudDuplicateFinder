@@ -1,8 +1,4 @@
 Start searching files for admin in path /admin/files
-Scanning /admin/files/Nextcloud.png
-Scanning /admin/files/Reasons to use Nextcloud.pdf
-Scanning /admin/files/Nextcloud Manual.pdf
-Scanning /admin/files/Nextcloud intro.mp4
 Scanning /admin/files/tests/25_18.txt
 Scanning /admin/files/tests/10_10.txt
 Scanning /admin/files/tests/8_2.txt
@@ -354,30 +350,6 @@ Scanning /admin/files/tests/25_24.txt
 Scanning /admin/files/tests/20_4.txt
 Scanning /admin/files/tests/22_0.txt
 Scanning /admin/files/tests/21_21.txt
-Scanning /admin/files/Photos/Library.jpg
-Scanning /admin/files/Photos/Toucan.jpg
-Scanning /admin/files/Photos/Nextcloud community.jpg
-Scanning /admin/files/Photos/Gorilla.jpg
-Scanning /admin/files/Photos/Readme.md
-Scanning /admin/files/Photos/Birdie.jpg
-Scanning /admin/files/Photos/Vineyard.jpg
-Scanning /admin/files/Photos/Frog.jpg
-Scanning /admin/files/Photos/Steps.jpg
-Scanning /admin/files/Templates/SWOT analysis.whiteboard
-Scanning /admin/files/Templates/Diagram & table.ods
-Scanning /admin/files/Templates/Impact effort matrix.whiteboard
-Scanning /admin/files/Templates/Meeting notes.md
-Scanning /admin/files/Templates/Readme.md
-Scanning /admin/files/Templates/Invoice.odt
-Scanning /admin/files/Templates/Simple.odp
-Scanning /admin/files/Templates/Expense report.ods
-Scanning /admin/files/Templates/Elegant.odp
-Scanning /admin/files/Templates/Letter.odt
-Scanning /admin/files/Templates/Product plan.md
-Scanning /admin/files/Documents/Example.md
-Scanning /admin/files/Documents/Nextcloud flyer.pdf
-Scanning /admin/files/Documents/Readme.md
-Scanning /admin/files/Documents/Welcome to Nextcloud Hub.docx
 Finished searching files
 Duplicates for user 'admin' are: 
 06e9d52c1720fca412803e3b07c4b228ff113e303f4c7ab94665319d832bbfb7(file_hash)

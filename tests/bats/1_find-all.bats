@@ -10,7 +10,7 @@ setup() {
   run ./occ -v duplicates:find-all -u admin
   [ "$status" -eq 0 ]
 
-  expectedHash="8914529f06c0687faac1cd7eed09b9f7919fea8b467b39220a1eadc5173ee7dd"
+  expectedHash="6d83990f6de7db72e63a68468e80bc7f091452d5be33ff677327409d5f8143b9"
   evaluateHashResult "${expectedHash}" 25 "${output}"
 }
 
@@ -35,7 +35,7 @@ setup() {
   run ./occ -v duplicates:find-all
   [ "$status" -eq 0 ]
 
-  expectedHash="0360dfeab8f35942f372824390b4222f7deac7a1f270b51682c57fdef8bb0657"
+  expectedHash="7f95571afc0fd23defbe4f15ec123115d986a9b2cdcc745caf45bba606a5f71f"
   evaluateHashResult "${expectedHash}" 51 "${output}"
 }
 
