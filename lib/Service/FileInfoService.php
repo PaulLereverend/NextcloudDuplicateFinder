@@ -238,14 +238,35 @@ class FileInfoService
         }
     }
 
-    private function getNode(FileInfo $fileInfo): Node
+    /*
+     *  The Node specified by the FileInfo isn't always in the cache.
+     *  If so, a get on the root folder will raise an |OCP\Files\NotFoundException
+     *  To avoid this, it is first tried to get the Node by the user folder. Because
+     *  the user folder supports lazy loading, it works even if the file isn't in the cache
+     *  If the owner is unknown, it is at least tried to get the Node from the root folder
+     */
+    public function getNode(FileInfo $fileInfo): Node
     {
         if ($fileInfo->getOwner()) {
             $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
-            $relativePath = substr($fileInfo->getPath(), strlen($userFolder->getPath()));
+            $relativePath = $this->getPathRelativeToUserFolder($fileInfo);
             return $userFolder->get($relativePath);
         } else {
             return $this->rootFolder->get($fileInfo->getPath());
+        }
+    }
+
+    /*
+     *  This method should only be called if the owner of the Node has already stored
+     *  in the owner property
+     */
+    public function getPathRelativeToUserFolder(FileInfo $fileInfo) : string
+    {
+        if ($fileInfo->getOwner()) {
+            $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
+            return substr($fileInfo->getPath(), strlen($userFolder->getPath()));
+        } else {
+            throw new \Exception("The owner of ".$fileInfo->getPath()." is not set");
         }
     }
 }

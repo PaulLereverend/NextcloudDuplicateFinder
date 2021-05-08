@@ -2,7 +2,6 @@
 namespace OCA\DuplicateFinder\Controller;
 
 use OCP\IRequest;
-use OCP\Files\IRootFolder;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
@@ -19,22 +18,18 @@ class PageController extends Controller
     private $fileDuplicateService;
     /** @var FileInfoService */
     private $fileInfoService;
-    /** @var IRootFolder */
-    private $rootFolder;
 
     public function __construct(
         string $AppName,
         IRequest $request,
         ?string $UserId,
         FileDuplicateService $fileDuplicateService,
-        FileInfoService $fileInfoService,
-        IRootFolder $rootFolder
+        FileInfoService $fileInfoService
     ) {
         parent::__construct($AppName, $request);
         $this->userId = $UserId;
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
-        $this->rootFolder = $rootFolder;
     }
 
     /**
@@ -64,15 +59,14 @@ class PageController extends Controller
         foreach ($duplicates as $duplicate) {
             foreach ($duplicate->getFiles() as $fileInfoId => $owner) {
                 $fileInfo = $this->fileInfoService->findById($fileInfoId);
-                $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
-                $node = $this->rootFolder->get($fileInfo->getPath());
+                $node = $this->fileInfoService->getNode($fileInfo);
                 $response[] = [
+                    'path' => $this->fileInfoService->getPathRelativeToUserFolder($fileInfo),
                     'hash' => $fileInfo->getFileHash(),
-                    'path' => substr($fileInfo->getPath(), strlen($userFolder->getPath())),
                     'infos' => [
                         "id" => $node->getId(),
-                        "size" => $node->getSize(),
-                        "mimetype" => $node->getMimetype()
+                        "size" => $fileInfo->getSize(),
+                        "mimetype" => $fileInfo->getMimetype()
                     ]
                 ];
             }

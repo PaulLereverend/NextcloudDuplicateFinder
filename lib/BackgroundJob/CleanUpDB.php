@@ -1,30 +1,29 @@
 <?php
 namespace OCA\DuplicateFinder\BackgroundJob;
 
-use OCP\Files\IRootFolder;
+use OCP\ILogger;
 use OCP\Files\NotFoundException;
 use OCA\DuplicateFinder\Service\FileInfoService;
 
 class CleanUpDB extends \OC\BackgroundJob\TimedJob
 {
-    /** @var IRootFolder */
-    private $rootFolder;
     /** @var FileInfoService*/
     private $fileInfoService;
-
+    /** @var ILogger */
+    private $logger;
 
     /**
-     * @param IRootFolder $rootFolder
      * @param FileInfoService $fileInfoService
+     * @param ILogger $logger
      */
     public function __construct(
-        IRootFolder $rootFolder,
-        FileInfoService $fileInfoService
+        FileInfoService $fileInfoService,
+        ILogger $logger
     ) {
         // Run every 5 days a full scan
         $this->setInterval(60*60*24*2);
-        $this->rootFolder = $rootFolder;
         $this->fileInfoService = $fileInfoService;
+        $this->logger = $logger;
     }
 
     /**
@@ -39,8 +38,9 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob
         $fileInfos = $this->fileInfoService->findAll();
         foreach ($fileInfos as $fileInfo) {
             try {
-                $this->rootFolder->get($fileInfo->getPath());
+                $this->fileInfoService->getNode($fileInfo);
             } catch (NotFoundException $e) {
+                $this->logger->info("FileInfo ".$fileInfo->getPath(). " will be deleted");
                 $this->fileInfoService->delete($fileInfo);
             }
         }
