@@ -47,6 +47,7 @@ appstore_build_directory=$(CURDIR)/build/artifacts/appstore
 appstore_package_name=$(appstore_build_directory)/$(app_name)
 npm=$(shell which npm 2> /dev/null)
 composer=$(shell which composer 2> /dev/null)
+composer_home=$(build_tools_directory)/.composer
 
 all: build
 
@@ -71,13 +72,15 @@ endif
 composer:
 ifeq (, $(composer))
 	@echo "No composer command available, downloading a copy from the web"
-	mkdir -p $(build_tools_directory)
-	curl -sS https://getcomposer.org/installer | php
-	mv composer.phar $(build_tools_directory)
-	php $(build_tools_directory)/composer.phar install --prefer-dist
+	export COMPOSER_HOME=$(composer_home); \
+	mkdir -p $(composer_home); \
+	curl -sS https://getcomposer.org/installer | php -- --install-dir=$(build_tools_directory) ; \
+	$(build_tools_directory)/composer.phar config --global home ; \
+	php $(build_tools_directory)/composer.phar install --prefer-dist ; \
 	php $(build_tools_directory)/composer.phar update --prefer-dist
 else
-	composer install --prefer-dist
+	export COMPOSER_HOME=$(composer_home); \
+	composer install --prefer-dist; \
 	composer update --prefer-dist
 endif
 
@@ -152,6 +155,21 @@ appstore:
 	-f $(appstore_package_name).tar.gz ../$(app_name) \
 
 .PHONY: test
-test: composer
+test: phpunit phpcs phpstan
+
+.PHONY: phpunit
+phpunit: composer
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+
+.PHONY: phpcs
+phpcs: composer
+	./vendor/bin/phpcs --standard=PSR2 lib
+
+.PHONY: phpstan
+phpstan: composer
+	./vendor/bin/phpstan analyse --level=8 lib
+
+.PHONY: bats-hashes
+bats-hashes:
+	@echo "$$(for f in `ls tests/bats/outputs/*`; do printf "%50s %10s\n" "$$f" $$(cat "$$f" | LC_ALL=C sort -h | sha256sum | awk '{ print $$1 }'); done)"

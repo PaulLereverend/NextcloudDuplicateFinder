@@ -1,3 +1,8 @@
+## 0.0.7
+
+- Added DB back-end to store detected duplicates.
+- Added event based duplicate detection.
+
 ## 0.0.6
 
 * Fix regression : only admins could get their duplicates file
