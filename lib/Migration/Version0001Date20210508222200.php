@@ -3,7 +3,9 @@ namespace OCA\DuplicateFinder\Migration;
 
 use Closure;
 use Doctrine\DBAL\Types\Type;
-use OCP\DB\Types;
+use Doctrine\DBAL\Types\Types;
+// This is OCP\DB\Types is support on NC 21 but not on NC 20
+//use OCP\DB\Types;
 use OCP\DB\ISchemaWrapper;
 use OCP\Migration\SimpleMigrationStep;
 use OCP\Migration\IOutput;
