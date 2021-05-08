@@ -7,6 +7,7 @@ You can either use the command or the cron job to do a full scan.
 Each time a new file is uploaded or a file is changed the app automatically checks if a duplicate of this file exists.
 
 ## Usage
+
 Beginning with version 0.0.7 the detection of duplicates has changed. If you're updating from an older version you don't have to do anything special.
 There are there are three possible ways duplicates can be detected.
 1. Event-based-detection
@@ -41,3 +42,7 @@ If you increase the verbosity of the occ command, the shows a little bit more wh
 ## Preview
 
 ![Preview of the GUI](https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png)
+
+## Special thanks
+
+Big thanks to @chrros95
