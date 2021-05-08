@@ -2,7 +2,3 @@
 .DS_Store
 
 build/
-node_modules/
-vendor/
-.phpunit.result.cache
-composer.lock

@@ -1,8 +1,0 @@
-
-parameters:
-  inferPrivatePropertyTypeFromConstructor: true
-  treatPhpDocTypesAsCertain: false
-  bootstrapFiles:
-    - %currentWorkingDirectory%/../../lib/base.php
-  ignoreErrors:
-    - '#Call to an undefined method OCA\\DuplicateFinder\\Db\\((?!EEntity).)+::(s|g)et[A-Z].+\(\)#'

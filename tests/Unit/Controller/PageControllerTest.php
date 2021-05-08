@@ -1,24 +1,23 @@
 <?php
 
-namespace OCA\DuplicateFinder\Tests\Unit\Controller;
+namespace OCA\DuplicateFinderBis\Tests\Unit\Controller;
 
-use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_TestCase;
 
 use OCP\AppFramework\Http\TemplateResponse;
 
-use OCP\IRequest;
-use OCA\DuplicateFinder\Controller\PageController;
-use OCA\DuplicateFinder\Service\FileDuplicateService;
-use OCA\DuplicateFinder\Service\FileInfoService;
+use OCA\DuplicateFinderBis\Controller\PageController;
 
-class PageControllerTest extends TestCase {
+
+class PageControllerTest extends PHPUnit_Framework_TestCase {
 	private $controller;
 	private $userId = 'john';
 
-	public function setUp() : void {
-		$this->controller = new PageController('duplicatefinder',
-			$this->createMock(IRequest::class), $this->userId,
-			$this->createMock(FileDuplicateService::class), $this->createMock(FileInfoService::class)
+	public function setUp() {
+		$request = $this->getMockBuilder('OCP\IRequest')->getMock();
+
+		$this->controller = new PageController(
+			'duplicatefinderbis', $request, $this->userId
 		);
 	}
 

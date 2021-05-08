@@ -1,19 +1,11 @@
 (function() {
-  var baseUrl = OC.generateUrl('/apps/duplicatefinder/api');
+  var baseUrl = OC.generateUrl('/apps/duplicatefinder');
   var element = document.getElementById('container');
   var loader = document.getElementById('loader-container');
-  var loaderBtn = document.getElementById('loader-btn');
   var title = document.getElementById('title');
-  var groupedResult = {
-    groupedItems: [],
-    totalSize: 0,
-    itemCount: 0,
-    uniqueTotalSize: 0
-  };
-  var limit = 20;
-  var offset = 0;
+  var groupedResult = {};
 
-  function render(items) {
+  function render() {
     loader.style.display = 'none';
 
     if (groupedResult.itemCount == 0) {
@@ -21,9 +13,10 @@
     } else {
       updateTitleWithStats();
 
-      items.forEach( (duplicate) => {
-        var groupDOM = getGroupElement(duplicate);
-        element.appendChild(groupDOM);
+      groupedResult.hashes.forEach(function(hash) {
+        var groupItems = groupedResult.groupedItems[hash];
+        var gruopDOM = getGroupElement(groupItems);
+        element.appendChild(gruopDOM);
       });
     }
   }
@@ -39,85 +32,76 @@
   }
 
   function isImage(item) {
-    return item.mimetype.substr(0, item.mimetype.indexOf('/')) == 'image';
+    return item.infos.mimetype.substr(0, item.infos.mimetype.indexOf('/')) == 'image';
   }
 
   function isVideo(item) {
-    return item.mimetype.substr(0, item.mimetype.indexOf('/')) == 'video';
+    return item.infos.mimetype.substr(0, item.infos.mimetype.indexOf('/')) == 'video';
   }
 
   function getPreviewImage(item) {
     if (isImage(item) || isVideo(item)) {
       return OC.generateUrl('/core/preview.png?') + $.param({
-        file: normalizeItemPath(item.path),
-        fileId: item.nodeId,
+        file: item.path,
+        fileId: item.infos.id,
         x: 500,
         y: 500,
         forceIcon: 0
       });
     }
 
-    return OC.MimeType.getIconUrl(item.mimetype);
+    return OC.MimeType.getIconUrl(item.infos.mimetype);
   }
 
-  function normalizeItemPath(path){
-    return path.match(/\/([^\/]*)\/files(\/.*)/)[2];
-  }
-
-  function deleteItem(item, e) {
+  function deleteItem(item) {
     let fileClient = OC.Files.getClient();
-    var iconEl;
-    if(e.target.className === "icon icon-delete"){
-      iconEl = e.target;
-    }else{
-      iconEl = e.target.getElementsByClassName('icon-delete')[0];
-    }
+    var itemEl = document.getElementById(item.infos.id);
+    var iconEl = itemEl.getElementsByClassName('icon-delete')[0];
+
     iconEl.classList.replace('icon-delete', 'icon-loading');
 
-    fileClient.remove(normalizeItemPath(item.path)).then(function() {
-      groupedResult.groupedItems.forEach((grp, i) => {
-        grp.files.forEach((file, j) => {
-          if(file.path === item.path){
-            if(document.getElementById(grp.id+"-file-"+file.id) !== null){
-              document.getElementById(grp.id+"-file-"+file.id).remove();
-            }
-            groupedResult.totalSize -= item.size;
-            groupedResult.itemCount -= 1;
-            grp.files.splice(j, 1);
-          }
-        });
-        if(grp.files.length <= 1){
-          if(document.getElementById("grp-"+grp.id) !== null){
-            document.getElementById("grp-"+grp.id).remove();
-          }
-          groupedResult.totalSize -= item.size;
-          groupedResult.itemCount -= 1;
-          groupedResult.uniqueTotalSize -= item.size;
-          groupedResult.groupedItems.splice(i, 1);
-        }
+    fileClient.remove(item.path).then(function() {
+      var itemGroup = groupedResult.groupedItems[item.hash];
+      var isLastItemInGroup = itemGroup.length === 1;
+      var itemIndex = itemGroup.findIndex(function(i) {
+        return i.infos.id === item.infos.id;
       });
+      itemGroup.splice(itemIndex, 1);
+
+      // If it was the last item, remove the whole group container.
+      if (isLastItemInGroup) {
+        itemEl.parentElement.remove();
+      }
+      else {
+        itemEl.remove();
+      }
+
+      // Update the stats
+      groupedResult.totalSize -= item.infos.size;
+      groupedResult.itemCount -= 1;
+      if (isLastItemInGroup) {
+        groupedResult.uniqueTotalSize -= item.infos.size;
+      }
 
       updateTitleWithStats();
     }).fail(function() {
       iconEl.classList.replace('icon-loading', 'icon-delete');
-      OC.dialogs.alert('Error deleting the file: ' + normalizeItemPath(item.path), 'Error')
+      OC.dialogs.alert('Error deleting the file: ' + item.path, 'Error')
     });
   }
 
 
-  function getGroupElement(group) {
-    let groupItems = group.files;
+  function getGroupElement(groupItems) {
     let groupContainer = document.createElement("div");
-    groupContainer.setAttribute('id', "grp-"+group.id);
     groupContainer.setAttribute('class', 'duplicates');
 
     var sizeDiv = document.createElement("div");
     sizeDiv.setAttribute('class', 'filesize');
-    sizeDiv.innerHTML = OC.Util.humanFileSize(groupItems[0].size);
+    sizeDiv.innerHTML = OC.Util.humanFileSize(groupItems[0].infos.size);
     groupContainer.appendChild(sizeDiv);
 
     groupItems.forEach(function(item) {
-      var itemDiv = getItemElement(item, group.id);
+      var itemDiv = getItemElement(item);
       groupContainer.appendChild(itemDiv);
     });
 
@@ -125,18 +109,18 @@
   }
 
 
-  function getItemElement(item, grpId) {
+  function getItemElement(item) {
     // Item wrapper container
     var itemDiv = document.createElement("div");
-    itemDiv.setAttribute('id', grpId+"-file-"+item.id);
+    itemDiv.setAttribute('id', item.infos.id);
     itemDiv.setAttribute('class', 'element')
 
     // Delete button
     var deleteButton = document.createElement("button");
     deleteButton.innerHTML = '<span class="icon icon-delete"></span>';
     deleteButton.setAttribute('class', 'button-delete');
-    deleteButton.addEventListener("click", function(e) {
-      deleteItem(item, e);
+    deleteButton.addEventListener("click", function() {
+      deleteItem(item);
     });
     itemDiv.appendChild(deleteButton);
 
@@ -152,23 +136,23 @@
     // Item path
     var itemPath = document.createElement("h1");
     itemPath.setAttribute('class', 'path');
-    itemPath.innerHTML = normalizeItemPath(item.path);
+    itemPath.innerHTML = item.path;
     labelContainer.appendChild(itemPath);
 
     var actions = [
       {
         'icon': 'icon-file',
         'url': function(item) {
-          let dir = OC.dirname(normalizeItemPath(item.path));
+          let dir = OC.dirname(item.path);
 
-          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + item.nodeId);
+          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + item.infos.id);
         },
         'description': 'Show file'
       },
       {
         'icon': 'icon-details',
         'url': function(item) {
-          return OC.generateUrl('/f/' + item.nodeId);
+          return OC.generateUrl('/f/' + item.infos.id);
         },
         'description': 'Show details'
       }
@@ -194,7 +178,7 @@
     // Item hash
     var hashContainer = document.createElement("h1");
     hashContainer.setAttribute('class', 'hash');
-    hashContainer.innerHTML = item.fileHash;
+    hashContainer.innerHTML = item.hash;
     labelContainer.appendChild(hashContainer);
 
     itemDiv.appendChild(labelContainer);
@@ -202,48 +186,45 @@
     return itemDiv;
   }
 
-  function loadFiles(){
-    loader.style.display = 'inherit';
-      loaderBtn.style.display = 'none';
-    $.getJSON(baseUrl + '/v1/Duplicates?offset='+offset)
+  function groupByHashWithStats(items) {
+    var hashes = [];
+    var groupedItems = {};
+    var totalSize = 0;
+    var uniqueTotalSize = 0;
+
+    items.forEach(function(item) {
+      var key = item.hash;
+
+      totalSize += item.infos.size;
+
+      if (!groupedItems[key]) {
+        groupedItems[key] = [];
+        hashes.push(key);
+        uniqueTotalSize += item.infos.size;
+      }
+
+      groupedItems[key].push(item);
+    });
+
+    return {
+      hashes: hashes,
+      groupedItems: groupedItems,
+      totalSize: totalSize,
+      itemCount: items.length,
+      uniqueTotalSize: uniqueTotalSize,
+    };
+  };
+
+  $.getJSON(baseUrl + '/files')
     .then(function(result) {
       var items = result;
 
-
-      if(items.data.length > 0){
-        offset += items.data.length;
-        if(offset % limit === 0 ){
-          loaderBtn.style.display = 'inherit';
-        }
-      }else{
-        loaderBtn.removeEventListener("click", loadFiles);
-      }
-
-      items.data.forEach((duplicate, i) => {
-        duplicate.files = Object.values(duplicate.files);
-        if(duplicate.files.length>0){
-          groupedResult.totalSize += duplicate.files[0].size*duplicate.files.length;
-          groupedResult.itemCount += duplicate.files.length;
-          groupedResult.uniqueTotalSize += duplicate.files[0].size;
-        }else {
-          items.data.splice(i, 1);
-        }
-      });
       // Sort desending by size
-      items.data.sort((a, b) => {
-        if(Array.isArray(b.files) && Array.isArray(a.files)
-          && b.files.length > 0 && a.files.length > 0){
-          return Math.abs((b.files[0].size*b.files.length) - (a.files[0].size*a.files.length));
-        } else {
-          return -1;
-        }
-      });
-      groupedResult.groupedItems = groupedResult.groupedItems.concat(items.data);
+      items.sort((a, b) => b.infos.size - a.infos.size);
 
-      render(items.data);
+      // Group items with same hash.
+      groupedResult = groupByHashWithStats(items);
+
+      render();
     });
-  }
-
-  loadFiles();
-  loaderBtn.addEventListener("click", loadFiles);
 })();

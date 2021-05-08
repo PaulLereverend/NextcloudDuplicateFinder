@@ -1,9 +1,9 @@
 <?php
 
-namespace OCA\DuplicateFinder\Tests\Integration\Controller;
+namespace OCA\DuplicateFinderBis\Tests\Integration\Controller;
 
 use OCP\AppFramework\App;
-use PHPUnit\Framework\TestCase;
+use Test\TestCase;
 
 
 /**
@@ -15,15 +15,15 @@ class AppTest extends TestCase {
 
     private $container;
 
-    public function setUp() : void {
+    public function setUp() {
         parent::setUp();
-        $app = new App('duplicatefinder');
+        $app = new App('duplicatefinderbis');
         $this->container = $app->getContainer();
     }
 
     public function testAppInstalled() {
         $appManager = $this->container->query('OCP\App\IAppManager');
-        $this->assertTrue($appManager->isInstalled('duplicatefinder'));
+        $this->assertTrue($appManager->isInstalled('duplicatefinderbis'));
     }
 
 }

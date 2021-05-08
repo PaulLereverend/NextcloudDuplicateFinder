@@ -2,21 +2,15 @@
 namespace OCA\DuplicateFinder\Command;
 
 use OC\Core\Command\Base;
-use OC\Files\Search\SearchQuery;
-use OC\Files\Search\SearchComparison;
-use OC\Files\Search\SearchOrder;
 use OCP\Encryption\IManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
-use OCP\Files\Search\ISearchComparison;
-use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IConfig;
-use OCP\IDBConnection;
 use OCP\IPreview;
 use OCP\IUser;
 use OCP\IUserManager;
-use OCP\ILogger;
 use OCP\AppFramework\Http\DataResponse;
 use OCA\Files\Helper;
 use OC\Files\Filesystem;
@@ -25,146 +19,126 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use OCA\DuplicateFinder\Service\FileInfoService;
-use OCA\DuplicateFinder\Service\FileDuplicateService;
-use OCA\DuplicateFinder\Utils\CMDUtils;
 
-class FindDuplicates extends Base
-{
+class FindDuplicates extends Base {
 
-    /** @var IUserManager */
-    protected $userManager;
+	/** @var IUserManager */
+	protected $userManager;
 
-    /** @var OutputInterface */
-    protected $output;
+	/** @var IRootFolder */
+	protected $rootFolder;
 
-    /** @var IManager */
-    protected $encryptionManager;
+	/** @var OutputInterface */
+	protected $output;
 
-    /** @var IDBConnection */
-    protected $connection;
+	/** @var IManager */
+	protected $encryptionManager;
 
-    /** @var FileInfoService */
-    protected $fileInfoService;
+	public function __construct(IRootFolder $rootFolder,
+								IUserManager $userManager,
+								IManager $encryptionManager) {
+		parent::__construct();
+		$this->userManager = $userManager;
+		$this->rootFolder = $rootFolder;
+		$this->encryptionManager = $encryptionManager;
+	}
 
-    /** @var FileDuplicateService */
-    protected $fileDuplicateService;
-    /** @var array<string>|null */
-    protected $inputPath;
-    /** @var ILogger */
-    private $logger;
+	protected function configure() {
+		$this
+			->setName('duplicates:find-all')
+			->setDescription('Find all duplicates files')
+			->addOption('recursive', 'r', InputOption::VALUE_OPTIONAL, 'scan folder recursively')
+			->addOption('user','u', InputOption::VALUE_OPTIONAL, 'scan files of the specified user')
+			->addOption('path','p', InputOption::VALUE_OPTIONAL, 'limit scan to this path, eg. --path="/alice/files/Photos"');
 
-    public function __construct(
-        IUserManager $userManager,
-        IManager $encryptionManager,
-        IDBConnection $connection,
-        FileInfoService $fileInfoService,
-        FileDuplicateService $fileDuplicateService,
-        ILogger $logger
-    ) {
-        parent::__construct();
-        $this->userManager = $userManager;
-        $this->encryptionManager = $encryptionManager;
-        $this->connection = $connection;
-        $this->fileInfoService = $fileInfoService;
-        $this->fileDuplicateService = $fileDuplicateService;
-        $this->logger = $logger;
-    }
+		parent::configure();
+	}
+	protected function execute(InputInterface $input, OutputInterface $output): int {
+		$this->output = $output;
+		if ($this->encryptionManager->isEnabled()) {
+			$this->output->writeln('Encryption is enabled. Aborted.');
+			return 1;
+		}
+		$inputPath = $input->getOption('path');
+		$user = $input->getOption('user');
+		if($user){
+			$files = $this->readFiles($user, $inputPath);
+			$this->checkDuplicates($files, $user);
+		}else{
+			$this->userManager->callForSeenUsers(function (IUser $user) {
+				$files = $this->readFiles($user->getUID(), $inputPath);
+				$this->checkDuplicates($files, $user->getUID());
+			});
+		}
 
-    protected function configure(): void
-    {
-        $this
-            ->setName('duplicates:find-all')
-            ->setDescription('Find all duplicates files')
-            ->addOption(
-                'user',
-                'u',
-                InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-                'scan files of the specified user'
-            )
-            ->addOption(
-                'path',
-                'p',
-                InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-                'limit scan to this path, eg. --path="./Photos"'
-            );
+		return 0;
+	}
+	private function checkDuplicates($files, $username){
+		$this->output->writeln("Start scan... user: " . $username);
 
-        parent::configure();
-    }
+		$results = \OCA\Files\Helper::formatFileInfos($files);
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $this->output = $output;
-        if ($this->encryptionManager->isEnabled()) {
-            $this->output->writeln('Encryption is enabled. Aborted.');
-            return 1;
-        }
+		$sizeArr = array();
+        foreach ($results as $key => $result) {
+			$path = $this->getRelativePath($files[$key]->getPath()). $result['name'];
+            $sizeArr[$path] = $result['size'];
+		}
+		unset($result);
 
-        $inputPath = $input->getOption('path');
-        if (is_bool($inputPath)) {
-            $this->output->writeln('<error>The given path is invalid.<error>');
-        } elseif (is_string($inputPath)) {
-            $this->inputPath = [$inputPath];
-        } elseif (!empty($inputPath)) {
-            $this->inputPath = $inputPath;
-        }
-        $user = $input->getOption('user');
-
-        try {
-            if ($user) {
-                if ($user === true) {
-                    $this->output->writeln('User parameter has an invalid value.');
-                    return 1;
-                } elseif (is_string($user)) {
-                    $users = [$user];
-                } else {
-                    $users = $user;
-                }
-                foreach ($users as $user) {
-                    if (!$this->userManager->userExists($user)) {
-                        $this->output->writeln('User '.$user.' is unkown.');
-                        return 1;
-                    }
-                    $this->findDuplicates($user);
-                }
-            } else {
-                $users =  $this->userManager->callForAllUsers(function (IUser $user): void {
-                    $this->findDuplicates($user->getUID());
-                });
+        $hashArr = array();
+        foreach(array_intersect($sizeArr, array_diff_assoc($sizeArr, array_unique($sizeArr))) as $filePath=>$size){
+            if($info = Filesystem::getLocalFile($filePath)) {
+                $fileHash = hash_file('md5', $info);
+				if($fileHash){
+					$hashArr[$filePath] = $fileHash;
+				}
             }
-        } catch (NotFoundException $e) {
-            $this->logger->logException($e, ["app" => "duplicatefinder"]);
-            $this->output->writeln('<error>The given path doesn\'t exists.<error>');
-        }
+		}
+		unset($sizeArr);
 
-        return 0;
-    }
+		$duplicatesHash = array_intersect($hashArr, array_diff_assoc($hashArr, array_unique($hashArr)));
+		unset($hashArr);
+        asort($duplicatesHash);
 
-    private function findDuplicates(string $user):void
-    {
-        if (is_null($this->inputPath)) {
-            $this->fileInfoService->scanFiles(
-                $user,
-                null,
-                function () {
-                    $this->abortIfInterrupted();
-                },
-                $this->output
-            );
-        } else {
-            foreach ($this->inputPath as $inputPath) {
-                $this->fileInfoService->scanFiles(
-                    $user,
-                    $inputPath,
-                    function () {
-                        $this->abortIfInterrupted();
-                    },
-                    $this->output
-                );
-            }
-        }
-        CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function () {
-            $this->abortIfInterrupted();
-        }, $user);
-    }
+
+		$previousHash = 0;
+		foreach($duplicatesHash as $filePath=>$fileHash) {
+			if($previousHash != $fileHash){
+				$this->output->writeln("\/----".$fileHash."---\/");
+			}
+			$this->output->writeln($filePath);
+			$previousHash = $fileHash;
+		}
+		if(count($duplicatesHash) == 0){
+			$this->output->writeln("No duplicate file");
+		}
+		$this->output->writeln("...end scan");
+	}
+	private function readFiles(string $user, $path){
+		if(!$path){
+			$path = '';
+		}
+		\OC_Util::tearDownFS();
+		if(!\OC_Util::setupFS($user)){
+			throw new Exception("Utilisateur inconnu", 1);
+		}
+		return $this->getFilesRecursive($path);
+	}
+
+	private function getFilesRecursive($path , & $results = []) {
+		$files = Filesystem::getDirectoryContent($path);
+		foreach($files as $file) {
+			if ($file->getType() === 'dir') {
+				$this->getFilesRecursive($path . '/' . $file->getName(), $results);
+			} else {
+				$results[] = $file;
+			}
+		}
+
+		return $results;
+	}
+	private function getRelativePath($path) {
+		$path = Filesystem::getView()->getRelativePath($path);
+		return substr($path, 0, strlen($path) - strlen(basename($path)));
+	}
 }
