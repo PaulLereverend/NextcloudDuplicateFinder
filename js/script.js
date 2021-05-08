@@ -238,7 +238,7 @@
           return -1;
         }
       });
-      groupedResult.groupedItems.concat(items.data);
+      groupedResult.groupedItems = groupedResult.groupedItems.concat(items.data);
 
       render(items.data);
     });
