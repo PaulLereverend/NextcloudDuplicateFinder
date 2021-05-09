@@ -113,14 +113,16 @@
 
     var sizeDiv = document.createElement("div");
     sizeDiv.setAttribute('class', 'filesize');
-    sizeDiv.innerHTML = OC.Util.humanFileSize(groupItems[0].size);
-    groupContainer.appendChild(sizeDiv);
+
 
     groupItems.forEach(function(item) {
       var itemDiv = getItemElement(item, group.id);
       groupContainer.appendChild(itemDiv);
+      if (item && item.size) {
+          sizeDiv.innerHTML = OC.Util.humanFileSize(item.size);
+      }
     });
-
+    groupContainer.appendChild(sizeDiv);
     return groupContainer;
   }
 
