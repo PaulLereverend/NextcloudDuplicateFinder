@@ -90,6 +90,7 @@ class FileDuplicateMapper extends EQBMapper
             );
             $duplicates[] = $this->findEntity($fQB);
         }
+        $qb->closeCursor();
         return $duplicates;
     }
 

@@ -63,6 +63,7 @@ abstract class EQBMapper extends QBMapper
                 $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType))
             );
             $qb = $qb->execute();
+
               $values = [];
             if (!is_int($qb)) {
                 foreach ($qb->fetchAll() as $row) {
@@ -71,6 +72,7 @@ abstract class EQBMapper extends QBMapper
                 $setter = 'set' . ucfirst($field);
                 $entity->$setter($values);
             }
+            $qb->closeCursor();
         }
         $entity->resetUpdatedRelationalFields();
         return $entity;
@@ -94,6 +96,7 @@ abstract class EQBMapper extends QBMapper
                 $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType))
             );
             $qb->execute();
+            $qb->closeCursor();
         }
     }
 
@@ -122,9 +125,9 @@ abstract class EQBMapper extends QBMapper
                         $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType)),
                         $qb->expr()->eq('rid', $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
                     );
-                    $qb->execute();
                 }
                 $qb->execute();
+                $qb->closeCursor();
             }
         }
     }
@@ -153,6 +156,7 @@ abstract class EQBMapper extends QBMapper
                 return count($qb->fetchAll());
             }
         }
+        $qb->closeCursor();
         return 0;
     }
 
@@ -160,9 +164,10 @@ abstract class EQBMapper extends QBMapper
     {
         $qb = $this->db->getQueryBuilder();
         if (is_null($table)) {
-            $qb->delete($this->getTableName())->execute();
+            $qb = $qb->delete($this->getTableName())->execute();
         } else {
-            $qb->delete($table)->execute();
+            $qb = $qb->delete($table)->execute();
         }
+        $qb->closeCursor();
     }
 }
