@@ -4,14 +4,17 @@ style('duplicatefinder', 'style');
 ?>
 
 <div id="app">
-	<!--<div id="app-navigation">
-		<?php //print_unescaped($this->inc('navigation/index')); ?>
-		<?php //print_unescaped($this->inc('settings/index')); ?>
-	</div> -->
-
 	<div id="app-content">
 		<div id="app-content-wrapper" style="display: block;">
-			<?php print_unescaped($this->inc('content/index')); ?>
+			<div id="container">
+				<h2 id="title"></h2>
+			</div>
+			<div id="load-more" style="margin-left: 2%;">
+				<button id="loader-btn" style="display: none;">Load more</button>
+				<div id="loader-container">
+					<div id="loader"></div>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
