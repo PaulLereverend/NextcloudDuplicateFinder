@@ -72,7 +72,9 @@ abstract class EQBMapper extends QBMapper
                 $setter = 'set' . ucfirst($field);
                 $entity->$setter($values);
             }
-            $qb->closeCursor();
+            if (!is_int($qb)) {
+                $qb->closeCursor();
+            }
         }
         $entity->resetUpdatedRelationalFields();
         return $entity;
@@ -95,8 +97,10 @@ abstract class EQBMapper extends QBMapper
             ->where(
                 $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType))
             );
-            $qb->execute();
-            $qb->closeCursor();
+            $qb = $qb->execute();
+            if (!is_int($qb)) {
+                $qb->closeCursor();
+            }
         }
     }
 
@@ -126,8 +130,10 @@ abstract class EQBMapper extends QBMapper
                         $qb->expr()->eq('rid', $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
                     );
                 }
-                $qb->execute();
-                $qb->closeCursor();
+                $qb = $qb->execute();
+                if (!is_int($qb)) {
+                    $qb->closeCursor();
+                }
             }
         }
     }
@@ -148,6 +154,7 @@ abstract class EQBMapper extends QBMapper
         );
         $qb = $qb->execute();
         if (!is_int($qb)) {
+            $qb->closeCursor();
             if (!$this->db->getDatabasePlatform() instanceof SqlitePlatform
               && !$this->db->getDatabasePlatform() instanceof PostgreSQL94Platform
             ) {
@@ -156,7 +163,6 @@ abstract class EQBMapper extends QBMapper
                 return count($qb->fetchAll());
             }
         }
-        $qb->closeCursor();
         return 0;
     }
 
@@ -168,6 +174,8 @@ abstract class EQBMapper extends QBMapper
         } else {
             $qb = $qb->delete($table)->execute();
         }
-        $qb->closeCursor();
+        if (!is_int($qb)) {
+            $qb->closeCursor();
+        }
     }
 }
