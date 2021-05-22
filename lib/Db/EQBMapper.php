@@ -154,14 +154,15 @@ abstract class EQBMapper extends QBMapper
         );
         $qb = $qb->execute();
         if (!is_int($qb)) {
-            $qb->closeCursor();
             if (!$this->db->getDatabasePlatform() instanceof SqlitePlatform
               && !$this->db->getDatabasePlatform() instanceof PostgreSQL94Platform
             ) {
-                return $qb->rowCount();
+                $count = $qb->rowCount();
             } else {
-                return count($qb->fetchAll());
+                $count = count($qb->fetchAll());
             }
+            $qb->closeCursor();
+            return $count;
         }
         return 0;
     }
