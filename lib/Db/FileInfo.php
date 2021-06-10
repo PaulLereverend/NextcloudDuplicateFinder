@@ -24,8 +24,8 @@ class FileInfo extends EEntity
     public function __construct(?string $path = null, ?string $owner = null)
     {
         $this->addInternalType('updatedAt', 'date');
-        $this->addInternalProperty("nodId");
-        $this->addType("size", "integer");
+        $this->addInternalProperty('nodId');
+        $this->addType('size', 'integer');
 
         if (!is_null($path)) {
             $this->setPath($path);

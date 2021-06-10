@@ -32,7 +32,7 @@ class FileInfoMapper extends EQBMapper
   /**
    * @return array<FileInfo>
    */
-    public function findByHash(string $hash, string $type = "file_hash"): array
+    public function findByHash(string $hash, string $type = 'file_hash'): array
     {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -43,14 +43,14 @@ class FileInfoMapper extends EQBMapper
         return $this->findEntities($qb);
     }
 
-    public function countByHash(string $hash, string $type = "file_hash"):int
+    public function countByHash(string $hash, string $type = 'file_hash'):int
     {
         return $this->countBy($type, $hash);
     }
 
     public function countBySize(int $size):int
     {
-        return $this->countBy("size", $size, IQueryBuilder::PARAM_INT);
+        return $this->countBy('size', $size, IQueryBuilder::PARAM_INT);
     }
 
     /**
@@ -62,10 +62,10 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq("size", $qb->createNamedParameter($size), IQueryBuilder::PARAM_INT)
+            $qb->expr()->eq('size', $qb->createNamedParameter($size), IQueryBuilder::PARAM_INT)
         );
         if ($onlyEmptyHash) {
-            $qb->andWhere($qb->expr()->isNull("file_hash"));
+            $qb->andWhere($qb->expr()->isNull('file_hash'));
         }
         return $this->findEntities($qb);
     }
@@ -76,7 +76,7 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq("id", $qb->createNamedParameter($id), IQueryBuilder::PARAM_INT)
+            $qb->expr()->eq('id', $qb->createNamedParameter($id), IQueryBuilder::PARAM_INT)
         );
         return $this->findEntity($qb);
     }

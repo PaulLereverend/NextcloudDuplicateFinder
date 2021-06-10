@@ -25,8 +25,8 @@ class Version0002Date202105271907000 extends SimpleMigrationStep
         $schema = $schemaClosure();
         if ($schema->hasTable('duplicatefinder_finfo')) {
             $table = $schema->getTable('duplicatefinder_finfo');
-            if ($table->hasColumn("size")) {
-                $pathColumn = $table->getColumn("size");
+            if ($table->hasColumn('size')) {
+                $pathColumn = $table->getColumn('size');
                 $pathColumn->setType(Type::getType(Types::BIGINT));
             }
             return $schema;

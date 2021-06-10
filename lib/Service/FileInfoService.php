@@ -94,7 +94,7 @@ class FileInfoService
     /**
      * @return array<FileInfo>
      */
-    public function findByHash(string $hash, string $type = "file_hash"):array
+    public function findByHash(string $hash, string $type = 'file_hash'):array
     {
         return $this->mapper->findByHash($hash, $type);
     }
@@ -107,7 +107,7 @@ class FileInfoService
         return $this->mapper->findBySize($size, $onlyEmptyHash);
     }
 
-    public function countByHash(string $hash, string $type = "file_hash"):int
+    public function countByHash(string $hash, string $type = 'file_hash'):int
     {
         return $this->mapper->countByHash($hash, $type);
     }
@@ -162,8 +162,8 @@ class FileInfoService
             $fileInfo->setOwner($file->getOwner()->getUID());
         } catch (\Throwable $e) {
             //Even though  this should not happen - the result of getOwner can be null
-            $this->logger->error("There is a problem with the owner of ".$fileInfo->getPath());
-            $this->logger->logException($e, ["app" => "duplicatefinder"]);
+            $this->logger->error('There is a problem with the owner of '.$fileInfo->getPath());
+            $this->logger->logException($e, ['app' => 'duplicatefinder']);
         }
         return $fileInfo;
     }
@@ -174,11 +174,11 @@ class FileInfoService
         $file = $this->getNode($fileInfo);
         if ($file->getType() === \OCP\Files\FileInfo::TYPE_FILE
           && ( empty($oldHash)
-            || $file->getMtime() >
-              $fileInfo->getUpdatedAt()->getTimestamp()
-            || $file->getUploadTime() >
-              $fileInfo->getUpdatedAt()->getTimestamp())) {
-            $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
+        || $file->getMtime() >
+          $fileInfo->getUpdatedAt()->getTimestamp()
+        || $file->getUploadTime() >
+          $fileInfo->getUpdatedAt()->getTimestamp())) {
+            $fileInfo->setFileHash($file->getStorage()->hash('sha256', $file->getInternalPath()));
             $fileInfo->setUpdatedAt(new \DateTime());
             $this->update($fileInfo);
             $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
@@ -210,7 +210,7 @@ class FileInfoService
         $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
         $scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) use ($abortIfInterrupted, $output) {
             if (!is_null($output)) {
-                $output->writeln("Scanning ".$path, OutputInterface::VERBOSITY_VERBOSE);
+                $output->writeln('Scanning '.$path, OutputInterface::VERBOSITY_VERBOSE);
             }
             $fileInfo = $this->save($path);
             if ($abortIfInterrupted) {
@@ -223,15 +223,15 @@ class FileInfoService
             }
         });
         if ($output) {
-            $output->writeln('Start searching files for '.$user." in path ".$scanPath);
+            $output->writeln('Start searching files for '.$user.' in path '.$scanPath);
         }
 
         try {
             $scanner->scan($scanPath, true);
         } catch (NotFoundException $e) {
-            $this->logger->logException($e, ["app" => "duplicatefinder"]);
+            $this->logger->logException($e, ['app' => 'duplicatefinder']);
             if ($output) {
-                $output->writeln("<error>The given path doesn't exists.</error>");
+                $output->writeln('<error>The given path doesn\'t exists.</error>');
             }
         }
         if ($output) {
@@ -241,9 +241,9 @@ class FileInfoService
 
     /*
      *  The Node specified by the FileInfo isn't always in the cache.
-     *  If so, a get on the root folder will raise an |OCP\Files\NotFoundException
-     *  To avoid this, it is first tried to get the Node by the user folder. Because
-     *  the user folder supports lazy loading, it works even if the file isn't in the cache
+        *  if so, a get on the root folder will raise an |OCP\Files\NotFoundException
+        *  To avoid this, it is first tried to get the Node by the user folder. Because
+        *  the user folder supports lazy loading, it works even if the file isn't in the cache
      *  If the owner is unknown, it is at least tried to get the Node from the root folder
      */
     public function getNode(FileInfo $fileInfo): Node
@@ -267,7 +267,7 @@ class FileInfoService
             $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
             return substr($fileInfo->getPath(), strlen($userFolder->getPath()));
         } else {
-            throw new \Exception("The owner of ".$fileInfo->getPath()." is not set");
+            throw new \Exception('The owner of '.$fileInfo->getPath().' is not set');
         }
     }
 }

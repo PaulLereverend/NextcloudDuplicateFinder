@@ -42,8 +42,8 @@ class NewFileInfoListener implements IEventListener
                 }
             }
         } catch (\Throwable $e) {
-            $this->logger->error("Failed to handle NewFileInfoEvent .", ["exception"=> $e]);
-            $this->logger->logException($e, ["app"=>"duplicatefinder"]);
+            $this->logger->error('Failed to handle NewFileInfoEvent .', ['exception'=> $e]);
+            $this->logger->logException($e, ['app'=>'duplicatefinder']);
         }
     }
 }

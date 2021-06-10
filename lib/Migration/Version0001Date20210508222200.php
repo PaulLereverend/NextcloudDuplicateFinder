@@ -25,12 +25,12 @@ class Version0001Date20210508222200 extends SimpleMigrationStep
         $schema = $schemaClosure();
         if ($schema->hasTable('duplicatefinder_finfo')) {
             $table = $schema->getTable('duplicatefinder_finfo');
-            if ($table->hasColumn("path")) {
-                $pathColumn = $table->getColumn("path");
+            if ($table->hasColumn('path')) {
+                $pathColumn = $table->getColumn('path');
                 $pathColumn->setType(Type::getType(Types::STRING));
                 $pathColumn->setOptions(['length' => 4000]);
             }
-            if (!$table->hasIndex("duplicatefinder_path_idx")) {
+            if (!$table->hasIndex('duplicatefinder_path_idx')) {
                 $table->addIndex(['path'], 'duplicatefinder_path_idx');
             }
             return $schema;

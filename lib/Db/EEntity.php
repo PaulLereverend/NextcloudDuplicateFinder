@@ -18,20 +18,20 @@ class EEntity extends Entity implements JsonSerializable
     private $changedRelations = [];
     /** @var array<array<bool>> */
     private $internalProperties = [
-        "keepAsPrimary" => [true, true],
-        "internalTypes" => [true, true],
-        "relationalFields" => [true, true],
-        "changedRelations" => [true, true],
-        "internalProperties" => [true, true]
+        'keepAsPrimary' => [true, true],
+        'internalTypes' => [true, true],
+        'relationalFields' => [true, true],
+        'changedRelations' => [true, true],
+        'internalProperties' => [true, true]
     ];
 
     protected function addInternalType(string $name, string $type):void
     {
-        if ($type === "date") {
-            $this->internalTypes[$name] = "date";
+        if ($type === 'date') {
+            $this->internalTypes[$name] = 'date';
             $this->addType($name, 'integer');
-        } elseif ($type === "json") {
-            $this->internalTypes[$name] = "json";
+        } elseif ($type === 'json') {
+            $this->internalTypes[$name] = 'json';
             $this->addType($name, 'string');
         }
     }
@@ -117,9 +117,9 @@ class EEntity extends Entity implements JsonSerializable
         $type = $this->getFieldTypeByName($name);
       // If a date fild has another value type than DateTime we exepct,
       // that the db can handle it or the app know what it does
-        if ($type === "date" && $args[0] instanceof \DateTime) {
+        if ($type === 'date' && $args[0] instanceof \DateTime) {
             $args[0] = $args[0]->getTimestamp();
-        } elseif ($type === "json") {
+        } elseif ($type === 'json') {
             $args[0] = json_encode($args[0]);
         }
         parent::setter($name, $args);
@@ -137,10 +137,10 @@ class EEntity extends Entity implements JsonSerializable
             return $result;
         }
         $type = $this->getFieldTypeByName($name);
-        if ($type === "date" && (is_null($result) || is_numeric($result))) {
+        if ($type === 'date' && (is_null($result) || is_numeric($result))) {
           // Use a custom DateTime object that serializes to a well-known date-time-format
             $result = (new JSONDateTime())->setTimestamp((int)$result);
-        } elseif ($type === "json") {
+        } elseif ($type === 'json') {
             $result = json_decode($result);
         }
         return $result;
@@ -161,7 +161,7 @@ class EEntity extends Entity implements JsonSerializable
         if (isset($fieldTypes[$fieldName])) {
             return $fieldTypes[$fieldName];
         }
-        return "string";
+        return 'string';
     }
 
   /**
@@ -179,10 +179,10 @@ class EEntity extends Entity implements JsonSerializable
               && $this->getInternalProperties()[$property][0]) {
                 continue;
             }
-            if ($this->getFieldTypeByName($property) !== "bool") {
-                $methodName = "get";
+            if ($this->getFieldTypeByName($property) !== 'bool') {
+                $methodName = 'get';
             } else {
-                $methodName = "is";
+                $methodName = 'is';
             }
             $methodName .= ucfirst($property);
             $json[$property] = $this->$methodName();

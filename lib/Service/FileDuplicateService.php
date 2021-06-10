@@ -45,9 +45,9 @@ class FileDuplicateService
                 $duplicate->resetUpdatedRelationalFields();
                 $duplicate->removeDuplicate($fileId);
                 $this->update($duplicate);
-                $this->logger->info("Removed stale entry ".$fileId
-                  ." for duplicate ".$duplicate->getId()." - "
-                  .$duplicate->getHash()." - ".$duplicate->getType());
+                $this->logger->info('Removed stale entry '.$fileId
+                  .' for duplicate '.$duplicate->getId().' - '
+                  .$duplicate->getHash().' - '.$duplicate->getType());
             }
         }
         return $duplicate;
@@ -66,7 +66,7 @@ class FileDuplicateService
         ?int $limit = 20,
         ?int $offset = null,
         bool $enrich = false,
-        ?array $orderBy = [["hash"],["type"]]
+        ?array $orderBy = [['hash'],['type']]
     ):array {
         $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
         foreach ($entities as $entity) {
@@ -87,7 +87,7 @@ class FileDuplicateService
         return $entities;
     }
 
-    public function find(string $hash, string $type = "file_hash"):FileDuplicate
+    public function find(string $hash, string $type = 'file_hash'):FileDuplicate
     {
         return $this->mapper->find($hash, $type);
     }
@@ -100,13 +100,13 @@ class FileDuplicateService
         return $fileDuplicate;
     }
 
-    public function getOrCreate(string $hash, string $type = "file_hash"):FileDuplicate
+    public function getOrCreate(string $hash, string $type = 'file_hash'):FileDuplicate
     {
         try {
             $fileDuplicate = $this->mapper->find($hash, $type);
         } catch (\Exception $e) {
             if (!($e instanceof DoesNotExistException)) {
-                $this->logger->logException($e, ["app" => "duplicatefinder"]);
+                $this->logger->logException($e, ['app' => 'duplicatefinder']);
             }
             $fileDuplicate = new FileDuplicate($hash, $type);
             $fileDuplicate->setKeepAsPrimary(true);
@@ -116,7 +116,7 @@ class FileDuplicateService
         return $fileDuplicate;
     }
 
-    public function delete(string $hash, string $type = "file_hash"):?FileDuplicate
+    public function delete(string $hash, string $type = 'file_hash'):?FileDuplicate
     {
         try {
             $fileDuplicate = $this->mapper->find($hash, $type);

@@ -351,7 +351,7 @@ Scanning /admin/files/tests/20_4.txt
 Scanning /admin/files/tests/22_0.txt
 Scanning /admin/files/tests/21_21.txt
 Finished searching files
-Duplicates for user 'admin' are: 
+Duplicates for user "admin" are: 
 06e9d52c1720fca412803e3b07c4b228ff113e303f4c7ab94665319d832bbfb7(file_hash)
      /admin/files/tests/6_0.txt
      /admin/files/tests/6_1.txt

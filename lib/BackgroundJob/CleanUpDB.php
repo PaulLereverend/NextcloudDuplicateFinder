@@ -40,7 +40,7 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob
             try {
                 $this->fileInfoService->getNode($fileInfo);
             } catch (NotFoundException $e) {
-                $this->logger->info("FileInfo ".$fileInfo->getPath(). " will be deleted");
+                $this->logger->info('FileInfo '.$fileInfo->getPath(). ' will be deleted');
                 $this->fileInfoService->delete($fileInfo);
             }
         }
