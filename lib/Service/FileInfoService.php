@@ -172,7 +172,7 @@ class FileInfoService
     {
         $oldHash = $fileInfo->getFileHash();
         $file = $this->getNode($fileInfo);
-        if ($file->getType() == \OCP\Files\FileInfo::TYPE_FILE
+        if ($file->getType() === \OCP\Files\FileInfo::TYPE_FILE
           && ( empty($oldHash)
             || $file->getMtime() >
               $fileInfo->getUpdatedAt()->getTimestamp()
