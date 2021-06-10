@@ -172,11 +172,12 @@ class FileInfoService
     {
         $oldHash = $fileInfo->getFileHash();
         $file = $this->getNode($fileInfo);
-        if (empty($oldHash)
-          || $file->getMtime() >
-            $fileInfo->getUpdatedAt()->getTimestamp()
-          || $file->getUploadTime() >
-            $fileInfo->getUpdatedAt()->getTimestamp()) {
+        if ($file->getType() == \OCP\Files\FileInfo::TYPE_FILE
+          && ( empty($oldHash)
+            || $file->getMtime() >
+              $fileInfo->getUpdatedAt()->getTimestamp()
+            || $file->getUploadTime() >
+              $fileInfo->getUpdatedAt()->getTimestamp())) {
             $fileInfo->setFileHash($file->getStorage()->hash("sha256", $file->getInternalPath()));
             $fileInfo->setUpdatedAt(new \DateTime());
             $this->update($fileInfo);
