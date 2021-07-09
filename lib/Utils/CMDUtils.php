@@ -16,16 +16,16 @@ class CMDUtils
         ?string $user = null
     ): void {
         if ($user === null) {
-            $output->writeln("Duplicates are: ");
+            $output->writeln('Duplicates are: ');
         } else {
-            $output->writeln("Duplicates for user '".$user."' are: ");
+            $output->writeln('Duplicates for user "'.$user.'" are: ');
         }
         $limit = 20;
         $offset = 0;
         do {
             $duplicates = $fileDuplicateService->findAll($user, $limit, $offset, true);
             foreach ($duplicates as $duplicate) {
-                $output->writeln($duplicate->getHash()."(".$duplicate->getType().")");
+                $output->writeln($duplicate->getHash().'('.$duplicate->getType().')');
                 foreach ($duplicate->getFiles() as $id => $file) {
                     if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
                         $output->writeln('     '.$file->getPath());

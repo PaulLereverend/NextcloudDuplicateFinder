@@ -63,8 +63,8 @@ class DuplicateApiController extends ApiController
         if ($e instanceof NotAuthenticatedException) {
             return $this->error($e, Http::STATUS_FORBIDDEN);
         }
-        $this->logger->logException($e, ["app" => "duplicatefinder"]);
-        return $this->error(new \Exception("Unknown Exception occured"), Http::STATUS_NOT_IMPLEMENTED);
+        $this->logger->logException($e, ['app' => 'duplicatefinder']);
+        return $this->error(new \Exception('Unknown Exception occured'), Http::STATUS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -77,7 +77,7 @@ class DuplicateApiController extends ApiController
             $duplicates = $this->fileDuplicateService->findAll($this->getUserId(), $limit, $offset, true);
             return $this->success($duplicates);
         } catch (\Exception $e) {
-            $this->logger->logException($e, ["app" => "duplicatefinder"]);
+            $this->logger->logException($e, ['app' => 'duplicatefinder']);
             return $this->handleException($e);
         }
     }

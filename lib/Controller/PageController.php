@@ -64,9 +64,9 @@ class PageController extends Controller
                     'path' => $this->fileInfoService->getPathRelativeToUserFolder($fileInfo),
                     'hash' => $fileInfo->getFileHash(),
                     'infos' => [
-                        "id" => $node->getId(),
-                        "size" => $fileInfo->getSize(),
-                        "mimetype" => $fileInfo->getMimetype()
+                        'id' => $node->getId(),
+                        'size' => $fileInfo->getSize(),
+                        'mimetype' => $fileInfo->getMimetype()
                     ]
                 ];
             }

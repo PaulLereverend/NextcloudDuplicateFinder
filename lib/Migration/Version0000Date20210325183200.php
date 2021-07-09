@@ -63,7 +63,9 @@ class Version0000Date20210325183200 extends SimpleMigrationStep
             ]);
 
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['path'], 'duplicatefinder_path_idx');
+            //On some db versions index on a text column leads to an error
+            //To avoid this a the next db migration changes the type to a varchar and creates the index
+            //$table->addIndex(['path'], 'duplicatefinder_path_idx');
             $table->addIndex(['file_hash'], 'duplicatefinder_hashes_idx');
         }
         $schema = $this->createDuplicatesTable($schema);

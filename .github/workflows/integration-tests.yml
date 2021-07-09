@@ -113,7 +113,6 @@ jobs:
       - name: Functional tests maintenance
         working-directory: ../server
         run: |
-          ./occ migrations:migrate duplicatefinder
           ./occ maintenance:repair
 
       - name: Functional tests

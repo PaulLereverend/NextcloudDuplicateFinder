@@ -155,7 +155,7 @@ appstore:
 	-f $(appstore_package_name).tar.gz ../$(app_name) \
 
 .PHONY: test
-test: phpunit phpcs phpstan
+test: phpcs phpstan phpunit
 
 .PHONY: phpunit
 phpunit: composer

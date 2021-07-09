@@ -60,7 +60,7 @@ class ClearDuplicates extends Base
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $isClearingRequested = $input->getOption("force");
+        $isClearingRequested = $input->getOption('force');
         if ($isClearingRequested !== true) {
             $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion(

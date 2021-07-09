@@ -10,7 +10,7 @@ setup() {
   run ./occ -v duplicates:find-all -u admin
   [ "$status" -eq 0 ]
 
-  expectedHash="6d83990f6de7db72e63a68468e80bc7f091452d5be33ff677327409d5f8143b9"
+  expectedHash="19fb85351e9ef4cbca4b165043d303fd723413fb3df6e0929d34a0e83c025142"
   evaluateHashResult "${expectedHash}" 25 "${output}"
 }
 
@@ -18,7 +18,7 @@ setup() {
   run ./occ -v duplicates:find-all -p ./tests
   [ "$status" -eq 0 ]
 
-  expectedHash="68a757b39206d7417aa06323731207c2da06dd968163efc7f46df7e814605263"
+  expectedHash="1657beda4e8910b33f1c21b494446e25896a7e30eea1dfb565c6e24eb18b29d6"
   # 51 because tuser hash file "zero" two times
   evaluateHashResult "${expectedHash}" 50 "${output}"
 }
@@ -27,7 +27,7 @@ setup() {
   run ./occ -v duplicates:find-all -u tuser -p tests2
   [ "$status" -eq 0 ]
 
-  expectedHash="9d057f8673fbb54276dc31ca27d7da7b6a5cdf0d4d532dfd3ed7b14536e425fc"
+  expectedHash="8970518bc29c3b2b09d185145db3a0c5ed47a61f1e6221400d57332fa5f9c2fb"
   evaluateHashResult "${expectedHash}" 26 "${output}"
 }
 
@@ -35,7 +35,7 @@ setup() {
   run ./occ -v duplicates:find-all
   [ "$status" -eq 0 ]
 
-  expectedHash="7f95571afc0fd23defbe4f15ec123115d986a9b2cdcc745caf45bba606a5f71f"
+  expectedHash="543123426997192c38e02cf08ab676059e60fcc9efbfc41ff04a60b61da907f7"
   evaluateHashResult "${expectedHash}" 51 "${output}"
 }
 
@@ -43,7 +43,7 @@ setup() {
   run ./occ -v duplicates:find-all -p path_not_found
   [ "$status" -eq 0 ]
 
-  expectedHash="8af3056a4f99c58cb0fb4070dd84becf5d1d50d7a5bc84dac319b2a23067fec7"
+  expectedHash="ef8889fc687de9a10bff98fd4151484db25e68905decfae799268f6e06b83e37"
   evaluateHashResult "${expectedHash}" 51 "${output}"
 }
 

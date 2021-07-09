@@ -133,7 +133,7 @@ class FindDuplicates extends Base
                 });
             }
         } catch (NotFoundException $e) {
-            $this->logger->logException($e, ["app" => "duplicatefinder"]);
+            $this->logger->logException($e, ['app' => 'duplicatefinder']);
             $this->output->writeln('<error>The given path doesn\'t exists.<error>');
         }
 

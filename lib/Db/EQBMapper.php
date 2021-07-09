@@ -57,19 +57,23 @@ abstract class EQBMapper extends QBMapper
         $idType = $this->getParameterTypeForProperty($entity, 'id');
         foreach ($entity->getRelationalFields() as $field => $v) {
             $qb = $this->db->getQueryBuilder();
-            $qb->select("*")
-                ->from($this->getTableName()."_".substr($field, 0, 1))
+            $qb->select('*')
+                ->from($this->getTableName().'_'.substr($field, 0, 1))
             ->where(
                 $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType))
             );
             $qb = $qb->execute();
+
               $values = [];
             if (!is_int($qb)) {
                 foreach ($qb->fetchAll() as $row) {
-                    $values[$row["rid"]] = $row["value"];
+                    $values[$row['rid']] = $row['value'];
                 }
                 $setter = 'set' . ucfirst($field);
                 $entity->$setter($values);
+            }
+            if (!is_int($qb)) {
+                $qb->closeCursor();
             }
         }
         $entity->resetUpdatedRelationalFields();
@@ -89,11 +93,14 @@ abstract class EQBMapper extends QBMapper
         $idType = $this->getParameterTypeForProperty($entity, 'id');
         foreach ($entity->getRelationalFields() as $field => $v) {
             $qb = $this->db->getQueryBuilder();
-            $qb->delete($this->getTableName()."_".substr($field, 0, 1))
+            $qb->delete($this->getTableName().'_'.substr($field, 0, 1))
             ->where(
                 $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType))
             );
-            $qb->execute();
+            $qb = $qb->execute();
+            if (!is_int($qb)) {
+                $qb->closeCursor();
+            }
         }
     }
 
@@ -112,19 +119,21 @@ abstract class EQBMapper extends QBMapper
             foreach ($updatedRelations[$field] as $key => $value) {
                 $qb = $this->db->getQueryBuilder();
                 if ($value !== null) {
-                    $qb->insert($this->getTableName()."_".substr($field, 0, 1))
-                    ->setValue("id", $qb->createNamedParameter($entity->getId(), $idType))
-                    ->setValue("rid", $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
-                    ->setValue("value", $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR));
+                    $qb->insert($this->getTableName().'_'.substr($field, 0, 1))
+                    ->setValue('id', $qb->createNamedParameter($entity->getId(), $idType))
+                    ->setValue('rid', $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
+                    ->setValue('value', $qb->createNamedParameter($value, IQueryBuilder::PARAM_STR));
                 } else {
-                    $qb->delete($this->getTableName()."_".substr($field, 0, 1))
+                    $qb->delete($this->getTableName().'_'.substr($field, 0, 1))
                     ->where(
                         $qb->expr()->eq('id', $qb->createNamedParameter($entity->getId(), $idType)),
                         $qb->expr()->eq('rid', $qb->createNamedParameter($key, IQueryBuilder::PARAM_INT))
                     );
-                    $qb->execute();
                 }
-                $qb->execute();
+                $qb = $qb->execute();
+                if (!is_int($qb)) {
+                    $qb->closeCursor();
+                }
             }
         }
     }
@@ -148,10 +157,12 @@ abstract class EQBMapper extends QBMapper
             if (!$this->db->getDatabasePlatform() instanceof SqlitePlatform
               && !$this->db->getDatabasePlatform() instanceof PostgreSQL94Platform
             ) {
-                return $qb->rowCount();
+                $count = $qb->rowCount();
             } else {
-                return count($qb->fetchAll());
+                $count = count($qb->fetchAll());
             }
+            $qb->closeCursor();
+            return $count;
         }
         return 0;
     }
@@ -160,9 +171,12 @@ abstract class EQBMapper extends QBMapper
     {
         $qb = $this->db->getQueryBuilder();
         if (is_null($table)) {
-            $qb->delete($this->getTableName())->execute();
+            $qb = $qb->delete($this->getTableName())->execute();
         } else {
-            $qb->delete($table)->execute();
+            $qb = $qb->delete($table)->execute();
+        }
+        if (!is_int($qb)) {
+            $qb->closeCursor();
         }
     }
 }

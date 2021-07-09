@@ -44,12 +44,12 @@ class NewHashListener implements IEventListener
                 $this->updateDuplicates($fileInfo);
             }
         } catch (\Throwable $e) {
-            $this->logger->error("Failed to handle new hash event .", ["exception"=> $e]);
-            $this->logger->logException($e, ["app"=>"duplicatefinder"]);
+            $this->logger->error('Failed to handle new hash event .', ['exception'=> $e]);
+            $this->logger->logException($e, ['app'=>'duplicatefinder']);
         }
     }
 
-    private function updateDuplicates(FileInfo $fileInfo, string $type = "file_hash"): void
+    private function updateDuplicates(FileInfo $fileInfo, string $type = 'file_hash'): void
     {
         $count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
         if ($count > 1) {
@@ -65,7 +65,7 @@ class NewHashListener implements IEventListener
                 }
                 $this->fileDuplicateService->update($fileDuplicate);
             } catch (\Exception $e) {
-                $this->logger->logException($e, ["app" => "duplicatefinder"]);
+                $this->logger->logException($e, ['app' => 'duplicatefinder']);
             }
         }
     }

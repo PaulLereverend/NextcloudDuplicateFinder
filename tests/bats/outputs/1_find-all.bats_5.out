@@ -1,5 +1,5 @@
 Skipped /admin/files/path_not_found because it doesn't exists.
-Duplicates for user 'admin' are: 
+Duplicates for user "admin" are: 
 06e9d52c1720fca412803e3b07c4b228ff113e303f4c7ab94665319d832bbfb7(file_hash)
      /admin/files/tests/6_0.txt
      /admin/files/tests/6_1.txt
@@ -376,7 +376,7 @@ f14b4987904bcb5814e4459a057ed4d20f58a633152288a761214dcd28780b56(file_hash)
      /admin/files/tests/22_21.txt
      /admin/files/tests/22_22.txt
 Skipped /tuser/files/path_not_found because it doesn't exists.
-Duplicates for user 'tuser' are: 
+Duplicates for user "tuser" are: 
 06e9d52c1720fca412803e3b07c4b228ff113e303f4c7ab94665319d832bbfb7(file_hash)
      /tuser/files/tests/6_0.txt
      /tuser/files/tests/6_1.txt

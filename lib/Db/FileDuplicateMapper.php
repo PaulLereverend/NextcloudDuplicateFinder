@@ -16,14 +16,14 @@ class FileDuplicateMapper extends EQBMapper
         parent::__construct($db, 'duplicatefinder_dups', FileDuplicate::class);
     }
 
-    public function find(string $hash, string $type = "file_hash"): FileDuplicate
+    public function find(string $hash, string $type = 'file_hash'): FileDuplicate
     {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq("hash", $qb->createNamedParameter($hash)),
-            $qb->expr()->eq("type", $qb->createNamedParameter($type))
+            $qb->expr()->eq('hash', $qb->createNamedParameter($hash)),
+            $qb->expr()->eq('type', $qb->createNamedParameter($type))
         );
         return $this->findEntity($qb);
     }
@@ -39,11 +39,11 @@ class FileDuplicateMapper extends EQBMapper
         ?string $user = null,
         ?int $limit = null,
         ?int $offset = null,
-        ?array $orderBy = [["hash"],["type"]]
+        ?array $orderBy = [['hash'],['type']]
     ):array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('d.id as id', 'type', 'hash')
-        ->from($this->getTableName(), "d");
+        ->from($this->getTableName(), 'd');
         if ($limit !== null) {
             $qb->setMaxResults($limit);
         }
@@ -52,8 +52,8 @@ class FileDuplicateMapper extends EQBMapper
         }
 
         if ($user !== null) {
-            $qb->leftJoin("d", $this->getTableName()."_f", "f", $qb->expr()->eq('d.id', 'f.id'))
-            ->where($qb->expr()->eq("value", $qb->createNamedParameter($user)))
+            $qb->leftJoin('d', $this->getTableName().'_f', 'f', $qb->expr()->eq('d.id', 'f.id'))
+            ->where($qb->expr()->eq('value', $qb->createNamedParameter($user)))
             ->groupBy('d.id')
             ->having('COUNT(d.id) > 1');
         }
@@ -72,9 +72,9 @@ class FileDuplicateMapper extends EQBMapper
     {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
-        ->from($this->getTableName()."_f")
+        ->from($this->getTableName().'_f')
         ->where(
-            $qb->expr()->eq("rid", $qb->createNamedParameter($duplicateId, IQueryBuilder::PARAM_INT))
+            $qb->expr()->eq('rid', $qb->createNamedParameter($duplicateId, IQueryBuilder::PARAM_INT))
         );
         $qb = $qb->execute();
         $duplicates = [];
@@ -86,16 +86,17 @@ class FileDuplicateMapper extends EQBMapper
             $fQB->select('*')
             ->from($this->getTableName())
             ->where(
-                $fQB->expr()->eq("id", $fQB->createNamedParameter($row["id"], IQueryBuilder::PARAM_INT))
+                $fQB->expr()->eq('id', $fQB->createNamedParameter($row['id'], IQueryBuilder::PARAM_INT))
             );
             $duplicates[] = $this->findEntity($fQB);
         }
+        $qb->closeCursor();
         return $duplicates;
     }
 
     public function clear(?string $table = null):void
     {
-        parent::clear($this->getTableName()."_f");
+        parent::clear($this->getTableName().'_f');
         parent::clear();
     }
 }
