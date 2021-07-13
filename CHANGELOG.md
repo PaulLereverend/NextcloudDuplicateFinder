@@ -1,3 +1,11 @@
+## 0.0.9
+
+- Restored 0.0.7 with fixes
+- Support for NC 22
+## 0.0.8
+
+- Rollback to 0.0.6 because of a bug on 0.0.7
+
 ## 0.0.7 Big thanks to @chrros95
 
 - Added DB back-end to store detected duplicates.
