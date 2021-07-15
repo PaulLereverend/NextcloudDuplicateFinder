@@ -8,7 +8,7 @@ on:
     paths: '**.php'
   workflow_dispatch:
 env:
-  DB_USER: nc_test
+  DB_USER: root
   DB_PASSWORD: nc_test
   DATABASE: nc_test
 jobs:
@@ -31,31 +31,24 @@ jobs:
         ports:
           - 5432:5432
       mariadb:
-        image: mariadb
-        env:
-          MYSQL_DATABASE: ${{ env.DATABASE }}
-          MYSQL_USER: ${{ env.DB_USER }}
-          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
-        options: >-
-          --health-cmd "mysqladmin ping -u nc_test -pnc_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+         # Nextcloud Requires compressed tables which are not supported in 10.6 (nextcloud/server #25436)
+        image: mariadb:10.5
         ports:
           - 3306:3306
-      mysql:
-        image: mysql
         env:
           MYSQL_DATABASE: ${{ env.DATABASE }}
-          MYSQL_USER: ${{ env.DB_USER }}
-          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
-        options: >-
-          --health-cmd "mysqladmin ping -u nc_test -pnc_test"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+      mysql:
+         # Nextcloud Requires compressed tables which are not supported in 10.6 (nextcloud/server #25436)
+        image: chrros95/mysql
         ports:
           - 3307:3306
+        env:
+          MYSQL_DATABASE: ${{ env.DATABASE }}
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+          AUTH_PLUGIN: mysql_native_password
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
     strategy:
       matrix:
         php-versions: ['7.3', '7.4']
@@ -75,7 +68,6 @@ jobs:
             dbport: 5432
           - database: mariadb
             dbtype: mysql
-            dbport: 3306
           - database: mysql
             dbport: 3307
     steps:
@@ -96,7 +88,7 @@ jobs:
           cron: true
           database-type: ${{ matrix.dbtype || matrix.database }}
           database-host: 127.0.0.1
-          database-port: ${{ matrix.dbport }}
+          database-port: ${{ matrix.dbport || 3306 }}
           database-name: ${{ env.DATABASE }}
           database-user: ${{ env.DB_USER }}
           database-password: ${{ env.DB_PASSWORD }}
