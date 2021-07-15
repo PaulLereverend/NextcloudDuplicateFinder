@@ -1,3 +1,6 @@
+## 0.0.10
+- Added Support for MySQL as database
+
 ## 0.0.9
 
 - Restored 0.0.7 with fixes
