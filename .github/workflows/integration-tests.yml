@@ -7,12 +7,9 @@ on:
   pull_request:
     paths: '**.php'
 env:
-  POSTGRES_PASSWORD: nc_test_db
-  MYSQL_USER: nc_test
-  MYSQL_PASSWORD: nc_test_db
-  MYSQL_DATABASE: nc_test
-  MYSQL_PORT: 3800
-
+  DB_USER: nc_test
+  DB_PASSWORD: nc_test_db
+  DATABASE: nc_test
 jobs:
   integration:
     runs-on: ubuntu-latest
@@ -22,19 +19,37 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.DATABASE }}
+          POSTGRES_USER: ${{ env.DB_USER }}
+          POSTGRES_PASSWORD: ${{ env.DB_PASSWORD }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432 # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+      mariadb:
+        image: mariadb
+        env:
+          MYSQL_DATABASE: ${{ env.DATABASE }}
+          MYSQL_USER: ${{ env.DB_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+      mysql:
+        image: mysql
+        env:
+          MYSQL_DATABASE: ${{ env.DATABASE }}
+          MYSQL_USER: ${{ env.DB_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        ports:
+          - 3307:3306
     strategy:
       matrix:
         php-versions: ['7.3', '7.4']
-        nextcloud: ['stable20', 'stable21']
-        database: ['sqlite', 'pgsql', 'mysql']
+        nextcloud: ['stable20', 'stable21', 'stable22']
+        database: ['sqlite', 'pgsql', 'mysql','mariadb']
         experimental: [false]
         include:
           - php-versions: 7.4
@@ -45,76 +60,48 @@ jobs:
             nextcloud: pre-release
             database: sqlite
             experimental: true
+          - database: pgsql
+            dbport: 5432
+          - database: mariadb
+            dbtype: mysql
+            dbport: 3306
+          - database: mysql
+            dbport: 3307
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: pdo_sqlite,pdo_mysql,pdo_pgsql,gd,zip
           coverage: none
-
       - name: Setup BATS
         uses: mig4/setup-bats@v1
-
-      ### MySQL specific setup
-      - name: Setup mysql
-        if: matrix.database == 'mysql'
-        uses: getong/mariadb-action@v1.1
-        with:
-          host port: ${{ env.MYSQL_PORT }}
-          mysql database: ${{ env.MYSQL_DATABASE }}
-          mysql root password: ${{ env.MYSQL_PASSWORD }}
-          mysql user: ${{ env.MYSQL_USER }}
-          mysql password: ${{ env.MYSQL_PASSWORD }}
-
-      - name: Set up server MySQL
-        if: matrix.database == 'mysql'
+      - name: Set up server
         uses: SMillerDev/nextcloud-actions/setup-nextcloud@main
         with:
           version: ${{ matrix.nextcloud }}
           cron: true
-          database-type: ${{ matrix.database }}
-          database-host: 127.0.0.1
-          database-port: ${{ env.MYSQL_PORT }}
-          database-name: ${{ env.MYSQL_DATABASE }}
-          database-user: root
-          database-password: ${{ env.MYSQL_PASSWORD }}
-
-      ### Back to normal setup
-      - name: Set up server non MySQL
-        if: matrix.database != 'mysql'
-        uses: SMillerDev/nextcloud-actions/setup-nextcloud@main
-        with:
-          version: ${{ matrix.nextcloud }}
-          cron: true
-          database-type: ${{ matrix.database }}
-          database-host: localhost
-          database-port: 5432
-          database-name: postgres
-          database-user: postgres
-          database-password: ${{ env.POSTGRES_PASSWORD }}
-
+          database-type: ${{ matrix.dbtype || matrix.database }}
+          database-host: 'localhost'
+          database-port: ${{ matrix.dbport }}
+          database-name: ${{ env.DATABASE }}
+          database-user: ${{ env.DB_USER }}
+          database-password: ${{ env.DB_PASSWORD }}
       - name: Prime app build
         run: make
-
       - name: Configure server with app
         uses: SMillerDev/nextcloud-actions/setup-nextcloud-app@main
         with:
           app: 'duplicatefinder'
           check-code: true
           force: ${{ matrix.experimental }}
-
       - name: Setup problem matchers for PHP
         run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-
       - name: Functional tests maintenance
         working-directory: ../server
-        run: |
-          ./occ maintenance:repair
-
+        run: ./occ maintenance:repair
       - name: Functional tests
         working-directory: ../server
         run: bats apps/duplicatefinder/tests/bats
