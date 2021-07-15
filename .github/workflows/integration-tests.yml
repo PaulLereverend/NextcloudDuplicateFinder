@@ -6,6 +6,7 @@ on:
     paths: '**.php'
   pull_request:
     paths: '**.php'
+  workflow_dispatch:
 env:
   DB_USER: nc_test
   DB_PASSWORD: nc_test_db
