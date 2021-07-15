@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 env:
   DB_USER: nc_test
-  DB_PASSWORD: nc_test_db
+  DB_PASSWORD: nc_test
   DATABASE: nc_test
 jobs:
   integration:
@@ -37,7 +37,7 @@ jobs:
           MYSQL_USER: ${{ env.DB_USER }}
           MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
         options: >-
-          --health-cmd "mysqladmin ping -u ${{env.DB_USER}} -p${{ env.DB_PASSWORD }}"
+          --health-cmd "mysqladmin ping -u nc_test -pnc_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -50,7 +50,7 @@ jobs:
           MYSQL_USER: ${{ env.DB_USER }}
           MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
         options: >-
-          --health-cmd "mysqladmin ping -u ${{env.DB_USER}} -p${{ env.DB_PASSWORD }}"
+          --health-cmd "mysqladmin ping -u nc_test -pnc_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
