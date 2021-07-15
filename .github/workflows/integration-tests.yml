@@ -36,6 +36,10 @@ jobs:
           MYSQL_DATABASE: ${{ env.DATABASE }}
           MYSQL_USER: ${{ env.DB_USER }}
           MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        options: >-
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           - 3306:3306
       mysql:
@@ -44,6 +48,10 @@ jobs:
           MYSQL_DATABASE: ${{ env.DATABASE }}
           MYSQL_USER: ${{ env.DB_USER }}
           MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        options: >-
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           - 3307:3306
     strategy:
