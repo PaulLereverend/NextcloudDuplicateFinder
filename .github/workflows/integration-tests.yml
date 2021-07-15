@@ -85,7 +85,7 @@ jobs:
           version: ${{ matrix.nextcloud }}
           cron: true
           database-type: ${{ matrix.dbtype || matrix.database }}
-          database-host: 'localhost'
+          database-host: 127.0.0.1
           database-port: ${{ matrix.dbport }}
           database-name: ${{ env.DATABASE }}
           database-user: ${{ env.DB_USER }}
