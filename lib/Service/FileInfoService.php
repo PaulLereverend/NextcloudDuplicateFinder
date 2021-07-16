@@ -178,10 +178,15 @@ class FileInfoService
           $fileInfo->getUpdatedAt()->getTimestamp()
         || $file->getUploadTime() >
           $fileInfo->getUpdatedAt()->getTimestamp())) {
-            $fileInfo->setFileHash($file->getStorage()->hash('sha256', $file->getInternalPath()));
-            $fileInfo->setUpdatedAt(new \DateTime());
-            $this->update($fileInfo);
-            $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
+             $hash = $file->getStorage()->hash('sha256', $file->getInternalPath());
+            if (!is_bool($hash)) {
+                $fileInfo->setFileHash($hash);
+                $fileInfo->setUpdatedAt(new \DateTime());
+                $this->update($fileInfo);
+                $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
+            } else {
+                throw new \Exception('Unable to calculate hash for '.$file->getInternalPath());
+            }
         }
         return $fileInfo;
     }

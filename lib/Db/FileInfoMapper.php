@@ -24,7 +24,7 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq('path', $qb->createNamedParameter($path))
+            $qb->expr()->eq('path_hash', $qb->createNamedParameter(sha1($path)))
         );
         return $this->findEntity($qb);
     }

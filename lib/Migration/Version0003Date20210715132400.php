@@ -10,7 +10,7 @@ use OCP\DB\ISchemaWrapper;
 use OCP\Migration\SimpleMigrationStep;
 use OCP\Migration\IOutput;
 
-class Version0001Date20210508222200 extends SimpleMigrationStep
+class Version0003Date20210715132400 extends SimpleMigrationStep
 {
 
   /**
@@ -25,10 +25,17 @@ class Version0001Date20210508222200 extends SimpleMigrationStep
         $schema = $schemaClosure();
         if ($schema->hasTable('duplicatefinder_finfo')) {
             $table = $schema->getTable('duplicatefinder_finfo');
-            if ($table->hasColumn('path')) {
-                $pathColumn = $table->getColumn('path');
-                $pathColumn->setType(Type::getType(Types::STRING));
-                $pathColumn->setOptions(['length' => 4000]);
+            if ($table->hasIndex('duplicatefinder_path_idx')) {
+                $table->dropIndex('duplicatefinder_path_idx');
+            }
+            if (!$table->hasColumn('path_hash')) {
+                $table->addColumn('path_hash', 'string', [
+                  'notnull' => true,
+                  'length' => 40,
+                ]);
+            }
+            if (!$table->hasIndex('duplicatefinder_ph_idx')) {
+                $table->addIndex(['path_hash'], 'duplicatefinder_ph_idx');
             }
             return $schema;
         }
