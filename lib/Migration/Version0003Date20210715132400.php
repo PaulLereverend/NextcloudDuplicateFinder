@@ -30,7 +30,7 @@ class Version0003Date20210715132400 extends SimpleMigrationStep
             }
             if (!$table->hasColumn('path_hash')) {
                 $table->addColumn('path_hash', 'string', [
-                  'notnull' => true,
+                  'notnull' => false,
                   'length' => 40,
                 ]);
             }
