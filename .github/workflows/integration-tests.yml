@@ -11,6 +11,7 @@ env:
   DB_USER: root
   DB_PASSWORD: nc_test
   DATABASE: nc_test
+  STORAGE_HOST: localhost
 jobs:
   integration:
     runs-on: ubuntu-latest
@@ -49,6 +50,14 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
           AUTH_PLUGIN: mysql_native_password
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+      external-storage:
+        image: chrros95/external-storage-test
+        ports:
+            - 20:20
+            - 21:21
+            - 80:80
+            - 139:139
+            - 445:445
     strategy:
       matrix:
         php-versions: ['7.3', '7.4']
@@ -105,6 +114,9 @@ jobs:
       - name: Functional tests maintenance
         working-directory: ../server
         run: ./occ maintenance:repair
+      - name: Allow that remote servers are on the local host
+        working-directory: ../server
+        run: ./occ config:system:set --value=true --type=boolean allow_local_remote_servers
       - name: Functional tests
         working-directory: ../server
         run: bats apps/duplicatefinder/tests/bats

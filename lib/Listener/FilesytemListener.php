@@ -33,18 +33,31 @@ class FilesytemListener implements IEventListener
     {
         if ($event instanceof NodeDeletedEvent) {
             $node = $event->getNode();
-            $fileInfo = $this->fileInfoService->find($node->getPath());
+            try {
+                $fileInfo = $this->fileInfoService->find($node->getPath(), $node->getOwner()->getUID());
+            } catch (\Throwable $e) {
+                $fileInfo = $this->fileInfoService->find($node->getPath(), null);
+            }
             $this->fileDuplicateService->clearDuplicates($fileInfo->getId());
             $this->fileInfoService->delete($fileInfo);
         } elseif ($event instanceof NodeRenamedEvent) {
-            $fileInfo = $this->fileInfoService->find($event->getSource()->getPath());
+            $source = $event->getSource();
+            try {
+                $fileInfo = $this->fileInfoService->find($source->getPath(), $source->getOwner()->getUID());
+            } catch (\Throwable $e) {
+                $fileInfo = $this->fileInfoService->find($source->getPath(), null);
+            }
             $target = $event->getTarget();
             $fileInfo->setPath($target->getPath());
             $fileInfo->setOwner($target->getOwner()->getUID());
             $this->fileInfoService->update($fileInfo);
         } elseif ($event instanceof AbstractNodeEvent) {
             $node = $event->getNode();
-            $fileInfo = $this->fileInfoService->save($node->getPath());
+            try {
+                $fileInfo = $this->fileInfoService->save($node->getPath(), $node->getOwner()->getUID());
+            } catch (\Throwable $e) {
+                $fileInfo = $this->fileInfoService->save($node->getPath(), null);
+            }
         }
     }
 }

@@ -73,9 +73,9 @@ class FileInfoService
         return $entities;
     }
 
-    public function find(string $path, bool $enrich = false):FileInfo
+    public function find(string $path, ?string $fallbackUID = null, bool $enrich = false):FileInfo
     {
-        $entity = $this->mapper->find($path);
+        $entity = $this->mapper->find($path, $fallbackUID);
         if ($enrich) {
             $entity = $this->enrich($entity);
         }
@@ -117,23 +117,23 @@ class FileInfoService
         return $this->mapper->countBySize($size);
     }
 
-    public function update(FileInfo $fileInfo):FileInfo
+    public function update(FileInfo $fileInfo, ?string $fallbackUID = null):FileInfo
     {
-        $fileInfo = $this->updateFileMeta($fileInfo);
+        $fileInfo = $this->updateFileMeta($fileInfo, $fallbackUID);
         $fileInfo->setKeepAsPrimary(true);
         $fileInfo = $this->mapper->update($fileInfo);
         $fileInfo->setKeepAsPrimary(false);
         return $fileInfo;
     }
 
-    public function save(string $path):FileInfo
+    public function save(string $path, ?string $fallbackUID = null):FileInfo
     {
         try {
-            $fileInfo = $this->mapper->find($path);
-            $fileInfo = $this->update($fileInfo);
+            $fileInfo = $this->mapper->find($path, $fallbackUID);
+            $fileInfo = $this->update($fileInfo, $fallbackUID);
         } catch (\Exception $e) {
             $fileInfo = new FileInfo($path);
-            $fileInfo = $this->updateFileMeta($fileInfo);
+            $fileInfo = $this->updateFileMeta($fileInfo, $fallbackUID);
             $fileInfo->setKeepAsPrimary(true);
             $fileInfo = $this->mapper->insert($fileInfo);
             $fileInfo->setKeepAsPrimary(false);
@@ -153,31 +153,34 @@ class FileInfoService
         $this->mapper->clear();
     }
 
-    public function updateFileMeta(FileInfo $fileInfo) : FileInfo
+    public function updateFileMeta(FileInfo $fileInfo, ?string $fallbackUID = null) : FileInfo
     {
-        $file = $this->getNode($fileInfo);
+        $file = $this->getNode($fileInfo, $fallbackUID);
         $fileInfo->setSize($file->getSize());
         $fileInfo->setMimetype($file->getMimetype());
         try {
             $fileInfo->setOwner($file->getOwner()->getUID());
         } catch (\Throwable $e) {
-            //Even though  this should not happen - the result of getOwner can be null
-            $this->logger->error('There is a problem with the owner of '.$fileInfo->getPath());
-            $this->logger->logException($e, ['app' => 'duplicatefinder']);
+            if (!is_null($fallbackUID)) {
+                $fileInfo->setOwner($fallbackUID);
+            } elseif (!$fileInfo->getOwner()) {
+                    throw $e;
+            }
         }
         return $fileInfo;
     }
 
-    public function calculateHashes(FileInfo $fileInfo):FileInfo
+    public function calculateHashes(FileInfo $fileInfo, ?string $fallbackUID = null):FileInfo
     {
         $oldHash = $fileInfo->getFileHash();
-        $file = $this->getNode($fileInfo);
+        $file = $this->getNode($fileInfo, $fallbackUID);
         if ($file->getType() === \OCP\Files\FileInfo::TYPE_FILE
           && ( empty($oldHash)
         || $file->getMtime() >
           $fileInfo->getUpdatedAt()->getTimestamp()
         || $file->getUploadTime() >
-          $fileInfo->getUpdatedAt()->getTimestamp())) {
+          $fileInfo->getUpdatedAt()->getTimestamp())
+        || $file->isMounted()) {
              $hash = $file->getStorage()->hash('sha256', $file->getInternalPath());
             if (!is_bool($hash)) {
                 $fileInfo->setFileHash($hash);
@@ -213,20 +216,24 @@ class FileInfoService
         }
 
         $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
-        $scanner->listen('\OC\Files\Utils\Scanner', 'scanFile', function ($path) use ($abortIfInterrupted, $output) {
-            if (!is_null($output)) {
-                $output->writeln('Scanning '.$path, OutputInterface::VERBOSITY_VERBOSE);
+        $scanner->listen(
+            '\OC\Files\Utils\Scanner',
+            'postScanFile',
+            function ($path) use ($abortIfInterrupted, $output, $user) {
+                if (!is_null($output)) {
+                    $output->writeln('Scanning '.$path, OutputInterface::VERBOSITY_VERBOSE);
+                }
+                $fileInfo = $this->save($path, $user);
+                if ($abortIfInterrupted) {
+                    $abortIfInterrupted();
+                }
+                // Ensure that every scanned file is commited - not only after all files are scanned
+                if ($this->connection->inTransaction()) {
+                    $this->connection->commit();
+                    $this->connection->beginTransaction();
+                }
             }
-            $fileInfo = $this->save($path);
-            if ($abortIfInterrupted) {
-                $abortIfInterrupted();
-            }
-            // Ensure that every scanned file is commited - not only after all files are scanned
-            if ($this->connection->inTransaction()) {
-                $this->connection->commit();
-                $this->connection->beginTransaction();
-            }
-        });
+        );
         if ($output) {
             $output->writeln('Start searching files for '.$user.' in path '.$scanPath);
         }
@@ -251,15 +258,23 @@ class FileInfoService
         *  the user folder supports lazy loading, it works even if the file isn't in the cache
      *  If the owner is unknown, it is at least tried to get the Node from the root folder
      */
-    public function getNode(FileInfo $fileInfo): Node
+    public function getNode(FileInfo $fileInfo, ?string $fallbackUID = null): Node
     {
+        $userFolder = null;
         if ($fileInfo->getOwner()) {
             $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
-            $relativePath = $this->getPathRelativeToUserFolder($fileInfo);
-            return $userFolder->get($relativePath);
-        } else {
-            return $this->rootFolder->get($fileInfo->getPath());
+        } elseif (!is_null($fallbackUID)) {
+            $userFolder = $this->rootFolder->getUserFolder($fallbackUID);
+            $fileInfo->setOwner($fallbackUID);
         }
+        if (!is_null($userFolder)) {
+            try {
+                $relativePath = $this->getPathRelativeToUserFolder($fileInfo);
+                return $userFolder->get($relativePath);
+            } catch (NotFoundException $e) {
+            }
+        }
+        return $this->rootFolder->get($fileInfo->getPath());
     }
 
     /*

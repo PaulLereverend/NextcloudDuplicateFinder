@@ -21,5 +21,7 @@ do
   done
 done
 
-./occ files:scan --all
+if [ -z "$DO_NOT_SCAN" ]; then
+    ./occ files:scan --all
+fi
 ./occ app:enable duplicatefinder

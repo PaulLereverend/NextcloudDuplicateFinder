@@ -18,7 +18,7 @@ class FileInfoMapper extends EQBMapper
   /**
    * @throws \OCP\AppFramework\Db\DoesNotExistException
    */
-    public function find(string $path):FileInfo
+    public function find(string $path, ?string $userID = null):FileInfo
     {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -26,7 +26,21 @@ class FileInfoMapper extends EQBMapper
         ->where(
             $qb->expr()->eq('path_hash', $qb->createNamedParameter(sha1($path)))
         );
-        return $this->findEntity($qb);
+        if (!is_null($userID)) {
+            $qb->andWhere($qb->expr()->eq('owner', $qb->createNamedParameter($userID)));
+        }
+        $entities = $this->findEntities($qb);
+        if ($entities) {
+            if (is_null($userID)) {
+                return $entities[0];
+            }
+            foreach ($entities as $entity) {
+                if ($entity->getOwner() === $userID) {
+                    return $entity;
+                }
+            }
+        }
+        throw new \OCP\AppFramework\Db\DoesNotExistException('FileInfo not found');
     }
 
   /**
