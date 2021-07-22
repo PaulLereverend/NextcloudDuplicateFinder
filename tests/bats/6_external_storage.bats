@@ -21,10 +21,24 @@ setup() {
     -exec curl -u 'WORKGROUP\test:test' -T {} smb://$STORAGE_HOST/public/ \; >/dev/null 2>&1
 }
 
+teardown() {
+    ./occ -v duplicates:clear -f
+}
+
 @test "[$TESTSUITE] Duplicates on external storage" {
+    ./occ config:app:delete duplicatefinder ignore_mounted_files
     run ./occ -v duplicates:find-all -u admin
     [ "$status" -eq 0 ]
 
     expectedHash="d60a2aacde91c38f29287ef2b473bc6d84d4ad7177027292d147ae3ce49cfc62"
+    evaluateHashResult "${expectedHash}" 25 "${output}"
+}
+
+@test "[$TESTSUITE] Skip search for duplicates on external storage" {
+    ./occ config:app:set --value=true duplicatefinder ignore_mounted_files
+    run ./occ -v duplicates:find-all -u admin
+    [ "$status" -eq 0 ]
+
+    expectedHash="aec985150dc1aebb94730d39b1180f3d962d6e4d20947ed1dd3f62ce4f2ab085"
     evaluateHashResult "${expectedHash}" 25 "${output}"
 }

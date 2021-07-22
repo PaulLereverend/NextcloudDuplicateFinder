@@ -4,6 +4,7 @@ namespace OCA\DuplicateFinder\Service;
 use OCP\IUser;
 use OCP\ILogger;
 use OCP\IDBConnection;
+use OCP\IConfig;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
@@ -14,10 +15,12 @@ use OCP\Files\NotFoundException;
 use OC\Files\Utils\Scanner;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileInfoMapper;
 use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 use OCA\DuplicateFinder\Event\NewFileInfoEvent;
+use OCA\DuplicateFinder\Exception\ForcedToIgnoreFileException;
 
 class FileInfoService
 {
@@ -32,19 +35,23 @@ class FileInfoService
     private $logger;
     /** @var IDBConnection */
     private $connection;
+    /** @var IConfig */
+    private $config;
 
     public function __construct(
         FileInfoMapper $mapper,
         IRootFolder $rootFolder,
         IEventDispatcher $eventDispatcher,
         ILogger $logger,
-        IDBConnection $connection
+        IDBConnection $connection,
+        IConfig $config
     ) {
         $this->mapper = $mapper;
         $this->rootFolder = $rootFolder;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;
         $this->connection = $connection;
+        $this->config = $config;
     }
 
     /**
@@ -156,6 +163,11 @@ class FileInfoService
     public function updateFileMeta(FileInfo $fileInfo, ?string $fallbackUID = null) : FileInfo
     {
         $file = $this->getNode($fileInfo, $fallbackUID);
+        // Default should be false but isn't supported by the api
+        $ignoreMountedFiles = $this->config->getAppValue(Application::ID, 'ignore_mounted_files', '');
+        if ($file->isMounted() && $ignoreMountedFiles) {
+            throw new ForcedToIgnoreFileException($fileInfo, 'app:ignore_mounted_files');
+        }
         $fileInfo->setSize($file->getSize());
         $fileInfo->setMimetype($file->getMimetype());
         try {
@@ -214,7 +226,6 @@ class FileInfoService
                 return;
             }
         }
-
         $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
         $scanner->listen(
             '\OC\Files\Utils\Scanner',
@@ -223,7 +234,19 @@ class FileInfoService
                 if (!is_null($output)) {
                     $output->writeln('Scanning '.$path, OutputInterface::VERBOSITY_VERBOSE);
                 }
-                $fileInfo = $this->save($path, $user);
+                try {
+                    $fileInfo = $this->save($path, $user);
+                } catch (NotFoundException $e) {
+                    $this->logger->logException($e, ['app' => 'duplicatefinder']);
+                    if ($output) {
+                        $output->writeln('<error>The given path doesn\'t exists.</error>');
+                    }
+                } catch (ForcedToIgnoreFileException $e) {
+                    $this->logger->info($e->getMessage(), ['exception'=> $e]);
+                    if ($output) {
+                        $output->writeln('Skipped '.$path, OutputInterface::VERBOSITY_VERBOSE);
+                    }
+                }
                 if ($abortIfInterrupted) {
                     $abortIfInterrupted();
                 }
@@ -243,7 +266,7 @@ class FileInfoService
         } catch (NotFoundException $e) {
             $this->logger->logException($e, ['app' => 'duplicatefinder']);
             if ($output) {
-                $output->writeln('<error>The given path doesn\'t exists.</error>');
+                $output->writeln('<error>The given scan path doesn\'t exists.</error>');
             }
         }
         if ($output) {

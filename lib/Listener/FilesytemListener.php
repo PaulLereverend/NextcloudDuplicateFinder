@@ -1,6 +1,7 @@
 <?php
 namespace OCA\DuplicateFinder\Listener;
 
+use OCP\ILogger;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCP\Files\Events\Node\NodeDeletedEvent;
@@ -8,6 +9,7 @@ use OCP\Files\Events\Node\NodeRenamedEvent;
 use OCP\Files\Events\Node\AbstractNodeEvent;
 use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
+use OCA\DuplicateFinder\Exception\ForcedToIgnoreFileException;
 
 /**
  * @template T of Event
@@ -20,13 +22,17 @@ class FilesytemListener implements IEventListener
     private $fileInfoService;
     /** @var FileDuplicateService */
     private $fileDuplicateService;
+    /** @var Ilogger */
+    private $logger;
 
     public function __construct(
         FileInfoService $fileInfoService,
-        FileDuplicateService $fileDuplicateService
+        FileDuplicateService $fileDuplicateService,
+        ILogger $logger
     ) {
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
+        $this->logger = $logger;
     }
 
     public function handle(Event $event): void
@@ -55,8 +61,14 @@ class FilesytemListener implements IEventListener
             $node = $event->getNode();
             try {
                 $fileInfo = $this->fileInfoService->save($node->getPath(), $node->getOwner()->getUID());
+            } catch (ForcedToIgnoreFileException $e) {
+                $this->logger->info($e->getMessage(), ['exception'=> $e]);
             } catch (\Throwable $e) {
-                $fileInfo = $this->fileInfoService->save($node->getPath(), null);
+                try {
+                    $fileInfo = $this->fileInfoService->save($node->getPath(), null);
+                } catch (ForcedToIgnoreFileException $e) {
+                    $this->logger->info($e->getMessage(), ['exception'=> $e]);
+                }
             }
         }
     }
