@@ -11,7 +11,7 @@ env:
   DB_USER: root
   DB_PASSWORD: nc_test
   DATABASE: nc_test
-  STORAGE_HOST: localhost
+  STORAGE_HOST: 127.0.0.1
 jobs:
   integration:
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ jobs:
           MYSQL_DATABASE: ${{ env.DATABASE }}
           MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
           AUTH_PLUGIN: mysql_native_password
-        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
       external-storage:
         image: chrros95/external-storage-test
         ports:
@@ -58,6 +58,7 @@ jobs:
             - 80:80
             - 139:139
             - 445:445
+            - 30000-30200:30000-30200
     strategy:
       matrix:
         php-versions: ['7.3', '7.4']
@@ -82,6 +83,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install additional software
+        run: |
+          sudo apt-get update
+          sudo apt-get install smbclient
+          sudo sed -i '/workgroup/ i\ client min protocol = NT1' /etc/samba/smb.conf
+          sudo sed -i '/workgroup/ i\ client max protocol = NT1' /etc/samba/smb.conf
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:

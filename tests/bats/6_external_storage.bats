@@ -10,15 +10,15 @@ setup() {
   DO_NOT_SCAN=1
   load ${BATS_TEST_DIRNAME}/setup.sh
   ./occ app:enable files_external
-  sed "s/%%host%%/$STORAGE_HOST/g" ${BATS_TEST_DIRNAME}/assets/externalStorage.json > $BATS_TEST_TMPDIR/externalStorage.json
+  sed "s/%%host%%/$STORAGE_HOST/g" ${BATS_TEST_DIRNAME}/assets/externalStorage.json > externalStorage.json
   for m in $(./occ files_external:list | grep -E '^\| [1-9]' | awk '{print $2}'); do
     ./occ files_external:delete -y $m
   done
-  ./occ files_external:import $BATS_TEST_TMPDIR/externalStorage.json
+  ./occ files_external:import externalStorage.json
   find ./data/admin/files/tests -type f -name '2_*' \
-    -exec curl -u 'test:test' -T {} http://$STORAGE_HOST/webdav/ \; \
-    -exec curl -u 'test:test' -T {} ftp://$STORAGE_HOST \; \
-    -exec curl -u 'WORKGROUP\test:test' -T {} smb://$STORAGE_HOST/public/ \; >/dev/null 2>&1
+    -exec curl -sS -u 'test:test' -T {} http://$STORAGE_HOST/webdav/ \; \
+    -exec curl -sS -u 'test:test' -T {} ftp://$STORAGE_HOST \; \
+    -exec curl -sS -u 'WORKGROUP\test:test' -T {} smb://$STORAGE_HOST/public/ \; >/dev/null
 }
 
 teardown() {
