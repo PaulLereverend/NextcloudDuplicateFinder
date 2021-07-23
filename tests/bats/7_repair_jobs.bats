@@ -7,6 +7,10 @@ setup() {
   ./occ -v duplicates:find-all
 }
 
+teardown(){
+    ./occ duplicates:clear -f
+}
+
 @test "[$TESTSUITE] Test Repair Job" {
     dbQuery "update oc_duplicatefinder_finfo set path_hash='';"
 

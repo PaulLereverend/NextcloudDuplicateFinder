@@ -23,6 +23,9 @@ setup() {
 
 teardown() {
     ./occ -v duplicates:clear -f
+    for m in $(./occ files_external:list | grep -E '^\| [1-9]' | awk '{print $2}'); do
+      ./occ files_external:delete -y $m
+    done
 }
 
 @test "[$TESTSUITE] Duplicates on external storage" {
