@@ -23,7 +23,7 @@ dbQuery() {
     if [ "$DB_TYPE" == "mysql" ]; then
         mysql -h ${DB_HOST:-127.0.0.1} -u $DB_USER -p$DB_PASSWORD -P $DB_PORT -D $DATABASE -e "$1"
     elif [ "$DB_TYPE" == "pgsql" ]; then
-        echo "$DB_HOST:$DB_PORT:$DATABASE:$DB_USER:$DB_PASSWORD" > ~/.pgpass
+        echo "${DB_HOST:-127.0.0.1}:$DB_PORT:$DATABASE:$DB_USER:$DB_PASSWORD" > ~/.pgpass
         chmod 0600 ~/.pgpass
         psql -h ${DB_HOST:-127.0.0.1} -U $DB_USER -p $DB_PORT -d $DATABASE -c "$1"
     else
