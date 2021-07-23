@@ -9,7 +9,6 @@ on:
 jobs:
   static-phpstan-analysis:
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         php-versions: [ '7.4' ]

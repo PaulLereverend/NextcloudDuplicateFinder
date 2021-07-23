@@ -5,6 +5,7 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Service\FileInfoService;
 
 class RepairFileInfos implements IRepairStep
@@ -34,7 +35,7 @@ class RepairFileInfos implements IRepairStep
      */
     public function getName()
     {
-        return 'Repair FileInfo objects';
+        return Application::ID.': Repair FileInfo objects';
     }
 
     /**
@@ -55,12 +56,12 @@ class RepairFileInfos implements IRepairStep
             $this->fileInfoService->update($fileInfo);
             $output->advance();
         }
-		$output->finishProgress();
+        $output->finishProgress();
     }
 
     protected function shouldRun() : bool
     {
-        $appVersion = $this->config->getAppValue('duplicatefinder', 'installed_version', '0.0.0');
+        $appVersion = $this->config->getAppValue(Application::ID, 'installed_version', '0.0.0');
         return version_compare($appVersion, '0.0.9', '>');
     }
 

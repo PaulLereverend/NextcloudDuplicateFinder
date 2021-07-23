@@ -127,3 +127,6 @@ jobs:
       - name: Functional tests
         working-directory: ../server
         run: bats apps/duplicatefinder/tests/bats
+        env:
+            DB_TYPE: ${{ matrix.dbtype || matrix.database }}
+            DB_PORT: ${{ matrix.dbport || 3306 }}
