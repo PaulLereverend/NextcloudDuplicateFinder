@@ -62,6 +62,11 @@
   <dependencies>
     <nextcloud min-version="20" max-version="22"/>
   </dependencies>
+  <repair-steps>
+      <post-migration>
+          <step>OCA\DuplicateFinder\Migration\RepairFileInfos</step>
+      </post-migration>
+  </repair-steps>
   <background-jobs>
     <job>OCA\DuplicateFinder\BackgroundJob\FindDuplicates</job>
     <job>OCA\DuplicateFinder\BackgroundJob\CleanUpDB</job>
