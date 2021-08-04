@@ -1,10 +1,12 @@
 <?php
 namespace OCA\DuplicateFinder\Migration;
 
+use \Psr\Log\LoggerInterface;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
+use OCP\Files\NotFoundException;
 use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Service\FileInfoService;
 
@@ -15,16 +17,23 @@ class RepairFileInfos implements IRepairStep
     private $config;
     /** @var IDBConnection */
     private $connection;
+    /** @var LoggerInterface */
+    private $logger;
     /** @var FileInfoService */
     private $fileInfoService;
 
 
 
-    public function __construct(IConfig $config, IDBConnection $connection, FileInfoService $fileInfoService)
-    {
+    public function __construct(
+        IConfig $config,
+        IDBConnection $connection,
+        FileInfoService $fileInfoService,
+        LoggerInterface $logger
+    ) {
         $this->config = $config;
         $this->connection = $connection;
-            $this->fileInfoService = $fileInfoService;
+        $this->logger = $logger;
+        $this->fileInfoService = $fileInfoService;
     }
 
     /**
@@ -48,21 +57,38 @@ class RepairFileInfos implements IRepairStep
             return;
         }
 
-        $invalidObjects = $this->getInvalidPathHashObjects();
-        $output->startProgress(count($invalidObjects));
-        foreach ($invalidObjects as $row) {
-            $fileInfo = $this->fileInfoService->findById($row['id']);
-            $fileInfo->setPath($fileInfo->getPath());
-            $this->fileInfoService->update($fileInfo);
-            $output->advance();
-        }
-        $output->finishProgress();
+        $output->info('Recalculating Path Hashes');
+        $this->updatePathHashes($output);
+        $output->info('Clearing duplicated records');
+        $this->clearDuplicateObjects($output);
     }
 
     protected function shouldRun() : bool
     {
         $appVersion = $this->config->getAppValue(Application::ID, 'installed_version', '0.0.0');
         return version_compare($appVersion, '0.0.9', '>');
+    }
+
+    private function updatePathHashes(IOutput $output) : void
+    {
+        $invalidObjects = $this->getInvalidPathHashObjects();
+        $output->startProgress(count($invalidObjects));
+        foreach ($invalidObjects as $row) {
+            $fileInfo = null;
+            try {
+                $fileInfo = $this->fileInfoService->findById($row['id']);
+                $fileInfo->setPath($fileInfo->getPath());
+                $this->fileInfoService->update($fileInfo);
+            } catch (NotFoundException $e) {
+                if (!is_null($fileInfo)) {
+                    $this->fileInfoService->delete($fileInfo);
+                }
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage(), ['exception'=> $e]);
+            }
+            $output->advance();
+        }
+        $output->finishProgress();
     }
 
     /**
@@ -82,5 +108,32 @@ class RepairFileInfos implements IRepairStep
         $rows = $qb->fetchAll();
         $qb->closeCursor();
         return $rows;
+    }
+
+    private function clearDuplicateObjects(IOutput $output) : void
+    {
+        $entities = $this->fileInfoService->findAll(false);
+        $paths = array();
+        $output->startProgress(count($entities));
+        foreach ($entities as $entity) {
+            try {
+                $hash = $entity->getPathHash();
+                $owner = $entity->getOwner();
+                if (isset($paths[$hash])) {
+                    if (isset($paths[$hash][$owner])) {
+                        $this->fileInfoService->delete($entity);
+                    } else {
+                        $paths[$hash][$owner] = true;
+                    }
+                } else {
+                    $paths[$hash] = array();
+                    $paths[$hash][$owner] = true;
+                }
+            } catch (\Exception $e) {
+                $this->logger->error($e->getMessage(), ['exception'=> $e]);
+            }
+            $output->advance();
+        }
+        $output->finishProgress();
     }
 }

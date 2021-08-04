@@ -11,7 +11,7 @@ teardown(){
     ./occ duplicates:clear -f
 }
 
-@test "[$TESTSUITE] Test Repair Job" {
+@test "[$TESTSUITE] Test Repair Path Hashes Job" {
     dbQuery "update oc_duplicatefinder_finfo set path_hash='';"
 
     ./occ maintenance:repair
@@ -22,4 +22,20 @@ teardown(){
         return 0
     fi
 
+}
+
+@test "[$TESTSUITE] Test Repair Duplicates Job" {
+    dbQuery "update oc_duplicatefinder_finfo set path_hash='';"
+    ./occ -v duplicates:find-all
+    run ./occ -v duplicates:list
+    [ "$status" -eq 0 ]
+    expectedHash="f6e92d51240a4aa74f1b42bdee4eabb9377400503a70c57703baaeb68cdb63a0"
+    evaluateHashResult "${expectedHash}" 26 "${output}" "_1"
+
+    ./occ maintenance:repair
+
+    run ./occ -v duplicates:list
+    [ "$status" -eq 0 ]
+    expectedHash="37df47434c76bd4387c975aba58906ea1c0e86be6e8e7d3f7ad329017f5a9187"
+    evaluateHashResult "${expectedHash}" 26 "${output}"
 }
