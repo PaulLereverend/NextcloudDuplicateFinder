@@ -53,6 +53,7 @@ class ClearDuplicates extends Base
         $this
             ->setName('duplicates:clear')
             ->setDescription('Clear all duplicates and information for discovery')
+            ->setHelp("Remove links to interactively recognized duplicate files from the database of your Nextcloud instance.\nThis action doesn't remove the files from your file system.")
             ->addOption('force', 'f', InputOption::VALUE_NONE, 'don\'t ask any questions');
 
         parent::configure();
