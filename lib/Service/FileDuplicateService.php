@@ -83,6 +83,9 @@ class FileDuplicateService
                 });
                 $entity->setFiles($files);
             }
+            if (count($entity->getFiles()) < 2) {
+                $entity->setFiles([]);
+            }
         }
         return $entities;
     }

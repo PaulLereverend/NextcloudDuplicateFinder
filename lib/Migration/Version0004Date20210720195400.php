@@ -27,8 +27,8 @@ class Version0004Date20210720195400 extends SimpleMigrationStep
             $table = $schema->getTable('duplicatefinder_finfo');
 
             if ($table->hasColumn('owner')) {
-              $ownerColumn = $table->getColumn('owner');
-              $ownerColumn->setOptions(['notnull' => false]);
+                $ownerColumn = $table->getColumn('owner');
+                $ownerColumn->setOptions(['notnull' => false]);
             }
 
             return $schema;

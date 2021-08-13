@@ -25,6 +25,9 @@ class CMDUtils
         do {
             $duplicates = $fileDuplicateService->findAll($user, $limit, $offset, true);
             foreach ($duplicates as $duplicate) {
+                if (!$duplicate->getFiles()) {
+                    continue;
+                }
                 $output->writeln($duplicate->getHash().'('.$duplicate->getType().')');
                 foreach ($duplicate->getFiles() as $id => $file) {
                     if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
