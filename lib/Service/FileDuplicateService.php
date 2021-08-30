@@ -90,13 +90,13 @@ class FileDuplicateService
                 $lastKey = $entity->id;
                 if (count($entity->getFiles()) > 1) {
                     $result[] = $entity;
-                    if (count($result) == $limit) {
+                    if (count($result) === $limit) {
                         break;
                     }
                 }
             }
-        } while (count($result) < $limit && count($entities) == $limit);
-        return array("entities" => $result, "pageKey" => $lastKey, "isLastFetched" => count($entities) != $limit );
+        } while (count($result) < $limit && count($entities) === $limit);
+        return array("entities" => $result, "pageKey" => $lastKey, "isLastFetched" => count($entities) !== $limit );
     }
 
     public function find(string $hash, string $type = 'file_hash'):FileDuplicate
