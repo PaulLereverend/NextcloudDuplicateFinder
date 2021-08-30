@@ -56,7 +56,7 @@ class PageController extends Controller
     {
         $response = array();
         $duplicates = $this->fileDuplicateService->findAll($this->userId, $limit, $offset);
-        foreach ($duplicates as $duplicate) {
+        foreach ($duplicates["entities"] as $duplicate) {
             foreach ($duplicate->getFiles() as $fileInfoId => $owner) {
                 $fileInfo = $this->fileInfoService->findById($fileInfoId);
                 if (is_string($owner)) {

@@ -20,11 +20,10 @@ class CMDUtils
         } else {
             $output->writeln('Duplicates for user "'.$user.'" are: ');
         }
-        $limit = 20;
-        $offset = 0;
+        $duplicates = array("pageKey" => 0, "isLastFetched" => true);
         do {
-            $duplicates = $fileDuplicateService->findAll($user, $limit, $offset, true);
-            foreach ($duplicates as $duplicate) {
+            $duplicates = $fileDuplicateService->findAll($user, 20, $duplicates["pageKey"], true);
+            foreach ($duplicates["entities"] as $duplicate) {
                 if (!$duplicate->getFiles()) {
                     continue;
                 }
@@ -33,10 +32,9 @@ class CMDUtils
                     if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
                         $output->writeln('     '.$file->getPath());
                     }
-                    $abortIfInterrupted();
                 };
             }
-            $offset += $limit;
-        } while (count($duplicates) === $limit);
+            $abortIfInterrupted();
+        } while (!$duplicates["isLastFetched"]);
     }
 }

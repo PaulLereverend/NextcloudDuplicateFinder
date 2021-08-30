@@ -10,7 +10,6 @@
     itemCount: 0,
     uniqueTotalSize: 0
   }
-  const limit = 20
   let offset = 0
 
   function render (items) {
@@ -208,29 +207,29 @@
     loaderBtn.style.display = 'none'
     $.getJSON(baseUrl + '/v1/Duplicates?offset=' + offset)
       .then(function (result) {
-        const items = result
+        const items = result.data.entities
 
-        if (items.data.length > 0) {
-          offset += items.data.length
-          if (offset % limit === 0) {
+        if (items.length > 0) {
+          offset = result.data.pageKey
+          if (!result.data.isLastFetched) {
             loaderBtn.style.display = 'inherit'
           }
         } else {
           loaderBtn.removeEventListener('click', loadFiles)
         }
 
-        items.data.forEach((duplicate, i) => {
+        items.forEach((duplicate, i) => {
           duplicate.files = Object.values(duplicate.files)
           if (duplicate.files.length > 0) {
             groupedResult.totalSize += duplicate.files[0].size * duplicate.files.length
             groupedResult.itemCount += duplicate.files.length
             groupedResult.uniqueTotalSize += duplicate.files[0].size
           } else {
-            items.data.splice(i, 1)
+            items.splice(i, 1)
           }
         })
         // Sort desending by size
-        items.data.sort((a, b) => {
+        items.sort((a, b) => {
           if (Array.isArray(b.files) && Array.isArray(a.files) &&
           b.files.length > 0 && a.files.length > 0) {
             return Math.abs((b.files[0].size * b.files.length) - (a.files[0].size * a.files.length))
@@ -238,9 +237,9 @@
             return -1
           }
         })
-        groupedResult.groupedItems = groupedResult.groupedItems.concat(items.data)
+        groupedResult.groupedItems = groupedResult.groupedItems.concat(items)
 
-        render(items.data)
+        render(items)
       })
   }
 

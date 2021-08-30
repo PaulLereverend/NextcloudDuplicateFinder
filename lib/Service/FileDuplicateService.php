@@ -59,7 +59,7 @@ class FileDuplicateService
      * @param int|null $offset
      * @param bool $enrich
      * @param array<array<string>> $orderBy
-     * @return array<FileDuplicate>
+     * @return array<string, FileDuplicate|int|mixed>
      */
     public function findAll(
         ?string $user = null,
@@ -68,26 +68,35 @@ class FileDuplicateService
         bool $enrich = false,
         ?array $orderBy = [['hash'],['type']]
     ):array {
-        $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
-        foreach ($entities as $entity) {
-            foreach ($entity->getFiles() as $fileId => $owner) {
-                if (!is_null($user)  && $user !== $owner) {
-                    $entity->removeDuplicate($fileId);
+        $result = array();
+        $entities = null;
+        $lastKey = null;
+        do {
+            $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
+            foreach ($entities as $entity) {
+                foreach ($entity->getFiles() as $fileId => $owner) {
+                    if (!is_null($user)  && $user !== $owner) {
+                        $entity->removeDuplicate($fileId);
+                    }
+                }
+                if ($enrich) {
+                    $entity = $this->enrich($entity);
+                    $files = $entity->getFiles();
+                    uasort($files, function (FileInfo $a, FileInfo $b) {
+                        return strnatcmp($a->getPath(), $b->getPath());
+                    });
+                    $entity->setFiles(array_values($files));
+                }
+                $lastKey = $entity->id;
+                if (count($entity->getFiles()) > 1) {
+                    $result[] = $entity;
+                    if (count($result) == $limit) {
+                        break;
+                    }
                 }
             }
-            if ($enrich) {
-                $entity = $this->enrich($entity);
-                $files = $entity->getFiles();
-                uasort($files, function (FileInfo $a, FileInfo $b) {
-                    return strnatcmp($a->getPath(), $b->getPath());
-                });
-                $entity->setFiles($files);
-            }
-            if (count($entity->getFiles()) < 2) {
-                $entity->setFiles([]);
-            }
-        }
-        return $entities;
+        } while (count($result) < $limit && count($entities) == $limit);
+        return array("entities" => $result, "pageKey" => $lastKey, "isLastFetched" => count($entities) != $limit );
     }
 
     public function find(string $hash, string $type = 'file_hash'):FileDuplicate
