@@ -6,6 +6,10 @@ setup() {
   load ${BATS_TEST_DIRNAME}/setup.sh
 }
 
+teardown(){
+    ./occ duplicates:clear -f
+}
+
 @test "[$TESTSUITE] Scan duplicates for user" {
   run ./occ -v duplicates:find-all -u admin
   [ "$status" -eq 0 ]
@@ -27,8 +31,8 @@ setup() {
   run ./occ -v duplicates:find-all -u tuser -p tests2
   [ "$status" -eq 0 ]
 
-  expectedHash="8970518bc29c3b2b09d185145db3a0c5ed47a61f1e6221400d57332fa5f9c2fb"
-  evaluateHashResult "${expectedHash}" 26 "${output}"
+  expectedHash="32af17b6db3a8496229b740562938355d83edad67162dfb5f3843e50f4600a56"
+  evaluateHashResult "${expectedHash}" 25 "${output}"
 }
 
 @test "[$TESTSUITE] Scan for all duplicates" {
@@ -43,8 +47,8 @@ setup() {
   run ./occ -v duplicates:find-all -p path_not_found
   [ "$status" -eq 0 ]
 
-  expectedHash="ef8889fc687de9a10bff98fd4151484db25e68905decfae799268f6e06b83e37"
-  evaluateHashResult "${expectedHash}" 51 "${output}"
+  expectedHash="2c5f884c3b78c7ba08baee430af449eaa6d9c4b97f1609481a2bc346d28e69dc"
+  evaluateHashResult "${expectedHash}" 0 "${output}"
 }
 
 @test "[$TESTSUITE] Check for user separation" {

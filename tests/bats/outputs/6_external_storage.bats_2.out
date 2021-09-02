@@ -350,6 +350,24 @@ Scanning /admin/files/tests/25_24.txt
 Scanning /admin/files/tests/20_4.txt
 Scanning /admin/files/tests/22_0.txt
 Scanning /admin/files/tests/21_21.txt
+Scanning /admin/files/eWebDAV/2_0.txt
+Skipped /admin/files/eWebDAV/2_0.txt
+Scanning /admin/files/eWebDAV/2_2.txt
+Skipped /admin/files/eWebDAV/2_2.txt
+Scanning /admin/files/eWebDAV/2_1.txt
+Skipped /admin/files/eWebDAV/2_1.txt
+Scanning /admin/files/eFTP/2_0.txt
+Skipped /admin/files/eFTP/2_0.txt
+Scanning /admin/files/eFTP/2_2.txt
+Skipped /admin/files/eFTP/2_2.txt
+Scanning /admin/files/eFTP/2_1.txt
+Skipped /admin/files/eFTP/2_1.txt
+Scanning /admin/files/eSMB/2_0.txt
+Skipped /admin/files/eSMB/2_0.txt
+Scanning /admin/files/eSMB/2_2.txt
+Skipped /admin/files/eSMB/2_2.txt
+Scanning /admin/files/eSMB/2_1.txt
+Skipped /admin/files/eSMB/2_1.txt
 Finished searching files
 Duplicates for user "admin" are: 
 917df3320d778ddbaa5c5c7742bc4046bf803c36ed2b050f30844ed206783469(file_hash)

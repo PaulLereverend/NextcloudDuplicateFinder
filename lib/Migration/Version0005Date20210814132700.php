@@ -10,7 +10,7 @@ use OCP\DB\ISchemaWrapper;
 use OCP\Migration\SimpleMigrationStep;
 use OCP\Migration\IOutput;
 
-class Version0004Date20210720195400 extends SimpleMigrationStep
+class Version0005Date20210814132700 extends SimpleMigrationStep
 {
 
   /**
@@ -25,12 +25,9 @@ class Version0004Date20210720195400 extends SimpleMigrationStep
         $schema = $schemaClosure();
         if ($schema->hasTable('duplicatefinder_finfo')) {
             $table = $schema->getTable('duplicatefinder_finfo');
-
-            if ($table->hasColumn('owner')) {
-                $ownerColumn = $table->getColumn('owner');
-                $ownerColumn->setOptions(['notnull' => false]);
+            if (!$table->hasIndex('duplicatefinder_s_idx')) {
+                $table->addIndex(['size'], 'duplicatefinder_s_idx');
             }
-
             return $schema;
         }
         return null;
