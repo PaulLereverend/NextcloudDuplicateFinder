@@ -50,7 +50,7 @@
     ![Preview of the GUI](https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png)
 ]]>
   </description>
-  <version>0.0.11</version>
+  <version>0.0.12</version>
   <licence>agpl</licence>
   <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
   <namespace>DuplicateFinder</namespace>
