@@ -32,23 +32,6 @@ jobs:
         ports:
           - 5432:5432
       mariadb:
-<<<<<<< HEAD
-        image: mariadb
-        env:
-          MYSQL_DATABASE: ${{ env.DATABASE }}
-          MYSQL_USER: ${{ env.DB_USER }}
-          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
-        ports:
-          - 3306:3306
-      mysql:
-        image: mysql
-        env:
-          MYSQL_DATABASE: ${{ env.DATABASE }}
-          MYSQL_USER: ${{ env.DB_USER }}
-          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
-        ports:
-          - 3307:3306
-=======
          # Nextcloud Requires compressed tables which are not supported in 10.6 (nextcloud/server #25436)
         image: mariadb:10.5
         ports:
@@ -76,7 +59,6 @@ jobs:
             - 139:139
             - 445:445
             - 30000-30200:30000-30200
->>>>>>> e861a6d72b6d54cd0e86a392af0022ca0397d7b1
     strategy:
       matrix:
         php-versions: ['7.3', '7.4']
