@@ -8,9 +8,10 @@ on:
     paths: '**.php'
   workflow_dispatch:
 env:
-  DB_USER: nc_test
-  DB_PASSWORD: nc_test_db
+  DB_USER: root
+  DB_PASSWORD: nc_test
   DATABASE: nc_test
+  STORAGE_HOST: 127.0.0.1
 jobs:
   integration:
     runs-on: ubuntu-latest
@@ -31,6 +32,7 @@ jobs:
         ports:
           - 5432:5432
       mariadb:
+<<<<<<< HEAD
         image: mariadb
         env:
           MYSQL_DATABASE: ${{ env.DATABASE }}
@@ -46,6 +48,35 @@ jobs:
           MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
         ports:
           - 3307:3306
+=======
+         # Nextcloud Requires compressed tables which are not supported in 10.6 (nextcloud/server #25436)
+        image: mariadb:10.5
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: ${{ env.DATABASE }}
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+      mysql:
+         # Nextcloud Requires compressed tables which are not supported in 10.6 (nextcloud/server #25436)
+        image: chrros95/mysql
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_DATABASE: ${{ env.DATABASE }}
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+          AUTH_PLUGIN: mysql_native_password
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      external-storage:
+        image: chrros95/external-storage-test
+        ports:
+            - 20:20
+            - 21:21
+            - 80:80
+            - 139:139
+            - 445:445
+            - 30000-30200:30000-30200
+>>>>>>> e861a6d72b6d54cd0e86a392af0022ca0397d7b1
     strategy:
       matrix:
         php-versions: ['7.3', '7.4']
@@ -65,12 +96,24 @@ jobs:
             dbport: 5432
           - database: mariadb
             dbtype: mysql
+<<<<<<< HEAD
             dbport: 3306
+=======
+>>>>>>> e861a6d72b6d54cd0e86a392af0022ca0397d7b1
           - database: mysql
             dbport: 3307
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+<<<<<<< HEAD
+=======
+      - name: Install additional software
+        run: |
+          sudo apt-get update
+          sudo apt-get install smbclient
+          sudo sed -i '/workgroup/ i\ client min protocol = NT1' /etc/samba/smb.conf
+          sudo sed -i '/workgroup/ i\ client max protocol = NT1' /etc/samba/smb.conf
+>>>>>>> e861a6d72b6d54cd0e86a392af0022ca0397d7b1
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -85,8 +128,13 @@ jobs:
           version: ${{ matrix.nextcloud }}
           cron: true
           database-type: ${{ matrix.dbtype || matrix.database }}
+<<<<<<< HEAD
           database-host: 'localhost'
           database-port: ${{ matrix.dbport }}
+=======
+          database-host: 127.0.0.1
+          database-port: ${{ matrix.dbport || 3306 }}
+>>>>>>> e861a6d72b6d54cd0e86a392af0022ca0397d7b1
           database-name: ${{ env.DATABASE }}
           database-user: ${{ env.DB_USER }}
           database-password: ${{ env.DB_PASSWORD }}
@@ -103,6 +151,15 @@ jobs:
       - name: Functional tests maintenance
         working-directory: ../server
         run: ./occ maintenance:repair
+<<<<<<< HEAD
+=======
+      - name: Allow that remote servers are on the local host
+        working-directory: ../server
+        run: ./occ config:system:set --value=true --type=boolean allow_local_remote_servers
+>>>>>>> e861a6d72b6d54cd0e86a392af0022ca0397d7b1
       - name: Functional tests
         working-directory: ../server
         run: bats apps/duplicatefinder/tests/bats
+        env:
+            DB_TYPE: ${{ matrix.dbtype || matrix.database }}
+            DB_PORT: ${{ matrix.dbport || 3306 }}

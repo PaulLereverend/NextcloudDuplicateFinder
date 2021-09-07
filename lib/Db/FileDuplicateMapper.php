@@ -48,15 +48,9 @@ class FileDuplicateMapper extends EQBMapper
             $qb->setMaxResults($limit);
         }
         if ($offset !== null) {
-            $qb->setFirstResult($offset);
+            $qb->where($qb->expr()->gt('id', $qb->createNamedParameter($offset, IQueryBuilder::PARAM_INT)));
         }
-
-        if ($user !== null) {
-            $qb->leftJoin('d', $this->getTableName().'_f', 'f', $qb->expr()->eq('d.id', 'f.id'))
-            ->where($qb->expr()->eq('value', $qb->createNamedParameter($user)))
-            ->groupBy('d.id')
-            ->having('COUNT(d.id) > 1');
-        }
+        $qb->addOrderBy('id');
         if ($orderBy !== null) {
             foreach ($orderBy as $order) {
                 $qb->addOrderBy($order[0], isset($order[1]) ? $order[1] : null);

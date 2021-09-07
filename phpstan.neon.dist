@@ -5,4 +5,4 @@ parameters:
   bootstrapFiles:
     - %currentWorkingDirectory%/../../lib/base.php
   ignoreErrors:
-    - '#Call to an undefined method OCA\\DuplicateFinder\\Db\\((?!EEntity).)+::(s|g)et[A-Z].+\(\)#'
+    - '#Call to an undefined static method OCA\\DuplicateFinder\\Db\\EEntity::(s|g)et[A-Z].+\(\).#'
