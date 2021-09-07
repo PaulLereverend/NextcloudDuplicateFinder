@@ -70,7 +70,6 @@ class FileDuplicateService
     ):array {
         $result = array();
         $entities = null;
-        $lastKey = null;
         do {
             $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
             foreach ($entities as $entity) {
@@ -87,7 +86,7 @@ class FileDuplicateService
                     });
                     $entity->setFiles(array_values($files));
                 }
-                $lastKey = $entity->id;
+                $offset = $entity->id;
                 if (count($entity->getFiles()) > 1) {
                     $result[] = $entity;
                     if (count($result) === $limit) {
@@ -96,7 +95,7 @@ class FileDuplicateService
                 }
             }
         } while (count($result) < $limit && count($entities) === $limit);
-        return array("entities" => $result, "pageKey" => $lastKey, "isLastFetched" => count($entities) !== $limit );
+        return array("entities" => $result, "pageKey" => $offset, "isLastFetched" => count($entities) !== $limit );
     }
 
     public function find(string $hash, string $type = 'file_hash'):FileDuplicate

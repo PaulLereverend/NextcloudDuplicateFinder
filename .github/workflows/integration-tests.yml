@@ -83,6 +83,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Install additional software
+        run: |
+          sudo apt-get update
+          sudo apt-get install smbclient
+          sudo sed -i '/workgroup/ i\ client min protocol = NT1' /etc/samba/smb.conf
+          sudo sed -i '/workgroup/ i\ client max protocol = NT1' /etc/samba/smb.conf
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -115,6 +121,9 @@ jobs:
       - name: Functional tests maintenance
         working-directory: ../server
         run: ./occ maintenance:repair
+      - name: Allow that remote servers are on the local host
+        working-directory: ../server
+        run: ./occ config:system:set --value=true --type=boolean allow_local_remote_servers
       - name: Functional tests
         working-directory: ../server
         run: bats apps/duplicatefinder/tests/bats
