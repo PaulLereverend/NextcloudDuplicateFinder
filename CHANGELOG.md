@@ -1,3 +1,11 @@
+## 0.0.12 (Author : @chrros95)
+- Add an option to ignore external files
+- Fix NotFoundExceptions
+- Fixed issue with the owner of the file
+## 0.0.11
+- Fixed SQL exceptions
+## 0.0.10
+- Added Support for MySQL as database
 ## 0.0.9
 
 - Restored 0.0.7 with fixes

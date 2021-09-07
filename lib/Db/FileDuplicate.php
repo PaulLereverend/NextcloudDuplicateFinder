@@ -1,6 +1,14 @@
 <?php
 namespace OCA\DuplicateFinder\Db;
 
+/**
+ * @method void setType(string $s)
+ * @method void setHash(string $s)
+ * @method void setFiles(array<string|FileInfo> $a)
+ * @method string getType()
+ * @method string getHash()
+ * @method array<string|FileInfo> getFiles()
+ */
 class FileDuplicate extends EEntity
 {
 

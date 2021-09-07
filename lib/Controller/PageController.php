@@ -56,10 +56,14 @@ class PageController extends Controller
     {
         $response = array();
         $duplicates = $this->fileDuplicateService->findAll($this->userId, $limit, $offset);
-        foreach ($duplicates as $duplicate) {
+        foreach ($duplicates["entities"] as $duplicate) {
             foreach ($duplicate->getFiles() as $fileInfoId => $owner) {
                 $fileInfo = $this->fileInfoService->findById($fileInfoId);
-                $node = $this->fileInfoService->getNode($fileInfo);
+                if (is_string($owner)) {
+                    $node = $this->fileInfoService->getNode($fileInfo, $owner);
+                } else {
+                    $node = $this->fileInfoService->getNode($fileInfo, null);
+                }
                 $response[] = [
                     'path' => $this->fileInfoService->getPathRelativeToUserFolder($fileInfo),
                     'hash' => $fileInfo->getFileHash(),

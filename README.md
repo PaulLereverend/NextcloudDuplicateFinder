@@ -39,6 +39,11 @@ If you increase the verbosity of the occ command, the shows a little bit more wh
       options
         -f, --force the flag forces to do the cleanup. _attention_ you will not be asked any questions
 
+## Config
+
+There is an option to avoid scanning external storages. 
+
+`./occ config:app:set --value=true duplicatefinder ignore_mounted_files`
 ## Preview
 
 ![Preview of the GUI](https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png)

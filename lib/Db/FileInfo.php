@@ -1,6 +1,26 @@
 <?php
 namespace OCA\DuplicateFinder\Db;
 
+/**
+ * @method void setOwner(string $s)
+ * @method void setPath(string $s)
+ * @method void setPathHash(string $s)
+ * @method void setFileHash(string $s)
+ * @method void setImageHash(string $s)
+ * @method void setUpdatedAt(int|\DateTime $d)
+ * @method void setNodeId(int $i)
+ * @method void setMimetype(string $s)
+ * @method void setSize(int $i)
+ * @method string getOwner()
+ * @method string getPath()
+ * @method string getPathHash()
+ * @method string getFileHash()
+ * @method string getImageHash()
+ * @method \DateTime getUpdatedAt()
+ * @method int getNodeId()
+ * @method string getMimetype()
+ * @method int getSize()
+ */
 class FileInfo extends EEntity
 {
 
@@ -8,6 +28,8 @@ class FileInfo extends EEntity
     protected $owner;
     /** @var string */
     protected $path;
+    /** @var string */
+    protected $pathHash;
     /** @var string */
     protected $fileHash;
     /** @var string */
@@ -33,5 +55,12 @@ class FileInfo extends EEntity
         if (!is_null($owner)) {
             $this->setOwner($owner);
         }
+    }
+
+    public function setPath(string $path):void
+    {
+        // SHA1 because we need a function to short the path and not be cryptographically secure
+        $this->setPathHash(sha1($path));
+        parent::setPath($path);
     }
 }

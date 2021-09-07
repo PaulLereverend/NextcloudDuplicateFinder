@@ -21,5 +21,4 @@ do
   done
 done
 
-./occ files:scan --all
 ./occ app:enable duplicatefinder

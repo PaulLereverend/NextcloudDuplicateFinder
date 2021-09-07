@@ -19,10 +19,11 @@ use OCA\DuplicateFinder\Listener\NewFileInfoListener;
 
 class Application extends App implements IBootstrap
 {
+    const ID = "duplicatefinder";
 
     public function __construct()
     {
-        parent::__construct('duplicatefinder');
+        parent::__construct(self::ID);
     }
 
     public function register(IRegistrationContext $context): void

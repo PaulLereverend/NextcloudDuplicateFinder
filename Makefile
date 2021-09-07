@@ -84,6 +84,16 @@ else
 	composer update --prefer-dist
 endif
 
+.PHONY: xmllint
+xmllint:
+ifeq (,$(wildcard $(build_tools_directory)/info.xsd))
+	mkdir -p $(build_tools_directory)
+	curl -o '$(build_tools_directory)/info.xsd' 'https://apps.nextcloud.com/schema/apps/info.xsd'
+	xmllint --schema $(build_tools_directory)/info.xsd $(CURDIR)/appinfo/info.xml --noout
+else
+	xmllint --schema $(build_tools_directory)/info.xsd $(CURDIR)/appinfo/info.xml --noout
+endif
+
 # Installs npm dependencies
 .PHONY: npm
 npm:
@@ -155,12 +165,16 @@ appstore:
 	-f $(appstore_package_name).tar.gz ../$(app_name) \
 
 .PHONY: test
-test: phpcs phpstan phpunit
+test: xmllint phpcbf phpcs phpstan phpunit
 
 .PHONY: phpunit
 phpunit: composer
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+
+.PHONY: phpcbf
+phpcbf: composer
+	./vendor/bin/phpcbf --standard=PSR2 lib
 
 .PHONY: phpcs
 phpcs: composer

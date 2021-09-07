@@ -50,7 +50,7 @@
     ![Preview of the GUI](https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png)
 ]]>
   </description>
-  <version>0.0.9</version>
+  <version>0.0.12</version>
   <licence>agpl</licence>
   <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
   <namespace>DuplicateFinder</namespace>
@@ -66,6 +66,11 @@
     <job>OCA\DuplicateFinder\BackgroundJob\FindDuplicates</job>
     <job>OCA\DuplicateFinder\BackgroundJob\CleanUpDB</job>
   </background-jobs>
+  <repair-steps>
+      <post-migration>
+          <step>OCA\DuplicateFinder\Migration\RepairFileInfos</step>
+      </post-migration>
+  </repair-steps>
   <commands>
 	  <command>OCA\DuplicateFinder\Command\FindDuplicates</command>
 	  <command>OCA\DuplicateFinder\Command\ListDuplicates</command>

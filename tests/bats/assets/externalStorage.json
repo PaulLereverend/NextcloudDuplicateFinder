@@ -1,0 +1,81 @@
+[
+    {
+        "mount_id": 1,
+        "mount_point": "\/eSMB",
+        "storage": "\\OCA\\Files_External\\Lib\\Storage\\SMB",
+        "authentication_type": "password::password",
+        "configuration": {
+            "host": "%%host%%",
+            "share": "public",
+            "root": "",
+            "domain": "WORKGROUP",
+            "show_hidden": false,
+            "check_acl": true,
+            "timeout": "",
+            "user": "test",
+            "password": "test"
+        },
+        "options": {
+            "encrypt": true,
+            "previews": true,
+            "enable_sharing": false,
+            "filesystem_check_changes": 1,
+            "encoding_compatibility": false,
+            "readonly": false
+        },
+        "applicable_users": [
+            "admin"
+        ],
+        "applicable_groups": []
+    },
+    {
+        "mount_id": 2,
+        "mount_point": "\/eFTP",
+        "storage": "\\OCA\\Files_External\\Lib\\Storage\\FTP",
+        "authentication_type": "password::password",
+        "configuration": {
+            "host": "%%host%%",
+            "root": "",
+            "secure": false,
+            "user": "test",
+            "password": "test"
+        },
+        "options": {
+            "encrypt": true,
+            "previews": true,
+            "enable_sharing": false,
+            "filesystem_check_changes": 1,
+            "encoding_compatibility": false,
+            "readonly": false
+        },
+        "applicable_users": [
+            "admin"
+        ],
+        "applicable_groups": []
+    },
+    {
+        "mount_id": 3,
+        "mount_point": "\/eWebDAV",
+        "storage": "\\OC\\Files\\Storage\\DAV",
+        "authentication_type": "password::password",
+        "configuration": {
+            "host": "%%host%%\/webdav",
+            "root": "",
+            "secure": false,
+            "user": "test",
+            "password": "test"
+        },
+        "options": {
+            "encrypt": true,
+            "previews": true,
+            "enable_sharing": false,
+            "filesystem_check_changes": 1,
+            "encoding_compatibility": false,
+            "readonly": false
+        },
+        "applicable_users": [
+            "admin"
+        ],
+        "applicable_groups": []
+    }
+]
