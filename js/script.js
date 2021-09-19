@@ -1,3 +1,4 @@
+/* global OC, fetch */
 (function () {
   const baseUrl = OC.generateUrl('/apps/duplicatefinder/api')
   const element = document.getElementById('container')
@@ -29,8 +30,8 @@
     }
   }
 
-  function updateTitle (s_title) {
-    title.innerHTML = s_title
+  function updateTitle (sTitle) {
+    title.innerHTML = sTitle
   }
 
   function updateTitleWithStats () {
@@ -49,13 +50,14 @@
 
   function getPreviewImage (item) {
     if (isImage(item) || isVideo(item)) {
-      return OC.generateUrl('/core/preview.png?') + $.param({
+      const query = new URLSearchParams({
         file: normalizeItemPath(item.path),
         fileId: item.nodeId,
         x: 500,
         y: 500,
         forceIcon: 0
       })
+      return OC.generateUrl('/core/preview.png?') + query.toString()
     }
 
     return OC.MimeType.getIconUrl(item.mimetype)
@@ -177,16 +179,16 @@
     actionsContainer.setAttribute('class', 'fileactions')
 
     actions.forEach(action => {
-      const action_link = document.createElement('a')
-      action_link.setAttribute('href', action.url.call(null, item))
-      action_link.setAttribute('class', 'action permanent')
-      action_link.setAttribute('title', action.description)
+      const actionLink = document.createElement('a')
+      actionLink.setAttribute('href', action.url.call(null, item))
+      actionLink.setAttribute('class', 'action permanent')
+      actionLink.setAttribute('title', action.description)
 
-      const action_icon = document.createElement('span')
-      action_icon.setAttribute('class', 'icon ' + action.icon)
-      action_link.appendChild(action_icon)
+      const actionIcon = document.createElement('span')
+      actionIcon.setAttribute('class', 'icon ' + action.icon)
+      actionLink.appendChild(actionIcon)
 
-      actionsContainer.appendChild(action_link)
+      actionsContainer.appendChild(actionLink)
     })
 
     labelContainer.appendChild(actionsContainer)
@@ -202,45 +204,57 @@
     return itemDiv
   }
 
-  function loadFiles () {
+  async function loadFiles () {
     loader.style.display = 'inherit'
     loaderBtn.style.display = 'none'
-    $.getJSON(baseUrl + '/v1/Duplicates?offset=' + offset)
-      .then(function (result) {
-        const items = result.data.entities
-
-        if (items.length > 0) {
-          offset = result.data.pageKey
-          if (!result.data.isLastFetched) {
-            loaderBtn.style.display = 'inherit'
-          }
-        } else {
-          loaderBtn.removeEventListener('click', loadFiles)
-        }
-
-        items.forEach((duplicate, i) => {
-          duplicate.files = Object.values(duplicate.files)
-          if (duplicate.files.length > 0) {
-            groupedResult.totalSize += duplicate.files[0].size * duplicate.files.length
-            groupedResult.itemCount += duplicate.files.length
-            groupedResult.uniqueTotalSize += duplicate.files[0].size
-          } else {
-            items.splice(i, 1)
-          }
-        })
-        // Sort desending by size
-        items.sort((a, b) => {
-          if (Array.isArray(b.files) && Array.isArray(a.files) &&
-          b.files.length > 0 && a.files.length > 0) {
-            return Math.abs((b.files[0].size * b.files.length) - (a.files[0].size * a.files.length))
-          } else {
-            return -1
-          }
-        })
-        groupedResult.groupedItems = groupedResult.groupedItems.concat(items)
-
-        render(items)
+    let response
+    try {
+      response = await fetch(baseUrl + '/v1/Duplicates?offset=' + offset, {
+        redirect: 'error'
       })
+
+      const result = await response.json()
+      const items = result.data.entities
+
+      if (items.length > 0) {
+        offset = result.data.pageKey
+        if (!result.data.isLastFetched) {
+          loaderBtn.style.display = 'inherit'
+        }
+      } else {
+        loaderBtn.removeEventListener('click', loadFiles)
+      }
+
+      items.forEach((duplicate, i) => {
+        duplicate.files = Object.values(duplicate.files)
+        if (duplicate.files.length > 0) {
+          groupedResult.totalSize += duplicate.files[0].size * duplicate.files.length
+          groupedResult.itemCount += duplicate.files.length
+          groupedResult.uniqueTotalSize += duplicate.files[0].size
+        } else {
+          items.splice(i, 1)
+        }
+      })
+      // Sort desending by size
+      items.sort((a, b) => {
+        if (Array.isArray(b.files) && Array.isArray(a.files) &&
+            b.files.length > 0 && a.files.length > 0) {
+          return Math.abs((b.files[0].size * b.files.length) - (a.files[0].size * a.files.length))
+        } else {
+          return -1
+        }
+      })
+      groupedResult.groupedItems = groupedResult.groupedItems.concat(items)
+
+      render(items)
+    } catch (e) {
+      console.error('duplicatefinder: API Fetching', e, response)
+      loader.style.display = 'none'
+      const errorElement = document.createElement('div')
+      errorElement.innerHTML = 'Failed to load duplicates'
+      errorElement.style = 'width: 100%; color: rgb(132, 32, 41); background-color: rgb(248, 215, 218); border-color: rgb(245, 194, 199);height: 4em;line-height: 4em;padding-left: 1em;border: 1px solid rgb(245, 194, 199);border-radius: .25rem;'
+      element.appendChild(errorElement)
+    }
   }
 
   loadFiles()
