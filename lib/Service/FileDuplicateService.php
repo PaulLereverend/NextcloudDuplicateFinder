@@ -50,6 +50,7 @@ class FileDuplicateService
                   .$duplicate->getHash().' - '.$duplicate->getType());
             }
         }
+        unset($owner);
         return $duplicate;
     }
 
@@ -78,6 +79,7 @@ class FileDuplicateService
                         $entity->removeDuplicate($fileId);
                     }
                 }
+                unset($owner);
                 if ($enrich) {
                     $entity = $this->enrich($entity);
                     $files = $entity->getFiles();
@@ -94,6 +96,7 @@ class FileDuplicateService
                     }
                 }
             }
+            unset($entity);
         } while (count($result) < $limit && count($entities) === $limit);
         return array("entities" => $result, "pageKey" => $offset, "isLastFetched" => count($entities) !== $limit );
     }
@@ -154,5 +157,6 @@ class FileDuplicateService
                 $this->mapper->delete($fileDuplicate);
             }
         }
+        unset($fileDuplicate);
     }
 }

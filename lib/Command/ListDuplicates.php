@@ -113,6 +113,7 @@ class ListDuplicates extends Base
                     $user
                 );
             }
+            unset($user);
         } else {
             CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function () {
                 $this->abortIfInterrupted();

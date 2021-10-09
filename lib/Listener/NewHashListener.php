@@ -62,6 +62,7 @@ class NewHashListener implements IEventListener
                     foreach ($files as $fileInfo) {
                         $fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
                     }
+                    unset($fileInfo);
                 }
                 $this->fileDuplicateService->update($fileDuplicate);
             } catch (\Exception $e) {

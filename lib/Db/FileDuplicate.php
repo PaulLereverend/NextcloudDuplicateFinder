@@ -79,6 +79,7 @@ class FileDuplicate extends EEntity
                 $result += 1;
             }
         }
+        unset($u);
         return $result;
     }
 }

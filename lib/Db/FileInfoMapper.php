@@ -39,6 +39,7 @@ class FileInfoMapper extends EQBMapper
                     return $entity;
                 }
             }
+            unset($entity);
         }
         throw new \OCP\AppFramework\Db\DoesNotExistException('FileInfo not found');
     }

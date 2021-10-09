@@ -88,6 +88,7 @@ class RepairFileInfos implements IRepairStep
             }
             $output->advance();
         }
+        unset($row);
         $output->finishProgress();
     }
 
@@ -134,6 +135,7 @@ class RepairFileInfos implements IRepairStep
             }
             $output->advance();
         }
+        unset($entity);
         $output->finishProgress();
     }
 }

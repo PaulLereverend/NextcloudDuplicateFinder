@@ -55,6 +55,7 @@ class EEntity extends Entity implements JsonSerializable
         foreach ($this->changedRelations as $field => $value) {
             $this->changedRelations[$field] = [];
         }
+        unset($value);
     }
 
     /**
@@ -187,6 +188,7 @@ class EEntity extends Entity implements JsonSerializable
             $methodName .= ucfirst($property);
             $json[$property] = $this->$methodName();
         }
+        unset($value);
         return $json;
     }
 

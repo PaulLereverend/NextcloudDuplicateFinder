@@ -127,6 +127,7 @@ class FindDuplicates extends Base
                     }
                     $this->findDuplicates($user);
                 }
+                unset($user);
             } else {
                 $users =  $this->userManager->callForAllUsers(function (IUser $user): void {
                     $this->findDuplicates($user->getUID());
@@ -162,6 +163,7 @@ class FindDuplicates extends Base
                     $this->output
                 );
             }
+            unset($inputPath);
         }
         CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function () {
             $this->abortIfInterrupted();

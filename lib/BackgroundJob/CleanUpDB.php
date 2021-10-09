@@ -44,5 +44,6 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob
                 $this->fileInfoService->delete($fileInfo);
             }
         }
+        unset($fileInfo);
     }
 }

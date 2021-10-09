@@ -32,8 +32,10 @@ class CMDUtils
                     if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
                         $output->writeln('     '.$file->getPath());
                     }
-                };
+                }
+                unset($file);
             }
+            unset($duplicate);
             $abortIfInterrupted();
         } while (!$duplicates["isLastFetched"]);
     }

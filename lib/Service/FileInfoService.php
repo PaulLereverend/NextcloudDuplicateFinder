@@ -76,6 +76,7 @@ class FileInfoService
             foreach ($entities as $entity) {
                 $entity = $this->enrich($entity);
             }
+            unset($entity);
         }
         return $entities;
     }

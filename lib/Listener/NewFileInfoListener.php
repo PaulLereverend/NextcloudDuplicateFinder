@@ -39,7 +39,8 @@ class NewFileInfoListener implements IEventListener
                     foreach ($files as $finfo) {
                         $this->fileInfoService->calculateHashes($finfo);
                     }
-                }
+                    unset($finfo);
+                } 
             }
         } catch (\Throwable $e) {
             $this->logger->error('Failed to handle NewFileInfoEvent .', ['exception'=> $e]);
