@@ -40,7 +40,7 @@ class NewFileInfoListener implements IEventListener
                         $this->fileInfoService->calculateHashes($finfo);
                     }
                     unset($finfo);
-                } 
+                }
             }
         } catch (\Throwable $e) {
             $this->logger->error('Failed to handle NewFileInfoEvent .', ['exception'=> $e]);
