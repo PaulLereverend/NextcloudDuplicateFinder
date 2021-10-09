@@ -173,7 +173,6 @@ class EEntity extends Entity implements JsonSerializable
     public function jsonSerialize()
     {
         $properties = get_object_vars($this);
-        $reflection = new \ReflectionClass($this);
         $json = [];
         foreach ($properties as $property => $value) {
             if (isset($this->getInternalProperties()[$property])

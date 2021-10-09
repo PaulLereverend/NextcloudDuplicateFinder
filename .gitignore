@@ -6,3 +6,5 @@ node_modules/
 vendor/
 .phpunit.result.cache
 composer.lock
+sonar-project.properties
+.scannerwork

@@ -74,12 +74,8 @@ class FileDuplicateService
         do {
             $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
             foreach ($entities as $entity) {
-                foreach ($entity->getFiles() as $fileId => $owner) {
-                    if (!is_null($user)  && $user !== $owner) {
-                        $entity->removeDuplicate($fileId);
-                    }
-                }
-                unset($owner);
+                $entity = $this->stripFilesWithoutAccessRights($entity, $user);
+                
                 if ($enrich) {
                     $entity = $this->enrich($entity);
                     $files = $entity->getFiles();
@@ -99,6 +95,17 @@ class FileDuplicateService
             unset($entity);
         } while (count($result) < $limit && count($entities) === $limit);
         return array("entities" => $result, "pageKey" => $offset, "isLastFetched" => count($entities) !== $limit );
+    }
+
+    private function stripFilesWithoutAccessRights(FileDuplicate $entity, ?string $user) : FileDuplicate
+    {
+        foreach ($entity->getFiles() as $fileId => $owner) {
+            if (!is_null($user) && $user !== $owner) {
+                $entity->removeDuplicate($fileId);
+            }
+        }
+        unset($owner);
+        return $entity;
     }
 
     public function find(string $hash, string $type = 'file_hash'):FileDuplicate

@@ -21,6 +21,8 @@ use OCA\DuplicateFinder\Db\FileInfoMapper;
 use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 use OCA\DuplicateFinder\Event\NewFileInfoEvent;
 use OCA\DuplicateFinder\Exception\ForcedToIgnoreFileException;
+use OCA\DuplicateFinder\Exception\UnableToCalculateHash;
+use OCA\DuplicateFinder\Exception\UnknownOwnerException;
 
 class FileInfoService
 {
@@ -201,7 +203,7 @@ class FileInfoService
                 $this->update($fileInfo);
                 $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
             } else {
-                throw new \Exception('Unable to calculate hash for '.$file->getInternalPath());
+                throw new UnableToCalculateHash($file->getInternalPath());
             }
         }
         return $fileInfo;
@@ -218,12 +220,11 @@ class FileInfoService
         if (!is_null($path)) {
             $scanPath .= DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR);
             if (!$userFolder->nodeExists(ltrim($path, DIRECTORY_SEPARATOR))) {
-                if ($output) {
-                    $output->writeln(
-                        'Skipped '.$scanPath.' because it doesn\'t exists.',
-                        OutputInterface::VERBOSITY_VERBOSE
-                    );
-                }
+                $this->showIfOutputIsPresent(
+                    'Skipped '.$scanPath.' because it doesn\'t exists.',
+                    $output,
+                    OutputInterface::VERBOSITY_VERBOSE
+                );
                 return;
             }
         }
@@ -232,21 +233,26 @@ class FileInfoService
             '\OC\Files\Utils\Scanner',
             'postScanFile',
             function ($path) use ($abortIfInterrupted, $output, $user) {
-                if (!is_null($output)) {
-                    $output->writeln('Scanning '.$path, OutputInterface::VERBOSITY_VERBOSE);
-                }
+                $this->showIfOutputIsPresent(
+                    'Scanning '.$path,
+                    $output,
+                    OutputInterface::VERBOSITY_VERBOSE
+                );
                 try {
-                    $fileInfo = $this->save($path, $user);
+                    $this->save($path, $user);
                 } catch (NotFoundException $e) {
                     $this->logger->logException($e, ['app' => 'duplicatefinder']);
-                    if ($output) {
-                        $output->writeln('<error>The given path doesn\'t exists.</error>');
-                    }
+                    $this->showIfOutputIsPresent(
+                        '<error>The given path doesn\'t exists.</error>',
+                        $output
+                    );
                 } catch (ForcedToIgnoreFileException $e) {
                     $this->logger->info($e->getMessage(), ['exception'=> $e]);
-                    if ($output) {
-                        $output->writeln('Skipped '.$path, OutputInterface::VERBOSITY_VERBOSE);
-                    }
+                    $this->showIfOutputIsPresent(
+                        'Skipped '.$path,
+                        $output,
+                        OutputInterface::VERBOSITY_VERBOSE
+                    );
                 }
                 if ($abortIfInterrupted) {
                     $abortIfInterrupted();
@@ -258,20 +264,33 @@ class FileInfoService
                 }
             }
         );
-        if ($output) {
-            $output->writeln('Start searching files for '.$user.' in path '.$scanPath);
-        }
+        $this->showIfOutputIsPresent(
+            'Start searching files for '.$user.' in path '.$scanPath,
+            $output
+        );
 
         try {
             $scanner->scan($scanPath, true);
         } catch (NotFoundException $e) {
             $this->logger->logException($e, ['app' => 'duplicatefinder']);
-            if ($output) {
-                $output->writeln('<error>The given scan path doesn\'t exists.</error>');
-            }
+            $this->showIfOutputIsPresent(
+                '<error>The given scan path doesn\'t exists.</error>',
+                $output
+            );
         }
-        if ($output) {
-            $output->writeln('Finished searching files');
+        $this->showIfOutputIsPresent(
+            'Finished searching files',
+            $output
+        );
+    }
+
+    private function showIfOutputIsPresent(
+        string $message,
+        ?OutputInterface $output = null,
+        int $verbosity = OutputInterface::VERBOSITY_NORMAL
+    ) : void {
+        if (!is_null($output)) {
+            $output->writeln($message, $verbosity);
         }
     }
 
@@ -296,6 +315,7 @@ class FileInfoService
                 $relativePath = $this->getPathRelativeToUserFolder($fileInfo);
                 return $userFolder->get($relativePath);
             } catch (NotFoundException $e) {
+                //If the file is not known in the user root (cached) it's fine to use the root
             }
         }
         return $this->rootFolder->get($fileInfo->getPath());
@@ -311,7 +331,7 @@ class FileInfoService
             $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
             return substr($fileInfo->getPath(), strlen($userFolder->getPath()));
         } else {
-            throw new \Exception('The owner of '.$fileInfo->getPath().' is not set');
+            throw new UnknownOwnerException($fileInfo->getPath());
         }
     }
 }

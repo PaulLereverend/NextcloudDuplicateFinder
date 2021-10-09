@@ -88,7 +88,7 @@ class ListDuplicates extends Base
             return 1;
         }
         $user = $input->getOption('user');
-
+        $result = 0;
         if ($user) {
             if ($user === true) {
                 $this->output->writeln('User parameter has an invalid value.');
@@ -98,28 +98,41 @@ class ListDuplicates extends Base
             } else {
                 $users = $user;
             }
-            foreach ($users as $user) {
-                if (!$this->userManager->userExists($user)) {
-                    $this->output->writeln('User '.$user.' is unkown.');
-                    return 1;
-                }
-                CMDUtils::showDuplicates(
-                    $this->fileDuplicateService,
-                    $this->fileInfoService,
-                    $this->output,
-                    function () {
-                        $this->abortIfInterrupted();
-                    },
-                    $user
-                );
+            if ($result === 0) {
+                $result = $this->listDuplicatesForUsers($users);
             }
-            unset($user);
         } else {
-            CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function () {
+            CMDUtils::showDuplicates($this->fileDuplicateService, $this->output, function () {
                 $this->abortIfInterrupted();
             });
+            $result = 0;
         }
 
-        return 0;
+        return $result;
+    }
+
+    /**
+     * @param array<string> $users
+     */
+    private function listDuplicatesForUsers(array $users) : int
+    {
+        $result = 0;
+        foreach ($users as $user) {
+            if (!$this->userManager->userExists($user)) {
+                $this->output->writeln('User '.$user.' is unkown.');
+                $result = 1;
+                break;
+            }
+            CMDUtils::showDuplicates(
+                $this->fileDuplicateService,
+                $this->output,
+                function () {
+                    $this->abortIfInterrupted();
+                },
+                $user
+            );
+        }
+        unset($user);
+        return $result;
     }
 }

@@ -78,33 +78,34 @@
     iconEl.classList.replace('icon-delete', 'icon-loading')
 
     fileClient.remove(normalizeItemPath(item.path)).then(function () {
-      groupedResult.groupedItems.forEach((grp, i) => {
-        grp.files.forEach((file, j) => {
-          if (file.path === item.path) {
-            if (document.getElementById(grp.id + '-file-' + file.id) !== null) {
-              document.getElementById(grp.id + '-file-' + file.id).remove()
-            }
-            groupedResult.totalSize -= item.size
-            groupedResult.itemCount -= 1
-            grp.files.splice(j, 1)
-          }
-        })
-        if (grp.files.length <= 1) {
-          if (document.getElementById('grp-' + grp.id) !== null) {
-            document.getElementById('grp-' + grp.id).remove()
-          }
-          groupedResult.totalSize -= item.size
-          groupedResult.itemCount -= 1
-          groupedResult.uniqueTotalSize -= item.size
-          groupedResult.groupedItems.splice(i, 1)
-        }
-      })
-
+      groupedResult.groupedItems.forEach(cleanGroupItems.bind(undefined, item))
       updateTitleWithStats()
     }).fail(function () {
       iconEl.classList.replace('icon-loading', 'icon-delete')
       OC.dialogs.alert('Error deleting the file: ' + normalizeItemPath(item.path), 'Error')
     })
+  }
+  
+  function cleanGroupItems(item, grp, i) {
+    grp.files.forEach((file, j) => {
+      if (file.path === item.path) {
+        if (document.getElementById(grp.id + '-file-' + file.id) !== null) {
+          document.getElementById(grp.id + '-file-' + file.id).remove()
+        }
+        groupedResult.totalSize -= item.size
+        groupedResult.itemCount -= 1
+        grp.files.splice(j, 1)
+      }
+    })
+    if (grp.files.length <= 1) {
+      if (document.getElementById('grp-' + grp.id) !== null) {
+        document.getElementById('grp-' + grp.id).remove()
+      }
+      groupedResult.totalSize -= item.size
+      groupedResult.itemCount -= 1
+      groupedResult.uniqueTotalSize -= item.size
+      groupedResult.groupedItems.splice(i, 1)
+    }
   }
 
   function getGroupElement (group) {
@@ -160,17 +161,17 @@
     const actions = [
       {
         icon: 'icon-file',
-        url: function (item) {
-          const dir = OC.dirname(normalizeItemPath(item.path))
+        url: function (selectedItem) {
+          const dir = OC.dirname(normalizeItemPath(selectedItem.path))
 
-          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + item.nodeId)
+          return OC.generateUrl('/apps/files/?dir=' + dir + '&openfile=' + selectedItem.nodeId)
         },
         description: 'Show file'
       },
       {
         icon: 'icon-details',
-        url: function (item) {
-          return OC.generateUrl('/f/' + item.nodeId)
+        url: function (selectedItem) {
+          return OC.generateUrl('/f/' + selectedItem.nodeId)
         },
         description: 'Show details'
       }

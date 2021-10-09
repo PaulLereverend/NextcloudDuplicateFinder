@@ -100,16 +100,16 @@ class FindDuplicates extends Base
             return 1;
         }
 
-        $inputPath = $input->getOption('path');
-        if (is_bool($inputPath)) {
+        $scanPath = $input->getOption('path');
+        if (is_bool($scanPath)) {
             $this->output->writeln('<error>The given path is invalid.<error>');
-        } elseif (is_string($inputPath)) {
-            $this->inputPath = [$inputPath];
-        } elseif (!empty($inputPath)) {
-            $this->inputPath = $inputPath;
+        } elseif (is_string($scanPath)) {
+            $this->inputPath = [$scanPath];
+        } elseif (!empty($scanPath)) {
+            $this->inputPath = $scanPath;
         }
         $user = $input->getOption('user');
-
+        $result = 0;
         try {
             if ($user) {
                 if ($user === true) {
@@ -120,14 +120,7 @@ class FindDuplicates extends Base
                 } else {
                     $users = $user;
                 }
-                foreach ($users as $user) {
-                    if (!$this->userManager->userExists($user)) {
-                        $this->output->writeln('User '.$user.' is unkown.');
-                        return 1;
-                    }
-                    $this->findDuplicates($user);
-                }
-                unset($user);
+                $result = $this->findDuplicatesForUsers($users);
             } else {
                 $users =  $this->userManager->callForAllUsers(function (IUser $user): void {
                     $this->findDuplicates($user->getUID());
@@ -138,7 +131,25 @@ class FindDuplicates extends Base
             $this->output->writeln('<error>The given path doesn\'t exists.<error>');
         }
 
-        return 0;
+        return $result;
+    }
+
+    /**
+     * @param array<string> $users
+     */
+    private function findDuplicatesForUsers(array $users) : int
+    {
+        $result = 0;
+        foreach ($users as $user) {
+            if (!$this->userManager->userExists($user)) {
+                $this->output->writeln('User '.$user.' is unkown.');
+                $result = 1;
+                break;
+            }
+            $this->findDuplicates($user);
+        }
+        unset($user);
+        return $result;
     }
 
     private function findDuplicates(string $user):void
@@ -165,7 +176,7 @@ class FindDuplicates extends Base
             }
             unset($inputPath);
         }
-        CMDUtils::showDuplicates($this->fileDuplicateService, $this->fileInfoService, $this->output, function () {
+        CMDUtils::showDuplicates($this->fileDuplicateService, $this->output, function () {
             $this->abortIfInterrupted();
         }, $user);
     }
