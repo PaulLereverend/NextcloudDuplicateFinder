@@ -85,8 +85,8 @@
       OC.dialogs.alert('Error deleting the file: ' + normalizeItemPath(item.path), 'Error')
     })
   }
-  
-  function cleanGroupItems(item, grp, i) {
+
+  function cleanGroupItems (item, grp, i) {
     grp.files.forEach((file, j) => {
       if (file.path === item.path) {
         if (document.getElementById(grp.id + '-file-' + file.id) !== null) {

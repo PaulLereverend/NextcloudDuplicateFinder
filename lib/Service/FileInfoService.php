@@ -147,7 +147,7 @@ class FileInfoService
             $fileInfo->setKeepAsPrimary(true);
             $fileInfo = $this->mapper->insert($fileInfo);
             $fileInfo->setKeepAsPrimary(false);
-            $this->eventDispatcher->dispatchTyped(new NewFileInfoEvent($fileInfo));
+            $this->eventDispatcher->dispatchTyped(new NewFileInfoEvent($fileInfo, $fallbackUID));
         }
         return $fileInfo;
     }
@@ -179,7 +179,7 @@ class FileInfoService
             if (!is_null($fallbackUID)) {
                 $fileInfo->setOwner($fallbackUID);
             } elseif (!$fileInfo->getOwner()) {
-                    throw $e;
+                throw $e;
             }
         }
         return $fileInfo;
@@ -200,7 +200,7 @@ class FileInfoService
             if (!is_bool($hash)) {
                 $fileInfo->setFileHash($hash);
                 $fileInfo->setUpdatedAt(new \DateTime());
-                $this->update($fileInfo);
+                $this->update($fileInfo, $fallbackUID);
                 $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
             } else {
                 throw new UnableToCalculateHash($file->getInternalPath());
