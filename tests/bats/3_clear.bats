@@ -7,6 +7,10 @@ setup() {
   ./occ duplicates:find-all > /dev/null
 }
 
+teardown() {
+    clearTestFiles
+}
+
 @test "[$TESTSUITE] Clear all" {
   run ./occ duplicates:clear -f
   [ "$status" -eq 0 ]

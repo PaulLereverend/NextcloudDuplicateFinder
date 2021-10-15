@@ -3,8 +3,13 @@ TESTSUITE="duplicatefinder"
 load ${BATS_TEST_DIRNAME}/helper.sh
 
 setup() {
+  export MAX_FILES=25
   load ${BATS_TEST_DIRNAME}/setup.sh
   ./occ duplicates:find-all
+}
+
+teardown() {
+    clearTestFiles
 }
 
 @test "[$TESTSUITE] List duplicates for user admin" {

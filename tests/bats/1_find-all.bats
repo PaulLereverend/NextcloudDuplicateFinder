@@ -3,11 +3,12 @@ TESTSUITE="duplicatefinder"
 load ${BATS_TEST_DIRNAME}/helper.sh
 
 setup() {
+  export MAX_FILES=25
   load ${BATS_TEST_DIRNAME}/setup.sh
 }
 
-teardown(){
-    ./occ duplicates:clear -f
+teardown() {
+    clearTestFiles
 }
 
 @test "[$TESTSUITE] Scan duplicates for user" {
