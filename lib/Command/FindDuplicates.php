@@ -110,25 +110,20 @@ class FindDuplicates extends Base
         }
         $user = $input->getOption('user');
         $result = 0;
-        try {
-            if ($user) {
-                if ($user === true) {
-                    $this->output->writeln('User parameter has an invalid value.');
-                    return 1;
-                } elseif (is_string($user)) {
-                    $users = [$user];
-                } else {
-                    $users = $user;
-                }
-                $result = $this->findDuplicatesForUsers($users);
+        if ($user) {
+            if ($user === true) {
+                $this->output->writeln('User parameter has an invalid value.');
+                return 1;
+            } elseif (is_string($user)) {
+                $users = [$user];
             } else {
-                $users =  $this->userManager->callForAllUsers(function (IUser $user): void {
-                    $this->findDuplicates($user->getUID());
-                });
+                $users = $user;
             }
-        } catch (NotFoundException $e) {
-            $this->logger->logException($e, ['app' => 'duplicatefinder']);
-            $this->output->writeln('<error>The given path doesn\'t exists.<error>');
+            $result = $this->findDuplicatesForUsers($users);
+        } else {
+            $this->userManager->callForAllUsers(function (IUser $user): void {
+                $this->findDuplicates($user->getUID());
+            });
         }
 
         return $result;
@@ -146,7 +141,13 @@ class FindDuplicates extends Base
                 $result = 1;
                 break;
             }
-            $this->findDuplicates($user);
+
+            try {
+                $this->findDuplicates($user);
+            } catch (NotFoundException $e) {
+                $this->logger->logException($e, ['app' => 'duplicatefinder']);
+                $this->output->writeln('<error>The given path doesn\'t exists ('.$e->getMessage().').<error>');
+            }
         }
         unset($user);
         return $result;

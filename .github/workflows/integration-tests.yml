@@ -12,6 +12,7 @@ env:
   DB_PASSWORD: nc_test
   DATABASE: nc_test
   STORAGE_HOST: 127.0.0.1
+  NEXTCLOUD: "http://localhost:8080"
 jobs:
   integration:
     runs-on: ubuntu-latest
@@ -70,7 +71,7 @@ jobs:
             nextcloud: pre-release
             database: sqlite
             experimental: true
-          - php-versions: 8.0
+          - php-versions: "8.0"
             nextcloud: pre-release
             database: sqlite
             experimental: true
@@ -95,6 +96,12 @@ jobs:
           php-version: ${{ matrix.php-versions }}
           extensions: pdo_sqlite,pdo_mysql,pdo_pgsql,gd,zip
           coverage: none
+      - name: Setup NGINX
+        run: |
+          sudo wget -O /etc/nginx/nginx.conf https://gist.githubusercontent.com/chrros95/e5fec847dee6a0f4a9314148419f12bf/raw/nginx.conf
+          sudo wget -O /etc/php/${{ matrix.php-versions }}/fpm/pool.d/www.conf https://gist.githubusercontent.com/chrros95/25192b31029fb43ce4871fb7390e3004/raw/www.conf
+          sudo systemctl start nginx || sudo systemctl status nginx
+          sudo systemctl restart php${{ matrix.php-versions }}-fpm || sudo systemctl status php${{ matrix.php-versions }}-fpm
       - name: Setup BATS
         uses: mig4/setup-bats@v1
       - name: Set up server
@@ -114,10 +121,7 @@ jobs:
         uses: SMillerDev/nextcloud-actions/setup-nextcloud-app@main
         with:
           app: 'duplicatefinder'
-          check-code: true
           force: ${{ matrix.experimental }}
-      - name: Setup problem matchers for PHP
-        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
       - name: Functional tests maintenance
         working-directory: ../server
         run: ./occ maintenance:repair

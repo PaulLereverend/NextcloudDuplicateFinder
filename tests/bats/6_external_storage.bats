@@ -31,18 +31,16 @@ teardown() {
 
 @test "[$TESTSUITE] Duplicates on external storage" {
     ./occ config:app:delete duplicatefinder ignore_mounted_files
-    run ./occ -v duplicates:find-all -u admin
-    [ "$status" -eq 0 ]
-
+    
+    output=$(./occ -v duplicates:find-all -u admin)
     expectedHash="2ba3a0e386a9784998f74b45a542871db0d84dccb708c69c908d408b74fafbab"
     evaluateHashResult "${expectedHash}" 3 "${output}"
 }
 
 @test "[$TESTSUITE] Skip search for duplicates on external storage" {
     ./occ config:app:set --value=true duplicatefinder ignore_mounted_files
-    run ./occ -v duplicates:find-all -u admin
-    [ "$status" -eq 0 ]
-
+    
+    output=$(./occ -v duplicates:find-all -u admin)
     expectedHash="cbdc41d9d24253c54da8cd3087ecde71b45c7c9f328336d1247d2032b3a5aa28"
     evaluateHashResult "${expectedHash}" 3 "${output}"
 }

@@ -2,8 +2,10 @@
 namespace OCA\DuplicateFinder\Listener;
 
 use OCP\ILogger;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
+use OCP\Files\Node;
 use OCP\Files\Events\Node\NodeDeletedEvent;
 use OCP\Files\Events\Node\NodeRenamedEvent;
 use OCP\Files\Events\Node\AbstractNodeEvent;
@@ -39,13 +41,7 @@ class FilesytemListener implements IEventListener
     {
         if ($event instanceof NodeDeletedEvent) {
             $node = $event->getNode();
-            try {
-                $fileInfo = $this->fileInfoService->find($node->getPath(), $node->getOwner()->getUID());
-            } catch (\Throwable $e) {
-                $fileInfo = $this->fileInfoService->find($node->getPath(), null);
-            }
-            $this->fileDuplicateService->clearDuplicates($fileInfo->getId());
-            $this->fileInfoService->delete($fileInfo);
+            $this->handleDeleteEvent($node);
         } elseif ($event instanceof NodeRenamedEvent) {
             $source = $event->getSource();
             try {
@@ -70,6 +66,24 @@ class FilesytemListener implements IEventListener
                     $this->logger->info($e->getMessage(), ['exception'=> $e]);
                 }
             }
+        }
+    }
+
+    private function handleDeleteEvent(Node $node) : void
+    {
+        try {
+            $fileInfo = $this->fileInfoService->find($node->getPath(), $node->getOwner()->getUID());
+        } catch (\Throwable $e) {
+            try {
+                $fileInfo = $this->fileInfoService->find($node->getPath(), null);
+            } catch (DoesNotExistException $e) {
+                return;
+            }
+        }
+        $this->fileInfoService->delete($fileInfo);
+        $count = $this->fileInfoService->countByHash($fileInfo->getFileHash());
+        if ($count < 2) {
+            $this->fileDuplicateService->delete($fileInfo->getFileHash());
         }
     }
 }

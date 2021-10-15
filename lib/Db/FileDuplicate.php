@@ -21,7 +21,7 @@ class FileDuplicate extends EEntity
 
     public function __construct(?string $hash = null, string $type = 'file_hash')
     {
-        $this->addRelationalField('files');
+        $this->addInternalProperty('files');
 
         if (!is_null($hash)) {
             $this->setHash($hash);
@@ -35,22 +35,12 @@ class FileDuplicate extends EEntity
      */
     public function addDuplicate(int $id, $value):void
     {
-        if ($value instanceof FileInfo) {
-            if (!isset($this->files[$id]) || $this->files[$id] !== $value->getOwner()) {
-                $this->markRelationalFieldUpdated('files', $id, $value->getOwner());
-            }
-        } else {
-            if (!isset($this->files[$id]) || $this->files[$id] !== $value) {
-                $this->markRelationalFieldUpdated('files', $id, $value);
-            }
-        }
         $this->files[$id] = $value;
     }
 
     public function removeDuplicate(int $id):void
     {
         unset($this->files[$id]);
-        $this->markRelationalFieldUpdated('files', $id);
     }
 
     public function clear():void

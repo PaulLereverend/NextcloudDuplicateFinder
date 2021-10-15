@@ -8,8 +8,10 @@ use OCP\IDBConnection;
 use OCP\IConfig;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\IRootFolder;
+use OCP\Share\IManager;
 use OCA\DuplicateFinder\Db\FileInfoMapper;
 use OCA\DuplicateFinder\Service\FileInfoService;
+use OCA\DuplicateFinder\Service\ShareService;
 
 class FileInfoServiceTest extends TestCase
 {
@@ -22,7 +24,8 @@ class FileInfoServiceTest extends TestCase
             $this->createMock(IEventDispatcher::class),
             $this->createMock(ILogger::class),
             $this->createMock(IDBConnection::class),
-            $this->createMock(IConfig::class)
+            $this->createMock(IConfig::class),
+            $this->createMock(ShareService::class)
         );
     }
 

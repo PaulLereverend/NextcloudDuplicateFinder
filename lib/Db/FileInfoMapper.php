@@ -55,7 +55,7 @@ class FileInfoMapper extends EQBMapper
         ->where(
             $qb->expr()->eq($type, $qb->createNamedParameter($hash))
         );
-        return $this->findEntities($qb);
+        return $this->entitiesToIdArray($this->findEntities($qb));
     }
 
     public function countByHash(string $hash, string $type = 'file_hash'):int
@@ -82,7 +82,7 @@ class FileInfoMapper extends EQBMapper
         if ($onlyEmptyHash) {
             $qb->andWhere($qb->expr()->isNull('file_hash'));
         }
-        return $this->findEntities($qb);
+        return $this->entitiesToIdArray($this->findEntities($qb));
     }
 
     public function findById(int $id):FileInfo
@@ -96,14 +96,28 @@ class FileInfoMapper extends EQBMapper
         return $this->findEntity($qb);
     }
 
-  /**
-   * @return array<FileInfo>
-   */
+    /**
+     * @return array<FileInfo>
+     */
     public function findAll(): array
     {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
         ->from($this->getTableName());
-        return $this->findEntities($qb);
+        return $this->entitiesToIdArray($this->findEntities($qb));
+    }
+
+    /**
+     * @param array<FileInfo> $entities
+     * @return array<FileInfo>
+     */
+    private function entitiesToIdArray(array $entities) : array
+    {
+        $result = array();
+        foreach ($entities as $entity) {
+            $result[$entity->getId()] = $entity;
+        }
+        unset($entity);
+        return $result;
     }
 }

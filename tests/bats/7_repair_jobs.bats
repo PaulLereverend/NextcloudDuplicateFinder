@@ -43,8 +43,7 @@ teardown() {
     ./occ -v duplicates:find-all
     ./occ maintenance:repair
 
-    run ./occ -v duplicates:list -u admin
-    [ "$status" -eq 0 ]
+    output=$(./occ -v duplicates:list -u admin)
     expectedHash="0a3afe9180daf73432d6dbf0c6a1bb6b215404b971a3e00f4d005f68b2272587"
     evaluateHashResult "${expectedHash}" 3 "${output}" "_2"
 }

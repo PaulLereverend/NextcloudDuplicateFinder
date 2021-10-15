@@ -2,6 +2,7 @@
 namespace OCA\DuplicateFinder\Service;
 
 use OCP\IUser;
+use OCP\Share\IShare;
 use OCP\ILogger;
 use OCP\IDBConnection;
 use OCP\IConfig;
@@ -23,6 +24,8 @@ use OCA\DuplicateFinder\Event\NewFileInfoEvent;
 use OCA\DuplicateFinder\Exception\ForcedToIgnoreFileException;
 use OCA\DuplicateFinder\Exception\UnableToCalculateHash;
 use OCA\DuplicateFinder\Exception\UnknownOwnerException;
+use OCA\DuplicateFinder\Utils\CMDUtils;
+use OCA\DuplicateFinder\Utils\PathConversionUtils;
 
 class FileInfoService
 {
@@ -39,6 +42,8 @@ class FileInfoService
     private $connection;
     /** @var IConfig */
     private $config;
+    /** @var ShareService */
+    private $shareService;
 
     public function __construct(
         FileInfoMapper $mapper,
@@ -46,7 +51,8 @@ class FileInfoService
         IEventDispatcher $eventDispatcher,
         ILogger $logger,
         IDBConnection $connection,
-        IConfig $config
+        IConfig $config,
+        ShareService $shareService
     ) {
         $this->mapper = $mapper;
         $this->rootFolder = $rootFolder;
@@ -54,6 +60,7 @@ class FileInfoService
         $this->logger = $logger;
         $this->connection = $connection;
         $this->config = $config;
+        $this->shareService = $shareService;
     }
 
     /**
@@ -213,50 +220,39 @@ class FileInfoService
         string $user,
         ?string $path = null,
         ?\Closure $abortIfInterrupted = null,
-        ?OutputInterface $output = null
+        ?OutputInterface $output = null,
+        ?bool $isShared = false
     ): void {
         $userFolder = $this->rootFolder->getUserFolder($user);
         $scanPath = $userFolder->getPath();
-        if (!is_null($path)) {
+        if (!is_null($path) && !$isShared) {
             $scanPath .= DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR);
             if (!$userFolder->nodeExists(ltrim($path, DIRECTORY_SEPARATOR))) {
-                $this->showIfOutputIsPresent(
+                CMDUtils::showIfOutputIsPresent(
                     'Skipped '.$scanPath.' because it doesn\'t exists.',
                     $output,
                     OutputInterface::VERBOSITY_VERBOSE
                 );
                 return;
             }
+        } elseif ($isShared) {
+            if (is_null($path)) {
+                return;
+            }
+            $scanPath = $path;
         }
+
         $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
         $scanner->listen(
             '\OC\Files\Utils\Scanner',
             'postScanFile',
-            function ($path) use ($abortIfInterrupted, $output, $user) {
-                $this->showIfOutputIsPresent(
-                    'Scanning '.$path,
+            function ($path) use ($abortIfInterrupted, $output, $user, $isShared) {
+                CMDUtils::showIfOutputIsPresent(
+                    'Scanning '.($isShared ? 'Shared Node ':'').$path,
                     $output,
                     OutputInterface::VERBOSITY_VERBOSE
                 );
-                try {
-                    $this->save($path, $user);
-                } catch (NotFoundException $e) {
-                    $this->logger->logException($e, ['app' => 'duplicatefinder']);
-                    $this->showIfOutputIsPresent(
-                        '<error>The given path doesn\'t exists.</error>',
-                        $output
-                    );
-                } catch (ForcedToIgnoreFileException $e) {
-                    $this->logger->info($e->getMessage(), ['exception'=> $e]);
-                    $this->showIfOutputIsPresent(
-                        'Skipped '.$path,
-                        $output,
-                        OutputInterface::VERBOSITY_VERBOSE
-                    );
-                }
-                if ($abortIfInterrupted) {
-                    $abortIfInterrupted();
-                }
+                $this->saveScannedFile($path, $user, $abortIfInterrupted, $output);
                 // Ensure that every scanned file is commited - not only after all files are scanned
                 if ($this->connection->inTransaction()) {
                     $this->connection->commit();
@@ -264,33 +260,78 @@ class FileInfoService
                 }
             }
         );
-        $this->showIfOutputIsPresent(
-            'Start searching files for '.$user.' in path '.$scanPath,
-            $output
-        );
+        if (!$isShared) {
+            CMDUtils::showIfOutputIsPresent(
+                'Start searching files for '.$user.' in path '.$scanPath,
+                $output
+            );
+        }
+        
 
         try {
             $scanner->scan($scanPath, true);
         } catch (NotFoundException $e) {
             $this->logger->logException($e, ['app' => 'duplicatefinder']);
-            $this->showIfOutputIsPresent(
+            CMDUtils::showIfOutputIsPresent(
                 '<error>The given scan path doesn\'t exists.</error>',
                 $output
             );
         }
-        $this->showIfOutputIsPresent(
-            'Finished searching files',
-            $output
-        );
+        if (!$isShared) {
+            $this->scanSharedFiles($user, $path, $abortIfInterrupted, $output);
+            CMDUtils::showIfOutputIsPresent(
+                'Finished searching files',
+                $output
+            );
+        }
     }
 
-    private function showIfOutputIsPresent(
-        string $message,
-        ?OutputInterface $output = null,
-        int $verbosity = OutputInterface::VERBOSITY_NORMAL
+    public function scanSharedFiles(
+        string $user,
+        ?string $path,
+        ?\Closure $abortIfInterrupted = null,
+        ?OutputInterface $output = null
+    ): void {
+        $shares = $this->shareService->getShares($user);
+        
+        foreach ($shares as $share) {
+            $node = $share->getNode();
+            if (is_null($path) || strpos($node->getPath(), $path) == 0) {
+                if ($node->getType() === \OCP\Files\FileInfo::TYPE_FILE) {
+                    $this->saveScannedFile($node->getPath(), $user, $abortIfInterrupted, $output);
+                } else {
+                    $this->scanFiles($share->getSharedBy(), $node->getPath(), $abortIfInterrupted, $output, true);
+                }
+            }
+        }
+        unset($share);
+    }
+
+    private function saveScannedFile(
+        string $path,
+        string $user,
+        ?\Closure $abortIfInterrupted = null,
+        ?OutputInterface $output = null
     ) : void {
-        if (!is_null($output)) {
-            $output->writeln($message, $verbosity);
+
+        try {
+            $this->save($path, $user);
+        } catch (NotFoundException $e) {
+            $this->logger->logException($e, ['app' => 'duplicatefinder']);
+            CMDUtils::showIfOutputIsPresent(
+                '<error>The given path doesn\'t exists ('.$path.').</error>',
+                $output
+            );
+        } catch (ForcedToIgnoreFileException $e) {
+            $this->logger->info($e->getMessage(), ['exception'=> $e]);
+            CMDUtils::showIfOutputIsPresent(
+                'Skipped '.$path,
+                $output,
+                OutputInterface::VERBOSITY_VERBOSE
+            );
+        }
+        if ($abortIfInterrupted) {
+            $abortIfInterrupted();
         }
     }
 
@@ -312,7 +353,7 @@ class FileInfoService
         }
         if (!is_null($userFolder)) {
             try {
-                $relativePath = $this->getPathRelativeToUserFolder($fileInfo);
+                $relativePath = PathConversionUtils::convertRelativePathToUserFolder($fileInfo, $userFolder);
                 return $userFolder->get($relativePath);
             } catch (NotFoundException $e) {
                 //If the file is not known in the user root (cached) it's fine to use the root
@@ -321,17 +362,16 @@ class FileInfoService
         return $this->rootFolder->get($fileInfo->getPath());
     }
 
-    /*
-     *  This method should only be called if the owner of the Node has already stored
-     *  in the owner property
-     */
-    public function getPathRelativeToUserFolder(FileInfo $fileInfo) : string
+    public function hasAccessRight(FileInfo $fileInfo, string $user) : ?FileInfo
     {
-        if ($fileInfo->getOwner()) {
-            $userFolder = $this->rootFolder->getUserFolder($fileInfo->getOwner());
-            return substr($fileInfo->getPath(), strlen($userFolder->getPath()));
-        } else {
-            throw new UnknownOwnerException($fileInfo->getPath());
+        if ($fileInfo->getOwner() === $user) {
+            return $fileInfo;
         }
+        $path = $this->shareService->hasAccessRight($this->getNode($fileInfo, $user), $user);
+        if (!is_null($path)) {
+            $fileInfo->setPath($path);
+            return $fileInfo;
+        }
+        return null;
     }
 }

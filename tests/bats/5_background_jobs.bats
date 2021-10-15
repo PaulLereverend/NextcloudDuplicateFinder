@@ -13,10 +13,10 @@ teardown(){
 
 @test "[$TESTSUITE] Test background jobs" {
   dbQuery "update oc_jobs set last_run=0,last_checked=0,reserved_at=0  where class like '%DuplicateFinder%';"
+  
   php ./cron.php
-  run ./occ -v duplicates:list
-  [ "$status" -eq 0 ]
-
+  
+  output=$(./occ -v duplicates:list)
   expectedHash="544e5bb0331f80508af24a26fcc27f75eee8a4a2540cc5db246bcca6a677d2f0"
   evaluateHashResult "${expectedHash}" 4 "${output}"
 }

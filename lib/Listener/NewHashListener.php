@@ -38,9 +38,6 @@ class NewHashListener implements IEventListener
         try {
             if ($event instanceof CalculatedHashEvent && $event->isChanged()) {
                 $fileInfo = $event->getFileInfo();
-                if (!$event->isNew()) {
-                    $this->fileDuplicateService->clearDuplicates($fileInfo->getId());
-                }
                 $this->updateDuplicates($fileInfo);
             }
         } catch (\Throwable $e) {
@@ -54,17 +51,7 @@ class NewHashListener implements IEventListener
         $count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
         if ($count > 1) {
             try {
-                $fileDuplicate = $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
-                if ($count > 2) {
-                    $fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
-                } else {
-                    $files = $this->fileInfoService->findByHash($fileInfo->getFileHash(), $type);
-                    foreach ($files as $fileInfo) {
-                        $fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
-                    }
-                    unset($fileInfo);
-                }
-                $this->fileDuplicateService->update($fileDuplicate);
+                $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
             } catch (\Exception $e) {
                 $this->logger->logException($e, ['app' => 'duplicatefinder']);
             }

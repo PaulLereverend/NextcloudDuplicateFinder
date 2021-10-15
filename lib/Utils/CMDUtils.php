@@ -38,4 +38,15 @@ class CMDUtils
             $abortIfInterrupted();
         } while (!$duplicates["isLastFetched"]);
     }
+
+
+    public static function showIfOutputIsPresent(
+        string $message,
+        ?OutputInterface $output = null,
+        int $verbosity = OutputInterface::VERBOSITY_NORMAL
+    ) : void {
+        if (!is_null($output)) {
+            $output->writeln($message, $verbosity);
+        }
+    }
 }
