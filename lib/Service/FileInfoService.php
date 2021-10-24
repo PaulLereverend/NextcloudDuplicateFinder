@@ -1,14 +1,8 @@
 <?php
 namespace OCA\DuplicateFinder\Service;
 
-use OCP\IUser;
-use OCP\Share\IShare;
 use OCP\ILogger;
 use OCP\IDBConnection;
-use OCP\IConfig;
-use OCP\AppFramework\Db\Entity;
-use OCP\AppFramework\Db\DoesNotExistException;
-use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Node;
 use OCP\Files\IRootFolder;
@@ -16,14 +10,13 @@ use OCP\Files\NotFoundException;
 use OC\Files\Utils\Scanner;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileInfoMapper;
 use OCA\DuplicateFinder\Event\CalculatedHashEvent;
+use OCA\DuplicateFinder\Event\UpdatedFileInfoEvent;
 use OCA\DuplicateFinder\Event\NewFileInfoEvent;
 use OCA\DuplicateFinder\Exception\ForcedToIgnoreFileException;
 use OCA\DuplicateFinder\Exception\UnableToCalculateHash;
-use OCA\DuplicateFinder\Exception\UnknownOwnerException;
 use OCA\DuplicateFinder\Utils\CMDUtils;
 use OCA\DuplicateFinder\Utils\PathConversionUtils;
 
@@ -40,10 +33,10 @@ class FileInfoService
     private $logger;
     /** @var IDBConnection */
     private $connection;
-    /** @var IConfig */
-    private $config;
     /** @var ShareService */
     private $shareService;
+    /** @var FilterService */
+    private $filterService;
 
     public function __construct(
         FileInfoMapper $mapper,
@@ -51,16 +44,16 @@ class FileInfoService
         IEventDispatcher $eventDispatcher,
         ILogger $logger,
         IDBConnection $connection,
-        IConfig $config,
-        ShareService $shareService
+        ShareService $shareService,
+        FilterService $filterService
     ) {
         $this->mapper = $mapper;
         $this->rootFolder = $rootFolder;
         $this->eventDispatcher = $eventDispatcher;
         $this->logger = $logger;
         $this->connection = $connection;
-        $this->config = $config;
         $this->shareService = $shareService;
+        $this->filterService = $filterService;
     }
 
     /**
@@ -148,6 +141,7 @@ class FileInfoService
         try {
             $fileInfo = $this->mapper->find($path, $fallbackUID);
             $fileInfo = $this->update($fileInfo, $fallbackUID);
+            $this->eventDispatcher->dispatchTyped(new UpdatedFileInfoEvent($fileInfo, $fallbackUID));
         } catch (\Exception $e) {
             $fileInfo = new FileInfo($path);
             $fileInfo = $this->updateFileMeta($fileInfo, $fallbackUID);
@@ -173,11 +167,6 @@ class FileInfoService
     public function updateFileMeta(FileInfo $fileInfo, ?string $fallbackUID = null) : FileInfo
     {
         $file = $this->getNode($fileInfo, $fallbackUID);
-        // Default should be false but isn't supported by the api
-        $ignoreMountedFiles = $this->config->getAppValue(Application::ID, 'ignore_mounted_files', '');
-        if ($file->isMounted() && $ignoreMountedFiles) {
-            throw new ForcedToIgnoreFileException($fileInfo, 'app:ignore_mounted_files');
-        }
         $fileInfo->setSize($file->getSize());
         $fileInfo->setMimetype($file->getMimetype());
         try {
@@ -189,29 +178,50 @@ class FileInfoService
                 throw $e;
             }
         }
+        $fileInfo->setIgnored($this->filterService->isIgnored($fileInfo, $file));
         return $fileInfo;
     }
 
-    public function calculateHashes(FileInfo $fileInfo, ?string $fallbackUID = null):FileInfo
+    /**
+     * @return false|string
+     */
+    public function isRecalculationRequired(FileInfo $fileInfo, ?string $fallbackUID = null, ?Node $file = null)
+    {
+        if ($fileInfo->isIgnored()) {
+            return false;
+        }
+        if (is_null($file)) {
+            $file = $this->getNode($fileInfo, $fallbackUID);
+        }
+        if ($file->getType() === \OCP\Files\FileInfo::TYPE_FILE
+          && ( empty($fileInfo->getFileHash())
+               || $file->getMtime() > $fileInfo->getUpdatedAt()->getTimestamp()
+               || $file->getUploadTime() > $fileInfo->getUpdatedAt()->getTimestamp())
+          || $file->isMounted()) {
+            return $file->getInternalPath();
+        }
+        return false;
+    }
+
+    public function calculateHashes(FileInfo $fileInfo, ?string $fallbackUID = null, bool $requiresHash = true):FileInfo
     {
         $oldHash = $fileInfo->getFileHash();
         $file = $this->getNode($fileInfo, $fallbackUID);
-        if ($file->getType() === \OCP\Files\FileInfo::TYPE_FILE
-          && ( empty($oldHash)
-        || $file->getMtime() >
-          $fileInfo->getUpdatedAt()->getTimestamp()
-        || $file->getUploadTime() >
-          $fileInfo->getUpdatedAt()->getTimestamp())
-        || $file->isMounted()) {
-             $hash = $file->getStorage()->hash('sha256', $file->getInternalPath());
-            if (!is_bool($hash)) {
-                $fileInfo->setFileHash($hash);
-                $fileInfo->setUpdatedAt(new \DateTime());
-                $this->update($fileInfo, $fallbackUID);
-                $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
+        $path = $this->isRecalculationRequired($fileInfo, $fallbackUID, $file);
+        if ($path !== false) {
+            if ($requiresHash) {
+                $hash = $file->getStorage()->hash('sha256', $path);
+                if (!is_bool($hash)) {
+                    $fileInfo->setFileHash($hash);
+                    $fileInfo->setUpdatedAt(new \DateTime());
+                } else {
+                    throw new UnableToCalculateHash($file->getInternalPath());
+                }
             } else {
-                throw new UnableToCalculateHash($file->getInternalPath());
+                $fileInfo->setFileHash(null);
             }
+            $this->update($fileInfo, $fallbackUID);
+            $this->eventDispatcher->dispatchTyped(new CalculatedHashEvent($fileInfo, $oldHash));
         }
         return $fileInfo;
     }
@@ -337,9 +347,9 @@ class FileInfoService
 
     /*
      *  The Node specified by the FileInfo isn't always in the cache.
-        *  if so, a get on the root folder will raise an |OCP\Files\NotFoundException
-        *  To avoid this, it is first tried to get the Node by the user folder. Because
-        *  the user folder supports lazy loading, it works even if the file isn't in the cache
+     *  if so, a get on the root folder will raise an |OCP\Files\NotFoundException
+     *  To avoid this, it is first tried to get the Node by the user folder. Because
+     *  the user folder supports lazy loading, it works even if the file isn't in the cache
      *  If the owner is unknown, it is at least tried to get the Node from the root folder
      */
     public function getNode(FileInfo $fileInfo, ?string $fallbackUID = null): Node
@@ -367,11 +377,16 @@ class FileInfoService
         if ($fileInfo->getOwner() === $user) {
             return $fileInfo;
         }
-        $path = $this->shareService->hasAccessRight($this->getNode($fileInfo, $user), $user);
-        if (!is_null($path)) {
-            $fileInfo->setPath($path);
-            return $fileInfo;
+        try {
+            $path = $this->shareService->hasAccessRight($this->getNode($fileInfo, $user), $user);
+            if (!is_null($path)) {
+                $fileInfo->setPath($path);
+                return $fileInfo;
+            }
+        } catch (NotFoundException $e) {
+            // NO-OP
         }
+        
         return null;
     }
 }

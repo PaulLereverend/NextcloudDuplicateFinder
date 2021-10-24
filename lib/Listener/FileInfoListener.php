@@ -4,16 +4,14 @@ namespace OCA\DuplicateFinder\Listener;
 use OCP\ILogger;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
-use OCA\DuplicateFinder\Db\FileInfo;
-use OCA\DuplicateFinder\Event\NewFileInfoEvent;
+use OCA\DuplicateFinder\Event\AbstractFileInfoEvent;
 use OCA\DuplicateFinder\Service\FileInfoService;
-use OCA\DuplicateFinder\Service\FileDuplicateService;
 
 /**
  * @template T of Event
  * @implements IEventListener<T>
  */
-class NewFileInfoListener implements IEventListener
+class FileInfoListener implements IEventListener
 {
 
     /** @var FileInfoService */
@@ -32,14 +30,17 @@ class NewFileInfoListener implements IEventListener
     public function handle(Event $event): void
     {
         try {
-            if ($event instanceof NewFileInfoEvent) {
+            if ($event instanceof AbstractFileInfoEvent) {
                 $fileInfo = $event->getFileInfo();
-                if ($this->fileInfoService->countBySize($fileInfo->getSize())>1) {
+                $count = $this->fileInfoService->countBySize($fileInfo->getSize());
+                if ($count > 1) {
                     $files = $this->fileInfoService->findBySize($fileInfo->getSize());
                     foreach ($files as $finfo) {
                         $this->fileInfoService->calculateHashes($finfo, $event->getUserID());
                     }
                     unset($finfo);
+                } else {
+                    $this->fileInfoService->calculateHashes($fileInfo, $event->getUserID(), false);
                 }
             }
         } catch (\Throwable $e) {

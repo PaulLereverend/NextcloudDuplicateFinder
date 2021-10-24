@@ -1,0 +1,60 @@
+Start searching files for admin in path /admin/files
+Scanning /admin/files/tests/3_3.txt
+Scanning /admin/files/tests/0_0.txt
+Scanning /admin/files/tests/3_2.txt
+Scanning /admin/files/tests/1_1.txt
+Scanning /admin/files/tests/2_0.txt
+Scanning /admin/files/tests/1_0.txt
+Scanning /admin/files/tests/3_1.txt
+Scanning /admin/files/tests/2_2.txt
+Scanning /admin/files/tests/3_0.txt
+Scanning /admin/files/tests/2_1.txt
+Finished searching files
+Duplicates for user "admin" are: 
+1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2(file_hash)
+     /admin/files/tests/3_0.txt
+     /admin/files/tests/3_1.txt
+     /admin/files/tests/3_2.txt
+     /admin/files/tests/3_3.txt
+4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865(file_hash)
+     /admin/files/tests/1_0.txt
+     /admin/files/tests/1_1.txt
+53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3(file_hash)
+     /admin/files/tests/2_0.txt
+     /admin/files/tests/2_1.txt
+     /admin/files/tests/2_2.txt
+Start searching files for tuser in path /tuser/files
+Scanning /tuser/files/tests/3_3.txt
+Scanning /tuser/files/tests/0_0.txt
+Scanning /tuser/files/tests/3_2.txt
+Scanning /tuser/files/tests/1_1.txt
+Scanning /tuser/files/tests/2_0.txt
+Scanning /tuser/files/tests/1_0.txt
+Scanning /tuser/files/tests/3_1.txt
+Scanning /tuser/files/tests/2_2.txt
+Scanning /tuser/files/tests/3_0.txt
+Scanning /tuser/files/tests/2_1.txt
+Scanning /tuser/files/tests2/3_3.txt
+Scanning /tuser/files/tests2/0_0.txt
+Scanning /tuser/files/tests2/3_2.txt
+Scanning /tuser/files/tests2/1_1.txt
+Scanning /tuser/files/tests2/2_0.txt
+Scanning /tuser/files/tests2/1_0.txt
+Scanning /tuser/files/tests2/3_1.txt
+Scanning /tuser/files/tests2/2_2.txt
+Scanning /tuser/files/tests2/3_0.txt
+Scanning /tuser/files/tests2/2_1.txt
+Finished searching files
+Duplicates for user "tuser" are: 
+1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2(file_hash)
+     /tuser/files/tests/3_0.txt
+     /tuser/files/tests/3_1.txt
+     /tuser/files/tests/3_2.txt
+     /tuser/files/tests/3_3.txt
+4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865(file_hash)
+     /tuser/files/tests/1_0.txt
+     /tuser/files/tests/1_1.txt
+53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3(file_hash)
+     /tuser/files/tests/2_0.txt
+     /tuser/files/tests/2_1.txt
+     /tuser/files/tests/2_2.txt

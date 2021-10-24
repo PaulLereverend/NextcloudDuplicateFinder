@@ -37,6 +37,7 @@ class ShareService
     ): array {
         $shares = array();
         $shareTypes = [IShare::TYPE_USER, IShare::TYPE_GROUP, IShare::TYPE_CIRCLE, IShare::TYPE_ROOM];
+        //TYPE_DECK is not supported by NC 20
         if (defined('OCP\Share\IShare::TYPE_DECK')) {
             $shareTypes[] = IShare::TYPE_DECK;
         }

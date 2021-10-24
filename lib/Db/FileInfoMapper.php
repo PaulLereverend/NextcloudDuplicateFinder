@@ -53,7 +53,8 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq($type, $qb->createNamedParameter($hash))
+            $qb->expr()->eq($type, $qb->createNamedParameter($hash)),
+            $qb->expr()->eq('ignored', $qb->createNamedParameter(false, IQueryBuilder::PARAM_BOOL))
         );
         return $this->entitiesToIdArray($this->findEntities($qb));
     }
@@ -77,7 +78,7 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq('size', $qb->createNamedParameter($size), IQueryBuilder::PARAM_INT)
+            $qb->expr()->eq('size', $qb->createNamedParameter($size, IQueryBuilder::PARAM_INT))
         );
         if ($onlyEmptyHash) {
             $qb->andWhere($qb->expr()->isNull('file_hash'));
@@ -91,7 +92,7 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq('id', $qb->createNamedParameter($id), IQueryBuilder::PARAM_INT)
+            $qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT))
         );
         return $this->findEntity($qb);
     }

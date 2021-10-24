@@ -38,7 +38,7 @@ class NewHashListener implements IEventListener
         try {
             if ($event instanceof CalculatedHashEvent && $event->isChanged()) {
                 $fileInfo = $event->getFileInfo();
-                $this->updateDuplicates($fileInfo);
+                $this->updateDuplicates($fileInfo, $event->getOldHash());
             }
         } catch (\Throwable $e) {
             $this->logger->error('Failed to handle new hash event .', ['exception'=> $e]);
@@ -46,15 +46,24 @@ class NewHashListener implements IEventListener
         }
     }
 
-    private function updateDuplicates(FileInfo $fileInfo, string $type = 'file_hash'): void
+    private function updateDuplicates(FileInfo $fileInfo, ?string $oldHash, string $type = 'file_hash'): void
     {
-        $count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
+        $hash = $fileInfo->getFileHash();
+        if (is_null($hash)) {
+            if (is_null($oldHash)) {
+                return;
+            }
+            $hash = $oldHash;
+        }
+        $count = $this->fileInfoService->countByHash($hash, $type);
         if ($count > 1) {
             try {
-                $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
+                $this->fileDuplicateService->getOrCreate($hash, $type);
             } catch (\Exception $e) {
                 $this->logger->logException($e, ['app' => 'duplicatefinder']);
             }
+        } else {
+            $this->fileDuplicateService->delete($hash);
         }
     }
 }

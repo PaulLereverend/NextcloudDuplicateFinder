@@ -9,6 +9,8 @@ use OCP\Files\Node;
 use OCP\Files\Events\Node\NodeDeletedEvent;
 use OCP\Files\Events\Node\NodeRenamedEvent;
 use OCP\Files\Events\Node\AbstractNodeEvent;
+use OCA\DuplicateFinder\AppInfo\Application;
+use OCA\DuplicateFinder\Service\ConfigService;
 use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
 use OCA\DuplicateFinder\Exception\ForcedToIgnoreFileException;
@@ -26,19 +28,26 @@ class FilesytemListener implements IEventListener
     private $fileDuplicateService;
     /** @var Ilogger */
     private $logger;
+    /** @var ConfigService */
+    private $config;
 
     public function __construct(
         FileInfoService $fileInfoService,
         FileDuplicateService $fileDuplicateService,
-        ILogger $logger
+        ILogger $logger,
+        ConfigService $config
     ) {
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
         $this->logger = $logger;
+        $this->config = $config;
     }
 
     public function handle(Event $event): void
     {
+        if ($this->config->areFilesytemEventsDisabled()) {
+            return;
+        }
         if ($event instanceof NodeDeletedEvent) {
             $node = $event->getNode();
             $this->handleDeleteEvent($node);
@@ -81,9 +90,11 @@ class FilesytemListener implements IEventListener
             }
         }
         $this->fileInfoService->delete($fileInfo);
-        $count = $this->fileInfoService->countByHash($fileInfo->getFileHash());
-        if ($count < 2) {
-            $this->fileDuplicateService->delete($fileInfo->getFileHash());
+        if (!is_null($fileInfo->getFileHash())) {
+            $count = $this->fileInfoService->countByHash($fileInfo->getFileHash());
+            if ($count < 2) {
+                $this->fileDuplicateService->delete($fileInfo->getFileHash());
+            }
         }
     }
 }

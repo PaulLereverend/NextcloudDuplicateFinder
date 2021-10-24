@@ -7,7 +7,9 @@ use OCP\ILogger;
 use OCP\IUserManager;
 use OCP\IUser;
 use OCP\IDBConnection;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Service\FileInfoService;
+use OCA\DuplicateFinder\Service\ConfigService;
 
 class FindDuplicates extends \OC\BackgroundJob\TimedJob
 {
@@ -34,10 +36,10 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
         IEventDispatcher $dispatcher,
         ILogger $logger,
         IDBConnection $connection,
-        FileInfoService $fileInfoService
+        FileInfoService $fileInfoService,
+        ConfigService $config
     ) {
-        // Run every 5 days a full scan
-        $this->setInterval(60*60*24*5);
+        $this->setInterval($config->getFindJobInterval());
         $this->userManager = $userManager;
         $this->dispatcher = $dispatcher;
         $this->logger = $logger;

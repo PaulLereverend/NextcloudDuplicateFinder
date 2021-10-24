@@ -13,9 +13,10 @@ use OCP\Files\Events\Node\NodeWrittenEvent;
 use OCP\Files\Events\Node\NodeTouchedEvent;
 use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 use OCA\DuplicateFinder\Event\NewFileInfoEvent;
+use OCA\DuplicateFinder\Event\UpdatedFileInfoEvent;
 use OCA\DuplicateFinder\Listener\FilesytemListener;
 use OCA\DuplicateFinder\Listener\NewHashListener;
-use OCA\DuplicateFinder\Listener\NewFileInfoListener;
+use OCA\DuplicateFinder\Listener\FileInfoListener;
 
 class Application extends App implements IBootstrap
 {
@@ -28,14 +29,14 @@ class Application extends App implements IBootstrap
 
     public function register(IRegistrationContext $context): void
     {
-
         $context->registerEventListener(NodeDeletedEvent::class, FilesytemListener::class);
         $context->registerEventListener(NodeRenamedEvent::class, FilesytemListener::class);
         $context->registerEventListener(NodeCopiedEvent::class, FilesytemListener::class);
         $context->registerEventListener(NodeCreatedEvent::class, FilesytemListener::class);
         $context->registerEventListener(NodeWrittenEvent::class, FilesytemListener::class);
         $context->registerEventListener(NodeTouchedEvent::class, FilesytemListener::class);
-        $context->registerEventListener(NewFileInfoEvent::class, NewFileInfoListener::class);
+        $context->registerEventListener(NewFileInfoEvent::class, FileInfoListener::class);
+        $context->registerEventListener(UpdatedFileInfoEvent::class, FileInfoListener::class);
         $context->registerEventListener(CalculatedHashEvent::class, NewHashListener::class);
     }
 

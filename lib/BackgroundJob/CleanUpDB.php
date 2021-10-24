@@ -3,7 +3,9 @@ namespace OCA\DuplicateFinder\BackgroundJob;
 
 use OCP\ILogger;
 use OCP\Files\NotFoundException;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Service\FileInfoService;
+use OCA\DuplicateFinder\Service\ConfigService;
 
 class CleanUpDB extends \OC\BackgroundJob\TimedJob
 {
@@ -18,10 +20,10 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob
      */
     public function __construct(
         FileInfoService $fileInfoService,
-        ILogger $logger
+        ILogger $logger,
+        ConfigService $config
     ) {
-        // Run every 5 days a full scan
-        $this->setInterval(60*60*24*2);
+        $this->setInterval($config->getCleanupJobInterval());
         $this->fileInfoService = $fileInfoService;
         $this->logger = $logger;
     }
