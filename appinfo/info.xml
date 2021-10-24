@@ -43,6 +43,10 @@
 	  <command>OCA\DuplicateFinder\Command\ListDuplicates</command>
 	  <command>OCA\DuplicateFinder\Command\ClearDuplicates</command>
 	</commands>
+	<settings>
+		<admin>OCA\DuplicateFinder\Settings\Admin</admin>
+		<admin-section>OCA\DuplicateFinder\Settings\Section</admin-section>
+	</settings>
   <navigations>
     <navigation>
       <name>Duplicate Finder</name>

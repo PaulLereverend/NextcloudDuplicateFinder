@@ -8,3 +8,4 @@ vendor/
 composer.lock
 sonar-project.properties
 .scannerwork
+statistics.html

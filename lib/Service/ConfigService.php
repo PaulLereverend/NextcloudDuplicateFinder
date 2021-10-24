@@ -4,6 +4,7 @@ namespace OCA\DuplicateFinder\Service;
 use OCP\IConfig;
 use OCP\ILogger;
 use OCA\DuplicateFinder\AppInfo\Application;
+use OCA\DuplicateFinder\Exception\UnableToParseException;
 
 class ConfigService
 {
@@ -33,6 +34,30 @@ class ConfigService
             $value = $this->config->getAppValue(Application::ID, $key, 'false');
         }
         return $value === 'true';
+    }
+
+    private function setIntVal(string $key, int $defaultValue) : void
+    {
+        $this->config->setAppValue(Application::ID, $key, ''.$defaultValue);
+    }
+
+    private function setBoolVal(string $key, bool $defaultValue) : void
+    {
+        if ($defaultValue) {
+            $this->config->setAppValue(Application::ID, $key, 'true');
+        } else {
+            $this->config->setAppValue(Application::ID, $key, 'false');
+        }
+    }
+
+    public function getUserValue(string $userId, string $key, string $defaultValue) : string
+    {
+        return $this->config->getUserValue($userId, Application::ID, $key, $defaultValue);
+    }
+
+    public function setUserValue(string $userId, string $key, string $value) : void
+    {
+        $this->config->setUserValue($userId, Application::ID, $key, $value);
     }
 
     /**
@@ -67,5 +92,39 @@ class ConfigService
     public function getInstalledVersion() : string
     {
         return $this->config->getAppValue(Application::ID, 'installed_version', '0.0.0');
+    }
+
+    /**
+     * @param array<array> $value
+     * @throws UnableToParseException
+     */
+    public function setIgnoreConditions(array $value) : void
+    {
+        $deocedArray = json_encode($value);
+        if (is_string($deocedArray)) {
+            $this->config->setAppValue(Application::ID, 'ignored_files', $deocedArray);
+        } else {
+            throw new UnableToParseException('ignore conditions');
+        }
+    }
+
+    public function setFindJobInterval(int $value) : void
+    {
+        $this->setIntVal('backgroundjob_interval_find', $value);
+    }
+
+    public function setCleanupJobInterval(int $value) : void
+    {
+        $this->setIntVal('backgroundjob_interval_cleanup', $value);
+    }
+
+    public function setFilesytemEventsDisabled(bool $value):void
+    {
+        $this->setBoolVal('disable_filesystem_events', $value);
+    }
+
+    public function setMountedFilesIgnored(bool $value) : void
+    {
+        $this->setBoolVal('ignore_mounted_files', $value);
     }
 }

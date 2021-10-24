@@ -22,7 +22,7 @@ trait JSONResponseTrait
     }
 
     /**
-     * @param \JsonSerializable|array<\JsonSerializable> $responseData
+     * @param \JsonSerializable|array<mixed> $responseData
      * @param int $statusCode
      * @return JSONResponse
      */
