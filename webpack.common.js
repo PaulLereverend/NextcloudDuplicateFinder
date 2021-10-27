@@ -14,7 +14,7 @@ module.exports = {
     chunkFilename: 'js/[name].js?v=[contenthash]'
   },
   resolve: {
-    symlinks: false,
+    symlinks: true,
     modules: [__dirname, 'node_modules']
   },
   module: {
@@ -32,18 +32,16 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             plugins: [
+              '@emotion/babel-plugin',
               '@babel/plugin-syntax-dynamic-import',
               '@babel/plugin-proposal-class-properties'
             ],
             presets: [
               '@babel/preset-env',
-              '@babel/preset-react'
+              [ '@babel/preset-react', { "runtime": "automatic", "importSource": "@emotion/react" }]
             ]
           }
         }
-      }, {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
       }, {
         test: /\.html$/i,
         loader: 'html-loader'

@@ -97,11 +97,8 @@ endif
 # Installs npm dependencies
 .PHONY: npm
 npm:
-ifeq (,$(wildcard $(CURDIR)/package.json))
-	cd js && $(npm) run build
-else
+	npm install
 	npm run build
-endif
 
 # Removes the appstore build
 .PHONY: clean

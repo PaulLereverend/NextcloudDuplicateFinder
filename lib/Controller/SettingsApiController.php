@@ -72,7 +72,8 @@ class SettingsApiController extends AbstractAPIController
         unset($value);
         try {
             foreach ($config as $key => $value) {
-                $this->configService->$value($config[$key]);
+                $method = $configKeys[$key];
+                $this->configService->$method($config[$key]);
             }
             unset($key);
             unset($value);
