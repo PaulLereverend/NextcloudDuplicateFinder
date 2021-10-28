@@ -1,12 +1,11 @@
 import React from 'react'
 
-import PageTitle from './components/PageTitle'
-import Setting from './components/Setting'
-import SettingsFrame from './components/SettingsFrame'
-import SettingsGrid from './components/SettingsGrid'
-import FilterBuilder from './components/FilterBuilder'
-
-import { useViewState, LoadingSpinner } from 'nextcloud-react'
+import {
+  Setting, SettingsFrame,
+  SettingsPageTitle, SettingsGrid,
+  FilterBuilder, LoadingSpinner,
+  useViewState, gettext
+} from 'nextcloud-react'
 
 export default function AppProivder (props) {
   const viewData = useViewState('SettingsView')
@@ -15,28 +14,29 @@ export default function AppProivder (props) {
   }
   return (
     <SettingsFrame>
-      <PageTitle
+      <SettingsPageTitle
         help='https://github.com/PaulLereverend/NextcloudDuplicateFinder'
-        description='Adjust these settings to make the process of finding duplicates your own.'
+        label={'(' + gettext('Version:') + (viewData.settings.installed_version || 'n.a.') + ')'}
+        description={gettext('Adjust these settings to make the process of finding duplicates your own.')}
       >
-        Duplicate Finder (Version: {viewData.settings.installed_version || 'n.a.'})
-      </PageTitle>
+        {gettext('Duplicate Finder')}
+      </SettingsPageTitle>
       <SettingsGrid>
         <Setting
           setting='ignore_mounted_files'
           type='checkbox'
-          hint=''
+          hint={gettext('When true, files mounted on external storage will be ignored. Computing the hash for an external file may require transferring the whole file to the Nextcloud server. So, this setting can be useful when you need to reduce traffic e.g if you need to pay for the traffic.')}
           value={viewData.settings.ignore_mounted_files}
         >
-          Ignore Mounted Files
+          {gettext('Ignore Mounted Files')}
         </Setting>
         <Setting
           setting='disable_filesystem_events'
           type='checkbox'
-          hint=''
+          hint={gettext('When true, the event-based detection will be disabled. This gives you more control when the hashes are generated.')}
           value={viewData.settings.disable_filesystem_events}
         >
-          Disable event-based detection
+          {gettext('Disable event-based detection')}
         </Setting>
         <Setting
           setting='backgroundjob_interval_find'
@@ -45,10 +45,10 @@ export default function AppProivder (props) {
           subject='time'
           unit='second'
           defaultDisplayUnit='day'
-          hint=''
+          hint={gettext('Interval in seconds in which the clean-up background job will be run.')}
           value={viewData.settings.backgroundjob_interval_find}
         >
-          Cleanup Interval
+          {gettext('Cleanup Interval')}
         </Setting>
         <Setting
           setting='backgroundjob_interval_cleanup'
@@ -57,15 +57,14 @@ export default function AppProivder (props) {
           subject='time'
           unit='second'
           defaultDisplayUnit='day'
-          hint=''
+          hint={gettext('Interval in seconds in which the background job, to find duplicates, will be run.')}
           value={viewData.settings.backgroundjob_interval_cleanup}
         >
-          Detection Interval
+          {gettext('Detection Interval')}
         </Setting>
       </SettingsGrid>
-      <h3 style={{ fontWeight: 'bold' }}>Ignored Files</h3>
+      <h3 style={{ fontWeight: 'bold' }}>{gettext('Ignored Files')}</h3>
       <FilterBuilder filter={viewData ? viewData.filter : undefined} />
     </SettingsFrame>
   )
 }
-// 'ignored_files' => $this->configService->getIgnoreConditions()

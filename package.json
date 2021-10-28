@@ -24,6 +24,7 @@
   "author": "Christian Rose (@chrros95)",
   "dependencies": {
     "@emotion/react": "^11.5.0",
+    "facepaint": "^1.2.1",
     "history": "^4.7.2",
     "lodash": "^4.17.20",
     "nextcloud-react": "git+ssh://git@git.7cb.de:2222/chrros95/nextcloud-react.git",

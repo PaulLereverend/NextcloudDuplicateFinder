@@ -1,6 +1,12 @@
 import { takeLatest, takeEvery, select } from 'redux-saga/effects'
 import uniqueId from 'lodash/uniqueId'
-import { createReducerConstants, setViewData, API, showErrorToast, showSuccessToast, setStep, removeStep } from 'nextcloud-react'
+import {
+  createReducerConstants, setViewData,
+  API, showErrorToast,
+  showSuccessToast, setStep,
+  removeStep, gettext
+} from 'nextcloud-react'
+import config from '../../config'
 
 const reducerConstants = createReducerConstants()
 
@@ -47,7 +53,6 @@ function * changeFilter (event) {
     const viewData = yield select((state) => 'SettingsView' in state.app.views ? state.app.views.SettingsView : {})
     if (event.payload.action === 'filter_builder_save') {
       const savedFilter = viewData && viewData.filter ? viewData.filter.map((g) => g.conditions) : []
-      console.log('Saving ', savedFilter)
       yield saveSetting('ignored_files', savedFilter, viewData.filter)
     } else {
       viewData.filter = handleFilter(event.payload, viewData.filter)
@@ -83,7 +88,8 @@ function * watchForView () {
 }
 
 function * loadSettings () {
-  yield setStep('settings', 'Loading Settings')
+  window.appID = config.appID
+  yield setStep('settings', gettext('Loading Settings'))
   let response = yield API.get('duplicatefinder', 'Settings')
   if (response.status === 200) {
     response = yield response.json()
@@ -101,8 +107,8 @@ function * loadSettings () {
     yield setViewData('SettingsView', { settings: response.data, filter })
     yield removeStep('settings')
   } else {
-    yield setStep('settings', 'Failed to load settings', { state: 'error' })
-    yield showErrorToast('Failed to load settings')
+    yield setStep('settings', gettext('Failed to load settings'), { state: 'error' })
+    yield showErrorToast(gettext('Failed to load settings'))
   }
 }
 
@@ -111,9 +117,9 @@ function * saveSetting (key, value, oldValue) {
   config[key] = value
   const response = yield API.patch('duplicatefinder', 'Settings', undefined, { config })
   if (response.status === 200) {
-    yield showSuccessToast('Saved setting ' + key)
+    yield showSuccessToast(gettext('Saved setting ' + key))
   } else {
-    yield showErrorToast('Failed save settings ' + key)
+    yield showErrorToast(gettext('Failed save settings ' + key))
     const viewData = yield select((state) => 'SettingsView' in state.app.views ? state.app.views.SettingsView : {})
     yield setSetting(viewData, key, oldValue)
   }
