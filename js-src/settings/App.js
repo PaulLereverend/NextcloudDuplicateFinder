@@ -48,7 +48,7 @@ export default function AppProivder (props) {
           hint={gettext('Interval in seconds in which the clean-up background job will be run.')}
           value={viewData.settings.backgroundjob_interval_find}
         >
-          {gettext('Cleanup Interval')}
+          {gettext('Detection Interval')}
         </Setting>
         <Setting
           setting='backgroundjob_interval_cleanup'
@@ -60,7 +60,7 @@ export default function AppProivder (props) {
           hint={gettext('Interval in seconds in which the background job, to find duplicates, will be run.')}
           value={viewData.settings.backgroundjob_interval_cleanup}
         >
-          {gettext('Detection Interval')}
+          {gettext('Cleanup Interval')}
         </Setting>
       </SettingsGrid>
       <h3 style={{ fontWeight: 'bold' }}>{gettext('Ignored Files')}</h3>

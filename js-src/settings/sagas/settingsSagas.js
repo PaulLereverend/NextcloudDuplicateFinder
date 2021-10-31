@@ -119,7 +119,7 @@ function * saveSetting (key, value, oldValue) {
   if (response.status === 200) {
     yield showSuccessToast(gettext('Saved setting ' + key))
   } else {
-    yield showErrorToast(gettext('Failed save settings ' + key))
+    yield showErrorToast(gettext('Failed to save setting ' + key))
     const viewData = yield select((state) => 'SettingsView' in state.app.views ? state.app.views.SettingsView : {})
     yield setSetting(viewData, key, oldValue)
   }
