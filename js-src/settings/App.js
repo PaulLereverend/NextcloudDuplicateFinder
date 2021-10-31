@@ -16,7 +16,7 @@ export default function AppProivder (props) {
     <SettingsFrame>
       <SettingsPageTitle
         help='https://github.com/PaulLereverend/NextcloudDuplicateFinder'
-        label={'(' + gettext('Version:') + (viewData.settings.installed_version || 'n.a.') + ')'}
+        label={'(' + gettext('Version: ') + (viewData.settings.installed_version || 'n.a.') + ')'}
         description={gettext('Adjust these settings to make the process of finding duplicates your own.')}
       >
         {gettext('Duplicate Finder')}

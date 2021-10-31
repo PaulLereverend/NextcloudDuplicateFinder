@@ -26,11 +26,12 @@ module.exports = {
           limit: 10240
         }
       }, {
-        test: /\.js$/,
+        test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
+            cacheDirectory: true,
             plugins: [
               '@emotion/babel-plugin',
               '@babel/plugin-syntax-dynamic-import',
