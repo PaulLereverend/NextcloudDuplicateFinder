@@ -1,3 +1,8 @@
+## 0.0.13 
+- Support NC23
+- Fix #52
+- Fix #54
+- Fix #55
 ## 0.0.12 (Author : @chrros95)
 - Add an option to ignore external files
 - Fix NotFoundExceptions
