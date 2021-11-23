@@ -74,7 +74,9 @@ class PageController extends Controller
                     ]
                 ];
             }
+            unset($owner);
         }
+        unset($duplicate);
         return $response;
     }
 }

@@ -55,6 +55,7 @@ class EEntity extends Entity implements JsonSerializable
         foreach ($this->changedRelations as $field => $value) {
             $this->changedRelations[$field] = [];
         }
+        unset($value);
     }
 
     /**
@@ -172,7 +173,6 @@ class EEntity extends Entity implements JsonSerializable
     public function jsonSerialize()
     {
         $properties = get_object_vars($this);
-        $reflection = new \ReflectionClass($this);
         $json = [];
         foreach ($properties as $property => $value) {
             if (isset($this->getInternalProperties()[$property])
@@ -187,6 +187,7 @@ class EEntity extends Entity implements JsonSerializable
             $methodName .= ucfirst($property);
             $json[$property] = $this->$methodName();
         }
+        unset($value);
         return $json;
     }
 

@@ -55,6 +55,7 @@ class FileDuplicateMapper extends EQBMapper
             foreach ($orderBy as $order) {
                 $qb->addOrderBy($order[0], isset($order[1]) ? $order[1] : null);
             }
+            unset($order);
         }
         return $this->findEntities($qb);
     }
@@ -84,6 +85,7 @@ class FileDuplicateMapper extends EQBMapper
             );
             $duplicates[] = $this->findEntity($fQB);
         }
+        unset($row);
         $qb->closeCursor();
         return $duplicates;
     }

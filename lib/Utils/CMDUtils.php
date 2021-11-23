@@ -10,7 +10,6 @@ class CMDUtils
 
     public static function showDuplicates(
         FileDuplicateService $fileDuplicateService,
-        FileInfoService $fileInfoService,
         OutputInterface $output,
         \Closure $abortIfInterrupted,
         ?string $user = null
@@ -28,12 +27,14 @@ class CMDUtils
                     continue;
                 }
                 $output->writeln($duplicate->getHash().'('.$duplicate->getType().')');
-                foreach ($duplicate->getFiles() as $id => $file) {
+                foreach ($duplicate->getFiles() as $file) {
                     if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
                         $output->writeln('     '.$file->getPath());
                     }
-                };
+                }
+                unset($file);
             }
+            unset($duplicate);
             $abortIfInterrupted();
         } while (!$duplicates["isLastFetched"]);
     }

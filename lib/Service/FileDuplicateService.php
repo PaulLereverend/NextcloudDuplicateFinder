@@ -50,6 +50,7 @@ class FileDuplicateService
                   .$duplicate->getHash().' - '.$duplicate->getType());
             }
         }
+        unset($owner);
         return $duplicate;
     }
 
@@ -70,15 +71,11 @@ class FileDuplicateService
     ):array {
         $result = array();
         $entities = null;
-        $lastKey = null;
         do {
             $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
             foreach ($entities as $entity) {
-                foreach ($entity->getFiles() as $fileId => $owner) {
-                    if (!is_null($user)  && $user !== $owner) {
-                        $entity->removeDuplicate($fileId);
-                    }
-                }
+                $entity = $this->stripFilesWithoutAccessRights($entity, $user);
+                
                 if ($enrich) {
                     $entity = $this->enrich($entity);
                     $files = $entity->getFiles();
@@ -87,7 +84,7 @@ class FileDuplicateService
                     });
                     $entity->setFiles(array_values($files));
                 }
-                $lastKey = $entity->id;
+                $offset = $entity->id;
                 if (count($entity->getFiles()) > 1) {
                     $result[] = $entity;
                     if (count($result) === $limit) {
@@ -95,8 +92,20 @@ class FileDuplicateService
                     }
                 }
             }
+            unset($entity);
         } while (count($result) < $limit && count($entities) === $limit);
-        return array("entities" => $result, "pageKey" => $lastKey, "isLastFetched" => count($entities) !== $limit );
+        return array("entities" => $result, "pageKey" => $offset, "isLastFetched" => count($entities) !== $limit );
+    }
+
+    private function stripFilesWithoutAccessRights(FileDuplicate $entity, ?string $user) : FileDuplicate
+    {
+        foreach ($entity->getFiles() as $fileId => $owner) {
+            if (!is_null($user) && $user !== $owner) {
+                $entity->removeDuplicate($fileId);
+            }
+        }
+        unset($owner);
+        return $entity;
     }
 
     public function find(string $hash, string $type = 'file_hash'):FileDuplicate
@@ -155,5 +164,6 @@ class FileDuplicateService
                 $this->mapper->delete($fileDuplicate);
             }
         }
+        unset($fileDuplicate);
     }
 }

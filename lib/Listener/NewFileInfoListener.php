@@ -37,12 +37,13 @@ class NewFileInfoListener implements IEventListener
                 if ($this->fileInfoService->countBySize($fileInfo->getSize())>1) {
                     $files = $this->fileInfoService->findBySize($fileInfo->getSize());
                     foreach ($files as $finfo) {
-                        $this->fileInfoService->calculateHashes($finfo);
+                        $this->fileInfoService->calculateHashes($finfo, $event->getUserID());
                     }
+                    unset($finfo);
                 }
             }
         } catch (\Throwable $e) {
-            $this->logger->error('Failed to handle NewFileInfoEvent .', ['exception'=> $e]);
+            $this->logger->error('Failed to handle NewFileInfoEvent.', ['exception'=> $e]);
             $this->logger->logException($e, ['app'=>'duplicatefinder']);
         }
     }
