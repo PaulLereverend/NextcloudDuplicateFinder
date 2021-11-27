@@ -2,7 +2,6 @@
 namespace OCA\DuplicateFinder\Utils;
 
 use Symfony\Component\Console\Output\OutputInterface;
-use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
 
 class CMDUtils
@@ -27,16 +26,41 @@ class CMDUtils
                     continue;
                 }
                 $output->writeln($duplicate->getHash().'('.$duplicate->getType().')');
-                foreach ($duplicate->getFiles() as $file) {
-                    if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
-                        $output->writeln('     '.$file->getPath());
-                    }
-                }
-                unset($file);
+                self::showFiles($output, $duplicate->getFiles());
             }
             unset($duplicate);
             $abortIfInterrupted();
         } while (!$duplicates["isLastFetched"]);
+    }
+
+    /**
+     * @param array<\OCA\DuplicateFinder\Db\FileInfo> $files
+     */
+    private static function showFiles(OutputInterface $output, array $files) : void
+    {
+        $shownPaths = [];
+        $hiddenPaths = 0;
+        $indent = '     ';
+        foreach ($files as $file) {
+            if ($file instanceof \OCA\DuplicateFinder\Db\FileInfo) {
+                if (!isset($shownPaths[$file->getPath()])) {
+                    $output->writeln($indent.$file->getPath());
+                    $shownPaths[$file->getPath()] = 1;
+                } else {
+                    $hiddenPaths += 1;
+                }
+            }
+        }
+        unset($file);
+        $message = '';
+        if ($hiddenPaths == 1) {
+            $message = $hiddenPaths.' path is hidden because it references';
+        } elseif ($hiddenPaths > 1) {
+            $message = $hiddenPaths.' paths are hidden because they reference';
+        }
+        if ($hiddenPaths > 0) {
+            $output->writeln($indent.'<info>'.$message.' to a similiar file.</info>');
+        }
     }
 
 

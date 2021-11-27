@@ -1,7 +1,7 @@
 <?php
 namespace OCA\DuplicateFinder\Listener;
 
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCA\DuplicateFinder\Event\AbstractFileInfoEvent;
@@ -16,12 +16,12 @@ class FileInfoListener implements IEventListener
 
     /** @var FileInfoService */
     private $fileInfoService;
-    /** @var Ilogger */
+    /** @var LoggerInterface */
     private $logger;
 
     public function __construct(
         FileInfoService $fileInfoService,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         $this->fileInfoService = $fileInfoService;
         $this->logger = $logger;
@@ -45,7 +45,6 @@ class FileInfoListener implements IEventListener
             }
         } catch (\Throwable $e) {
             $this->logger->error('Failed to handle NewFileInfoEvent.', ['exception'=> $e]);
-            $this->logger->logException($e, ['app'=>'duplicatefinder']);
         }
     }
 }

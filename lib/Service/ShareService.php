@@ -3,7 +3,7 @@ namespace OCA\DuplicateFinder\Service;
 
 use OCA\DuplicateFinder\Utils\PathConversionUtils;
 use OCP\Share\IShare;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\Files\Node;
 use OCP\Files\IRootFolder;
 use OCP\Share\IManager;
@@ -12,7 +12,7 @@ class ShareService
 {
     /** @var IRootFolder */
     private $rootFolder;
-    /** @var ILogger */
+    /** @var LoggerInterface */
     private $logger;
     /** @var IManager */
     private $shareManager;
@@ -20,7 +20,7 @@ class ShareService
     public function __construct(
         IRootFolder $rootFolder,
         IManager $shareManager,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         $this->rootFolder = $rootFolder;
         $this->shareManager = $shareManager;
@@ -42,12 +42,17 @@ class ShareService
             $shareTypes[] = IShare::TYPE_DECK;
         }
         foreach ($shareTypes as $shareType) {
-            $shares = array_merge($shares, $this->shareManager->getSharedWith(
-                $user,
-                $shareType,
-                $node,
-                $limit
-            ));
+            try {
+                $shares = array_merge($shares, $this->shareManager->getSharedWith(
+                    $user,
+                    $shareType,
+                    $node,
+                    $limit
+                ));
+            } catch (\Throwable $e) {
+                $this->logger->error('Failed to get shares', ['exception'=> $e]);
+            }
+            
             if ($limit > 0 && count($shares) >= $limit) {
                 break;
             }
@@ -65,8 +70,10 @@ class ShareService
             while ($node) {
                 $shares = $this->getShares($user, $node, 1);
                 if (!empty($shares)) {
+                    $this->logger->debug('Target Path: @'.$shares[0]->getTarget().'@ '.$shares[0]->getNodeType());
                     return PathConversionUtils::convertSharedPath(
                         $this->rootFolder->getUserFolder($user),
+                        $this->rootFolder->getUserFolder($shares[0]->getSharedWith()),
                         $sharedNode,
                         $shares[0],
                         $stripedFolders

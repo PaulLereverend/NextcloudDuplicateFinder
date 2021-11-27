@@ -3,10 +3,11 @@ namespace OCA\DuplicateFinder\Controller;
 
 use OCP\IRequest;
 use OCP\IUserSession;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Exception\NotAuthenticatedException;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
 use OCA\DuplicateFinder\Service\FileInfoService;
@@ -25,7 +26,7 @@ class DuplicateApiController extends AbstractAPIController
         ?IUserSession $userSession,
         FileDuplicateService $fileDuplicateService,
         FileInfoService $fileInfoService,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         parent::__construct($appName, $request, $userSession, $logger);
         $this->fileInfoService = $fileInfoService;
@@ -42,7 +43,7 @@ class DuplicateApiController extends AbstractAPIController
             $duplicates = $this->fileDuplicateService->findAll($this->getUserId(), $limit, $offset, true);
             return $this->success($duplicates);
         } catch (\Exception $e) {
-            $this->logger->logException($e, ['app' => 'duplicatefinder']);
+            $this->logger->error('A unknown exception occured', ['app' => Application::ID, 'exception' => $e]);
             return $this->handleException($e);
         }
     }

@@ -31,7 +31,7 @@ class PageControllerTest extends TestCase
     {
         $result = $this->controller->index();
 
+        $this->assertInstanceOf(TemplateResponse::class, $result);
         $this->assertEquals('index', $result->getTemplateName());
-        $this->assertTrue($result instanceof TemplateResponse);
     }
 }

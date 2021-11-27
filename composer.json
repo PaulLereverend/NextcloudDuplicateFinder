@@ -2,7 +2,7 @@
     "name": "paullereverend/nextcloudduplicatefinder",
     "description": "Find your duplicate files and remove them",
     "type": "project",
-    "license": "AGPL-3.0-or-later",
+    "license": "GPL-3.0-only",
     "authors": [
         {
             "name": "Paul Lereverend"

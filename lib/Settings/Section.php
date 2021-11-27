@@ -5,6 +5,8 @@ use OCP\IL10N;
 use OCP\IURLGenerator;
 use OCP\Settings\IIconSection;
 
+use OCA\DuplicateFinder\AppInfo\Application;
+
 class Section implements IIconSection
 {
     /** @var IL10N */
@@ -24,7 +26,7 @@ class Section implements IIconSection
 
     public function getID() : string
     {
-        return 'duplicatefinder';
+        return Application::ID;
     }
 
     public function getName() : string
@@ -39,6 +41,6 @@ class Section implements IIconSection
 
     public function getIcon() : string
     {
-        return $this->url->imagePath('duplicatefinder', 'app-dark.svg');
+        return $this->url->imagePath(Application::ID, 'app-dark.svg');
     }
 }

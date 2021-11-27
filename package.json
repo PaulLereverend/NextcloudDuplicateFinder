@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "This package provides a UI for the Nextcloud app duplicatefinder",
   "main": "src/index.js",
-  "license": "agpl",
+  "license": "GPL-3.0-only",
   "private": true,
   "scripts": {
     "lint": "npx standard --fix js-src",

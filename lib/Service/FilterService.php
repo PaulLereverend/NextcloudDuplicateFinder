@@ -1,7 +1,7 @@
 <?php
 namespace OCA\DuplicateFinder\Service;
 
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\Files\Node;
 
 use OCA\DuplicateFinder\Db\FileInfo;
@@ -10,7 +10,7 @@ use OCA\DuplicateFinder\Service\ConfigService;
 
 class FilterService
 {
-    /** @var ILogger */
+    /** @var LoggerInterface */
     private $logger;
     /** @var ConfigService */
     private $config;
@@ -18,7 +18,7 @@ class FilterService
     private $ignoreConditions;
 
     public function __construct(
-        ILogger $logger,
+        LoggerInterface $logger,
         ConfigService $config
     ) {
         $this->logger = $logger;

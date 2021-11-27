@@ -3,10 +3,11 @@ namespace OCA\DuplicateFinder\Controller;
 
 use OCP\IRequest;
 use OCP\IUserSession;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Exception\NotAuthenticatedException;
 use OCA\DuplicateFinder\Utils\JSONResponseTrait;
 
@@ -16,14 +17,14 @@ abstract class AbstractAPIController extends ApiController
 
     /** @var IUserSession|null */
     private $userSession;
-    /** @var ILogger */
+    /** @var LoggerInterface */
     protected $logger;
 
     public function __construct(
         $appName,
         IRequest $request,
         ?IUserSession $userSession,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         parent::__construct($appName, $request);
         $this->userSession = $userSession;
@@ -53,7 +54,7 @@ abstract class AbstractAPIController extends ApiController
         if ($e instanceof NotAuthenticatedException) {
             return $this->error($e, Http::STATUS_FORBIDDEN);
         }
-        $this->logger->logException($e, ['app' => 'duplicatefinder']);
+        $this->logger->error('A unknown exception occured', ['app' => Application::ID, 'exception' => $e]);
         return $this->error(new \Exception('Unknown Exception occured'), Http::STATUS_NOT_IMPLEMENTED);
     }
 }

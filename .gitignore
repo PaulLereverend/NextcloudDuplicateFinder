@@ -9,3 +9,7 @@ composer.lock
 sonar-project.properties
 .scannerwork
 statistics.html
+.phpunit.cache/
+.phpunit.result.cache
+execution-result.xml
+coverage-result.xml

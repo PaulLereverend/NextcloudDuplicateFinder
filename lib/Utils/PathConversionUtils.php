@@ -24,13 +24,22 @@ class PathConversionUtils
     }
 
     public static function convertSharedPath(
-        Folder $userFolder,
-        Node $node,
+        Folder $srcUserFolder,
+        Folder $targetUserFolder,
+        Node $srcNode,
         IShare $share,
         int $strippedFolders
     ) : string {
-        $paths = explode('/', $node->getPath());
-        $paths = array_slice($paths, -$strippedFolders);
-        return $userFolder->getPath().$share->getTarget().'/'.implode('/', $paths);
+        if ($share->getNodeType() === 'file') {
+            return $targetUserFolder->getPath().$share->getTarget();
+        }
+        $srcPath = substr(
+            $srcNode->getPath(),
+            strlen($srcUserFolder->getPath())
+        );
+        $srcPath = explode('/', $srcPath);
+        $srcPath = array_slice($srcPath, -$strippedFolders);
+        $srcPath = implode('/', $srcPath);
+        return $targetUserFolder->getPath().$share->getTarget().'/'.$srcPath;
     }
 }

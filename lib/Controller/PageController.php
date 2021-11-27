@@ -4,6 +4,7 @@ namespace OCA\DuplicateFinder\Controller;
 use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Controller;
+use OCA\DuplicateFinder\AppInfo\Application;
 
 class PageController extends Controller
 {
@@ -21,6 +22,6 @@ class PageController extends Controller
     public function index(): TemplateResponse
     {
         //
-        return new TemplateResponse('duplicatefinder', 'index');  // templates/index.php
+        return new TemplateResponse(Application::ID, 'index');  // templates/index.php
     }
 }

@@ -1,9 +1,10 @@
 <?php
 namespace OCA\DuplicateFinder\Listener;
 
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 use OCA\DuplicateFinder\Service\FileInfoService;
@@ -20,13 +21,13 @@ class NewHashListener implements IEventListener
     private $fileInfoService;
     /** @var FileDuplicateService */
     private $fileDuplicateService;
-    /** @var Ilogger */
+    /** @var LoggerInterface */
     private $logger;
 
     public function __construct(
         FileInfoService $fileInfoService,
         FileDuplicateService $fileDuplicateService,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
@@ -42,7 +43,6 @@ class NewHashListener implements IEventListener
             }
         } catch (\Throwable $e) {
             $this->logger->error('Failed to handle new hash event .', ['exception'=> $e]);
-            $this->logger->logException($e, ['app'=>'duplicatefinder']);
         }
     }
 
@@ -60,7 +60,7 @@ class NewHashListener implements IEventListener
             try {
                 $this->fileDuplicateService->getOrCreate($hash, $type);
             } catch (\Exception $e) {
-                $this->logger->logException($e, ['app' => 'duplicatefinder']);
+                $this->logger->error('A unknown exception occured', ['app' => Application::ID, 'exception' => $e]);
             }
         } else {
             $this->fileDuplicateService->delete($hash);

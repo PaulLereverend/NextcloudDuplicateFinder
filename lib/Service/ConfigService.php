@@ -2,7 +2,7 @@
 namespace OCA\DuplicateFinder\Service;
 
 use OCP\IConfig;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Exception\UnableToParseException;
 
@@ -10,12 +10,12 @@ class ConfigService
 {
     /** @var IConfig */
     private $config;
-    /** @var ILogger */
+    /** @var LoggerInterface */
     private $logger;
 
     public function __construct(
         IConfig $config,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->logger = $logger;

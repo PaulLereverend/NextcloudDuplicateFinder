@@ -1,7 +1,7 @@
 <?php
 namespace OCA\DuplicateFinder\Listener;
 
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
@@ -9,7 +9,6 @@ use OCP\Files\Node;
 use OCP\Files\Events\Node\NodeDeletedEvent;
 use OCP\Files\Events\Node\NodeRenamedEvent;
 use OCP\Files\Events\Node\AbstractNodeEvent;
-use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Service\ConfigService;
 use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
@@ -26,7 +25,7 @@ class FilesytemListener implements IEventListener
     private $fileInfoService;
     /** @var FileDuplicateService */
     private $fileDuplicateService;
-    /** @var Ilogger */
+    /** @var LoggerInterface */
     private $logger;
     /** @var ConfigService */
     private $config;
@@ -34,7 +33,7 @@ class FilesytemListener implements IEventListener
     public function __construct(
         FileInfoService $fileInfoService,
         FileDuplicateService $fileDuplicateService,
-        ILogger $logger,
+        LoggerInterface $logger,
         ConfigService $config
     ) {
         $this->fileInfoService = $fileInfoService;

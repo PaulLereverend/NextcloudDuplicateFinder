@@ -20,7 +20,7 @@ use OCA\DuplicateFinder\Listener\FileInfoListener;
 
 class Application extends App implements IBootstrap
 {
-    public const ID = "duplicatefinder";
+    public const ID = 'duplicatefinder';
 
     public function __construct()
     {

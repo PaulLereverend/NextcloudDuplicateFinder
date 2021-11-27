@@ -1,0 +1,94 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Nextcloud package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Nextcloud 3.14159\n"
+"Report-Msgid-Bugs-To: translations\\@example.com\n"
+"POT-Creation-Date: 2021-11-05 05:13+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:19
+msgid "Version: "
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:20
+msgid ""
+"Adjust these settings to make the process of finding duplicates your own."
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:22
+#: /home/chrros95/git/nextcloud/duplicatefinder/lib/Settings/Section.php:32
+#: /home/chrros95/git/nextcloud/duplicatefinder/specialAppInfoFakeDummyForL10nScript.php:2
+msgid "Duplicate Finder"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:28
+msgid ""
+"When true, files mounted on external storage will be ignored. Computing the "
+"hash for an external file may require transferring the whole file to the "
+"Nextcloud server. So, this setting can be useful when you need to reduce "
+"traffic e.g if you need to pay for the traffic."
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:31
+msgid "Ignore Mounted Files"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:36
+msgid ""
+"When true, the event-based detection will be disabled. This gives you more "
+"control when the hashes are generated."
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:39
+msgid "Disable event-based detection"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:48
+msgid "Interval in seconds in which the clean-up background job will be run."
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:51
+msgid "Detection Interval"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:60
+msgid ""
+"Interval in seconds in which the background job, to find duplicates, will be "
+"run."
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:63
+msgid "Cleanup Interval"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/App.js:66
+msgid "Ignored Files"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/sagas/settingsSagas.js:92
+msgid "Loading Settings"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/sagas/settingsSagas.js:110
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/sagas/settingsSagas.js:111
+msgid "Failed to load settings"
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/sagas/settingsSagas.js:120
+msgid "Saved setting "
+msgstr ""
+
+#: /home/chrros95/git/nextcloud/duplicatefinder/js-src/settings/sagas/settingsSagas.js:122
+msgid "Failed to save setting "
+msgstr ""

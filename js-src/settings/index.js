@@ -3,13 +3,13 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 
 import { ToastContainer } from 'nextcloud-react'
-import App from './App'
+import AppProivder from './AppProivder'
 import store from './store'
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-      <App />
+      <AppProivder />
       <ToastContainer />
     </Provider>
   </React.StrictMode>,

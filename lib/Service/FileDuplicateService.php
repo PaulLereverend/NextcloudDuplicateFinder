@@ -2,11 +2,12 @@
 namespace OCA\DuplicateFinder\Service;
 
 use OCP\IUser;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\Files\NotFoundException;
 
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileDuplicate;
 use OCA\DuplicateFinder\Db\FileDuplicateMapper;
@@ -17,13 +18,13 @@ class FileDuplicateService
 
     /** @var FileDuplicateMapper */
     private $mapper;
-    /** @var ILogger */
+    /** @var LoggerInterface */
     private $logger;
     /** @var FileInfoService */
     private $fileInfoService;
 
     public function __construct(
-        ILogger $logger,
+        LoggerInterface $logger,
         FileDuplicateMapper $mapper,
         FileInfoService $fileInfoService
     ) {
@@ -122,7 +123,7 @@ class FileDuplicateService
             $fileDuplicate = $this->mapper->find($hash, $type);
         } catch (\Exception $e) {
             if (!($e instanceof DoesNotExistException)) {
-                $this->logger->logException($e, ['app' => 'duplicatefinder']);
+                $this->logger->error('A unknown exception occured', ['app' => Application::ID, 'exception' => $e]);
             }
             $fileDuplicate = new FileDuplicate($hash, $type);
             $fileDuplicate->setKeepAsPrimary(true);

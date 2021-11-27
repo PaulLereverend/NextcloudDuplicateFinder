@@ -6,7 +6,6 @@ import {
   showSuccessToast, setStep,
   removeStep, gettext
 } from 'nextcloud-react'
-import config from '../../config'
 
 const reducerConstants = createReducerConstants()
 
@@ -88,7 +87,6 @@ function * watchForView () {
 }
 
 function * loadSettings () {
-  window.appID = config.appID
   yield setStep('settings', gettext('Loading Settings'))
   let response = yield API.get('duplicatefinder', 'Settings')
   if (response.status === 200) {
@@ -113,9 +111,9 @@ function * loadSettings () {
 }
 
 function * saveSetting (key, value, oldValue) {
-  const config = {}
-  config[key] = value
-  const response = yield API.patch('duplicatefinder', 'Settings', undefined, { config })
+  const newConfig = {}
+  newConfig[key] = value
+  const response = yield API.patch('duplicatefinder', 'Settings', undefined, { newConfig })
   if (response.status === 200) {
     yield showSuccessToast(gettext('Saved setting ' + key))
   } else {

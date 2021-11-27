@@ -1,30 +1,34 @@
 <?php
 namespace OCA\DuplicateFinder\BackgroundJob;
 
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\Files\NotFoundException;
-use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\ConfigService;
+use OCA\DuplicateFinder\Service\FolderService;
 
 class CleanUpDB extends \OC\BackgroundJob\TimedJob
 {
     /** @var FileInfoService*/
     private $fileInfoService;
-    /** @var ILogger */
+    /** @var FolderService*/
+    private $folderService;
+    /** @var LoggerInterface */
     private $logger;
 
     /**
      * @param FileInfoService $fileInfoService
-     * @param ILogger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         FileInfoService $fileInfoService,
-        ILogger $logger,
-        ConfigService $config
+        LoggerInterface $logger,
+        ConfigService $config,
+        FolderService $folderService
     ) {
         $this->setInterval($config->getCleanupJobInterval());
         $this->fileInfoService = $fileInfoService;
+        $this->folderService = $folderService;
         $this->logger = $logger;
     }
 
@@ -40,7 +44,7 @@ class CleanUpDB extends \OC\BackgroundJob\TimedJob
         $fileInfos = $this->fileInfoService->findAll();
         foreach ($fileInfos as $fileInfo) {
             try {
-                $this->fileInfoService->getNode($fileInfo);
+                $this->folderService->getNodeByFileInfo($fileInfo);
             } catch (NotFoundException $e) {
                 $this->logger->info('FileInfo '.$fileInfo->getPath(). ' will be deleted');
                 $this->fileInfoService->delete($fileInfo);

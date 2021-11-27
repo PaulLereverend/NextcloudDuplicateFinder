@@ -3,7 +3,7 @@ namespace OCA\DuplicateFinder\Controller;
 
 use OCP\IRequest;
 use OCP\IUserSession;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Http\JSONResponse;
 use OCA\DuplicateFinder\Exception\UnknownConfigKeyException;
 use OCA\DuplicateFinder\Service\ConfigService;
@@ -18,7 +18,7 @@ class SettingsApiController extends AbstractAPIController
         IRequest $request,
         ?IUserSession $userSession,
         ConfigService $configService,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         parent::__construct($appName, $request, $userSession, $logger);
         $this->configService = $configService;

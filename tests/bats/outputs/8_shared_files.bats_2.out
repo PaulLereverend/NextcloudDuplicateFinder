@@ -1,0 +1,76 @@
+Duplicates for user "admin" are: 
+1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2(file_hash)
+     /admin/files/groupShareTest/3_0.txt
+     /admin/files/groupShareTest/3_1.txt
+     /admin/files/groupShareTest/3_2.txt
+     /admin/files/groupShareTest/3_3.txt
+     /admin/files/groupShareTest/subdir/3_0.txt
+     /admin/files/groupShareTest/subdir/3_1.txt
+     /admin/files/groupShareTest/subdir/3_2.txt
+     /admin/files/groupShareTest/subdir/3_3.txt
+     /admin/files/groupShareTest/subdir/subsubdir/3_0.txt
+     /admin/files/groupShareTest/subdir/subsubdir/3_1.txt
+     /admin/files/groupShareTest/subdir/subsubdir/3_2.txt
+     /admin/files/groupShareTest/subdir/subsubdir/3_3.txt
+     /admin/files/tests/3_0.txt
+     /admin/files/tests/3_1.txt
+     /admin/files/tests/3_2.txt
+     /admin/files/tests/3_3.txt
+     /admin/files/userShareTest/3_0.txt
+     /admin/files/userShareTest/3_1.txt
+     /admin/files/userShareTest/3_2.txt
+     /admin/files/userShareTest/3_3.txt
+     /admin/files/userShareTest/subdir/3_0.txt
+     /admin/files/userShareTest/subdir/3_1.txt
+     /admin/files/userShareTest/subdir/3_2.txt
+     /admin/files/userShareTest/subdir/3_3.txt
+     /admin/files/userShareTest/subdir/subsubdir/3_0.txt
+     /admin/files/userShareTest/subdir/subsubdir/3_1.txt
+     /admin/files/userShareTest/subdir/subsubdir/3_2.txt
+     /admin/files/userShareTest/subdir/subsubdir/3_3.txt
+4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865(file_hash)
+     /admin/files/groupShareTest/1_0.txt
+     /admin/files/groupShareTest/1_1.txt
+     /admin/files/groupShareTest/subdir/1_0.txt
+     /admin/files/groupShareTest/subdir/1_1.txt
+     /admin/files/groupShareTest/subdir/subsubdir/1_0.txt
+     /admin/files/groupShareTest/subdir/subsubdir/1_1.txt
+     /admin/files/tests/1_0.txt
+     /admin/files/tests/1_1.txt
+     /admin/files/userShareTest/1_0.txt
+     /admin/files/userShareTest/1_1.txt
+     /admin/files/userShareTest/subdir/1_0.txt
+     /admin/files/userShareTest/subdir/1_1.txt
+     /admin/files/userShareTest/subdir/subsubdir/1_0.txt
+     /admin/files/userShareTest/subdir/subsubdir/1_1.txt
+53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3(file_hash)
+     /admin/files/groupShareTest/2_0.txt
+     /admin/files/groupShareTest/2_1.txt
+     /admin/files/groupShareTest/2_2.txt
+     /admin/files/groupShareTest/subdir/2_0.txt
+     /admin/files/groupShareTest/subdir/2_1.txt
+     /admin/files/groupShareTest/subdir/2_2.txt
+     /admin/files/groupShareTest/subdir/subsubdir/2_0.txt
+     /admin/files/groupShareTest/subdir/subsubdir/2_1.txt
+     /admin/files/groupShareTest/subdir/subsubdir/2_2.txt
+     /admin/files/tests/2_0.txt
+     /admin/files/tests/2_1.txt
+     /admin/files/tests/2_2.txt
+     /admin/files/userShareTest/2_0.txt
+     /admin/files/userShareTest/2_1.txt
+     /admin/files/userShareTest/2_2.txt
+     /admin/files/userShareTest/subdir/2_0.txt
+     /admin/files/userShareTest/subdir/2_1.txt
+     /admin/files/userShareTest/subdir/2_2.txt
+     /admin/files/userShareTest/subdir/subsubdir/2_0.txt
+     /admin/files/userShareTest/subdir/subsubdir/2_1.txt
+     /admin/files/userShareTest/subdir/subsubdir/2_2.txt
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa(file_hash)
+     /admin/files/0_0.txt
+     /admin/files/groupShareTest/0_0.txt
+     /admin/files/groupShareTest/subdir/0_0.txt
+     /admin/files/groupShareTest/subdir/subsubdir/0_0.txt
+     /admin/files/tests/0_0.txt
+     /admin/files/userShareTest/subdir/0_0.txt
+     /admin/files/userShareTest/subdir/subsubdir/0_0.txt
+     1 path is hidden because it references to a similiar file.

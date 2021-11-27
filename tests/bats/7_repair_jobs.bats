@@ -28,7 +28,7 @@ teardown() {
     dbQuery "update oc_duplicatefinder_finfo set path_hash='';"
     ./occ -v duplicates:find-all
     output=$(./occ -v duplicates:list)
-    expectedHash="db1f0ecb4096a811ccf6b50be9af8cca537f5f08c4667ba1b2f6f7e5b6dced41"
+    expectedHash="d1e0e228f77662ecb2fbb0514bf2fafc8d1ce1089d53af1d46400443403c5d29"
     evaluateHashResult "${expectedHash}" 4 "${output}" "_1"
 
     ./occ maintenance:repair
