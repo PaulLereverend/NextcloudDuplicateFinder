@@ -2,11 +2,12 @@
 namespace OCA\DuplicateFinder\Service;
 
 use OCP\IUser;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\Files\NotFoundException;
 
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Db\FileDuplicate;
 use OCA\DuplicateFinder\Db\FileDuplicateMapper;
@@ -17,13 +18,13 @@ class FileDuplicateService
 
     /** @var FileDuplicateMapper */
     private $mapper;
-    /** @var ILogger */
+    /** @var LoggerInterface */
     private $logger;
     /** @var FileInfoService */
     private $fileInfoService;
 
     public function __construct(
-        ILogger $logger,
+        LoggerInterface $logger,
         FileDuplicateMapper $mapper,
         FileInfoService $fileInfoService
     ) {
@@ -37,20 +38,11 @@ class FileDuplicateService
      */
     public function enrich(FileDuplicate $duplicate):FileDuplicate
     {
-        foreach ($duplicate->getFiles() as $fileId => $owner) {
-            try {
-                $fileInfo = $this->fileInfoService->findById($fileId, true);
-                $duplicate->addDuplicate($fileId, $fileInfo);
-            } catch (DoesNotExistException|NotFoundException $e) {
-                $duplicate->resetUpdatedRelationalFields();
-                $duplicate->removeDuplicate($fileId);
-                $this->update($duplicate);
-                $this->logger->info('Removed stale entry '.$fileId
-                  .' for duplicate '.$duplicate->getId().' - '
-                  .$duplicate->getHash().' - '.$duplicate->getType());
-            }
-        }
-        unset($owner);
+        $files = $duplicate->getFiles();
+        uasort($files, function (FileInfo $a, FileInfo $b) {
+            return strnatcmp($a->getPath(), $b->getPath());
+        });
+        $duplicate->setFiles(array_values($files));
         return $duplicate;
     }
 
@@ -75,14 +67,8 @@ class FileDuplicateService
             $entities = $this->mapper->findAll($user, $limit, $offset, $orderBy);
             foreach ($entities as $entity) {
                 $entity = $this->stripFilesWithoutAccessRights($entity, $user);
-                
                 if ($enrich) {
                     $entity = $this->enrich($entity);
-                    $files = $entity->getFiles();
-                    uasort($files, function (FileInfo $a, FileInfo $b) {
-                        return strnatcmp($a->getPath(), $b->getPath());
-                    });
-                    $entity->setFiles(array_values($files));
                 }
                 $offset = $entity->id;
                 if (count($entity->getFiles()) > 1) {
@@ -97,15 +83,25 @@ class FileDuplicateService
         return array("entities" => $result, "pageKey" => $offset, "isLastFetched" => count($entities) !== $limit );
     }
 
-    private function stripFilesWithoutAccessRights(FileDuplicate $entity, ?string $user) : FileDuplicate
-    {
-        foreach ($entity->getFiles() as $fileId => $owner) {
-            if (!is_null($user) && $user !== $owner) {
-                $entity->removeDuplicate($fileId);
+    private function stripFilesWithoutAccessRights(
+        FileDuplicate $duplicate,
+        ?string $user
+    ) : FileDuplicate {
+        $files = $this->fileInfoService->findByHash($duplicate->getHash(), $duplicate->getType());
+        $duplicate->setFiles($files);
+        if (is_null($user)) {
+            return $duplicate;
+        }
+        foreach ($duplicate->getFiles() as $fileId => $fileInfo) {
+            if (is_string($fileInfo)) {
+                continue;
+            }
+            if (!$this->fileInfoService->hasAccessRight($fileInfo, $user)) {
+                $duplicate->removeDuplicate($fileId);
             }
         }
-        unset($owner);
-        return $entity;
+        unset($fileInfo);
+        return $duplicate;
     }
 
     public function find(string $hash, string $type = 'file_hash'):FileDuplicate
@@ -127,7 +123,7 @@ class FileDuplicateService
             $fileDuplicate = $this->mapper->find($hash, $type);
         } catch (\Exception $e) {
             if (!($e instanceof DoesNotExistException)) {
-                $this->logger->logException($e, ['app' => 'duplicatefinder']);
+                $this->logger->error('A unknown exception occured', ['app' => Application::ID, 'exception' => $e]);
             }
             $fileDuplicate = new FileDuplicate($hash, $type);
             $fileDuplicate->setKeepAsPrimary(true);
@@ -151,19 +147,5 @@ class FileDuplicateService
     public function clear():void
     {
         $this->mapper->clear();
-    }
-
-    public function clearDuplicates(int $id):void
-    {
-        $fileDuplicates = $this->mapper->findByDuplicate($id);
-        foreach ($fileDuplicates as $fileDuplicate) {
-            $fileDuplicate->removeDuplicate($id);
-            if ($fileDuplicate->getCount() > 1) {
-                $this->update($fileDuplicate);
-            } else {
-                $this->mapper->delete($fileDuplicate);
-            }
-        }
-        unset($fileDuplicate);
     }
 }

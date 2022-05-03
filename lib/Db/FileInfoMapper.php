@@ -53,9 +53,10 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq($type, $qb->createNamedParameter($hash))
+            $qb->expr()->eq($type, $qb->createNamedParameter($hash)),
+            $qb->expr()->eq('ignored', $qb->createNamedParameter(false, IQueryBuilder::PARAM_BOOL))
         );
-        return $this->findEntities($qb);
+        return $this->entitiesToIdArray($this->findEntities($qb));
     }
 
     public function countByHash(string $hash, string $type = 'file_hash'):int
@@ -77,12 +78,12 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq('size', $qb->createNamedParameter($size), IQueryBuilder::PARAM_INT)
+            $qb->expr()->eq('size', $qb->createNamedParameter($size, IQueryBuilder::PARAM_INT))
         );
         if ($onlyEmptyHash) {
             $qb->andWhere($qb->expr()->isNull('file_hash'));
         }
-        return $this->findEntities($qb);
+        return $this->entitiesToIdArray($this->findEntities($qb));
     }
 
     public function findById(int $id):FileInfo
@@ -91,19 +92,33 @@ class FileInfoMapper extends EQBMapper
         $qb->select('*')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq('id', $qb->createNamedParameter($id), IQueryBuilder::PARAM_INT)
+            $qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT))
         );
         return $this->findEntity($qb);
     }
 
-  /**
-   * @return array<FileInfo>
-   */
+    /**
+     * @return array<FileInfo>
+     */
     public function findAll(): array
     {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
         ->from($this->getTableName());
-        return $this->findEntities($qb);
+        return $this->entitiesToIdArray($this->findEntities($qb));
+    }
+
+    /**
+     * @param array<FileInfo> $entities
+     * @return array<FileInfo>
+     */
+    private function entitiesToIdArray(array $entities) : array
+    {
+        $result = array();
+        foreach ($entities as $entity) {
+            $result[$entity->getId()] = $entity;
+        }
+        unset($entity);
+        return $result;
     }
 }

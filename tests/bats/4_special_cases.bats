@@ -7,6 +7,10 @@ setup() {
   ./occ duplicates:find-all > /dev/null
 }
 
+teardown() {
+    clearTestFiles
+}
+
 @test "[$TESTSUITE] Duplicate on deleted file" {
   rm -rf data/tuser/test3
   mkdir -p data/tuser/test3

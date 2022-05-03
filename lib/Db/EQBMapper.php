@@ -155,7 +155,7 @@ abstract class EQBMapper extends QBMapper
         $qb->select('id')
         ->from($this->getTableName())
         ->where(
-            $qb->expr()->eq($field, $qb->createNamedParameter($value), $type)
+            $qb->expr()->eq($field, $qb->createNamedParameter($value, $type))
         );
         $qb = $qb->execute();
         if (!is_int($qb)) {

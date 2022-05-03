@@ -39,7 +39,6 @@ jobs:
         uses: SMillerDev/nextcloud-actions/setup-nextcloud-app@main
         with:
           app: 'duplicatefinder'
-          check-code: true
           force: true
 
       - name: PHPUnit

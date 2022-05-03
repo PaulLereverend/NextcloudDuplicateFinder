@@ -1,0 +1,9 @@
+js/
+tests/
+img/
+cypress/
+css/
+vendor/
+node_modules/
+.github/
+.scannerwork/

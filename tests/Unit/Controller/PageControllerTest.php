@@ -11,22 +11,27 @@ use OCA\DuplicateFinder\Controller\PageController;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
 use OCA\DuplicateFinder\Service\FileInfoService;
 
-class PageControllerTest extends TestCase {
-	private $controller;
-	private $userId = 'john';
+class PageControllerTest extends TestCase
+{
+    private $controller;
+    private $userId = 'admin';
 
-	public function setUp() : void {
-		$this->controller = new PageController('duplicatefinder',
-			$this->createMock(IRequest::class), $this->userId,
-			$this->createMock(FileDuplicateService::class), $this->createMock(FileInfoService::class)
-		);
-	}
+    public function setUp() : void
+    {
+        $this->controller = new PageController(
+            'duplicatefinder',
+            $this->createMock(IRequest::class),
+            $this->userId,
+            $this->createMock(FileDuplicateService::class),
+            $this->createMock(FileInfoService::class)
+        );
+    }
 
-	public function testIndex() {
-		$result = $this->controller->index();
+    public function testIndex() : void
+    {
+        $result = $this->controller->index();
 
-		$this->assertEquals('index', $result->getTemplateName());
-		$this->assertTrue($result instanceof TemplateResponse);
-	}
-
+        $this->assertInstanceOf(TemplateResponse::class, $result);
+        $this->assertEquals('index', $result->getTemplateName());
+    }
 }

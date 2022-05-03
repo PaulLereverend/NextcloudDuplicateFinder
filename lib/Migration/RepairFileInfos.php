@@ -2,18 +2,18 @@
 namespace OCA\DuplicateFinder\Migration;
 
 use \Psr\Log\LoggerInterface;
-use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
 use OCP\Files\NotFoundException;
 use OCA\DuplicateFinder\AppInfo\Application;
+use OCA\DuplicateFinder\Service\ConfigService;
 use OCA\DuplicateFinder\Service\FileInfoService;
 
 class RepairFileInfos implements IRepairStep
 {
 
-    /** @var IConfig */
+    /** @var ConfigService */
     private $config;
     /** @var IDBConnection */
     private $connection;
@@ -25,7 +25,7 @@ class RepairFileInfos implements IRepairStep
 
 
     public function __construct(
-        IConfig $config,
+        ConfigService $config,
         IDBConnection $connection,
         FileInfoService $fileInfoService,
         LoggerInterface $logger
@@ -65,8 +65,7 @@ class RepairFileInfos implements IRepairStep
 
     protected function shouldRun() : bool
     {
-        $appVersion = $this->config->getAppValue(Application::ID, 'installed_version', '0.0.0');
-        return version_compare($appVersion, '0.0.9', '>');
+        return version_compare($this->config->getInstalledVersion(), '0.0.9', '>');
     }
 
     private function updatePathHashes(IOutput $output) : void

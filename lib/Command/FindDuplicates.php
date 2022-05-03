@@ -2,29 +2,16 @@
 namespace OCA\DuplicateFinder\Command;
 
 use OC\Core\Command\Base;
-use OC\Files\Search\SearchQuery;
-use OC\Files\Search\SearchComparison;
-use OC\Files\Search\SearchOrder;
 use OCP\Encryption\IManager;
-use OCP\Files\File;
-use OCP\Files\Folder;
 use OCP\Files\NotFoundException;
-use OCP\Files\Search\ISearchComparison;
-use OCP\EventDispatcher\IEventDispatcher;
-use OCP\IConfig;
 use OCP\IDBConnection;
-use OCP\IPreview;
 use OCP\IUser;
 use OCP\IUserManager;
-use OCP\ILogger;
-use OCP\AppFramework\Http\DataResponse;
-use OCA\Files\Helper;
-use OC\Files\Filesystem;
-use Exception;
-use Symfony\Component\Console\Input\InputArgument;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
 use OCA\DuplicateFinder\Utils\CMDUtils;
@@ -51,7 +38,7 @@ class FindDuplicates extends Base
     protected $fileDuplicateService;
     /** @var array<string>|null */
     protected $inputPath;
-    /** @var ILogger */
+    /** @var LoggerInterface */
     private $logger;
 
     public function __construct(
@@ -60,7 +47,7 @@ class FindDuplicates extends Base
         IDBConnection $connection,
         FileInfoService $fileInfoService,
         FileDuplicateService $fileDuplicateService,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         parent::__construct();
         $this->userManager = $userManager;
@@ -110,25 +97,20 @@ class FindDuplicates extends Base
         }
         $user = $input->getOption('user');
         $result = 0;
-        try {
-            if ($user) {
-                if ($user === true) {
-                    $this->output->writeln('User parameter has an invalid value.');
-                    return 1;
-                } elseif (is_string($user)) {
-                    $users = [$user];
-                } else {
-                    $users = $user;
-                }
-                $result = $this->findDuplicatesForUsers($users);
+        if ($user) {
+            if ($user === true) {
+                $this->output->writeln('User parameter has an invalid value.');
+                return 1;
+            } elseif (is_string($user)) {
+                $users = [$user];
             } else {
-                $users =  $this->userManager->callForAllUsers(function (IUser $user): void {
-                    $this->findDuplicates($user->getUID());
-                });
+                $users = $user;
             }
-        } catch (NotFoundException $e) {
-            $this->logger->logException($e, ['app' => 'duplicatefinder']);
-            $this->output->writeln('<error>The given path doesn\'t exists.<error>');
+            $result = $this->findDuplicatesForUsers($users);
+        } else {
+            $this->userManager->callForAllUsers(function (IUser $user): void {
+                $this->findDuplicates($user->getUID());
+            });
         }
 
         return $result;
@@ -146,7 +128,13 @@ class FindDuplicates extends Base
                 $result = 1;
                 break;
             }
-            $this->findDuplicates($user);
+
+            try {
+                $this->findDuplicates($user);
+            } catch (NotFoundException $e) {
+                $this->logger->error('A given path doesn\'t exists', ['app' => Application::ID, 'exception' => $e]);
+                $this->output->writeln('<error>The given path doesn\'t exists ('.$e->getMessage().').<error>');
+            }
         }
         unset($user);
         return $result;

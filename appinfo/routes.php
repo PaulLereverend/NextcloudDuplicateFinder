@@ -9,8 +9,11 @@
  */
 return [
     'routes' => [
-	   ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
-     ['name' => 'page#files', 'url' => '/files', 'verb' => 'GET'],
-     ['name' => 'duplicate_api#list', 'url' => '/api/{apiVersion}/Duplicates', 'verb' => 'GET', 'requirements' => ['apiVersion' => 'v1']],
+        ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
+        ['name' => 'duplicate_api#list', 'url' => '/api/{apiVersion}/Duplicates', 'verb' => 'GET', 'requirements' => ['apiVersion' => 'v1']],
+        ['name' => 'settings_api#list', 'url' => '/api/{apiVersion}/Settings', 'verb' => 'GET', 'requirements' => ['apiVersion' => 'v1']],
+        ['name' => 'settings_api#save', 'url' => '/api/{apiVersion}/Settings', 'verb' => 'PATCH', 'requirements' => ['apiVersion' => 'v1']],
+        ['name' => 'filter_api#list', 'url' => '/api/{apiVersion}/Filters', 'verb' => 'GET', 'requirements' => ['apiVersion' => 'v1']],
+        ['name' => 'filter_api#save', 'url' => '/api/{apiVersion}/Filters', 'verb' => 'PUT', 'requirements' => ['apiVersion' => 'v1']],
     ]
 ];

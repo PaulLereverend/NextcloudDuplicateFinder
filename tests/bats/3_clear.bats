@@ -7,12 +7,14 @@ setup() {
   ./occ duplicates:find-all > /dev/null
 }
 
-@test "[$TESTSUITE] Clear all" {
-  run ./occ duplicates:clear -f
-  [ "$status" -eq 0 ]
-  run ./occ -v duplicates:list
-  [ "$status" -eq 0 ]
+teardown() {
+    clearTestFiles
+}
 
+@test "[$TESTSUITE] Clear all" {
+  ./occ duplicates:clear -f
+  
+  output=$(./occ -v duplicates:list)
   expectedHash="9cd4d85c76b5277321cf1de8f132f8b27d2a35a284b0ba10d4c9171b10eed00b"
   evaluateHashResult "${expectedHash}" 0 "${output}"
 }

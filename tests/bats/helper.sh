@@ -30,3 +30,29 @@ dbQuery() {
         sqlite3 ./data/${SQLITE_DATABASE:-owncloud}.db "$1"
     fi
 }
+
+createTestFiles() {
+    NO_OF_FILES=${1:-3}
+    shift
+    for path in "$@"
+    do
+        mkdir -p $path
+    done
+
+    #Include 0 to have one file per user (edge case where duplicate exist only because of one file per user)
+    for i in $(seq 0 $NO_OF_FILES)
+    do
+        for j in $(seq 0 $i)
+        do
+            for path in "$@"
+            do
+                echo $i > $path/${i}_${j}.txt
+            done
+        done
+    done
+}
+
+clearTestFiles(){
+    rm -rf 'data/admin/files/tests' 'data/tuser/files/tests/' 'data/tuser/files/tests2' $@
+    ./occ duplicates:clear -f
+}

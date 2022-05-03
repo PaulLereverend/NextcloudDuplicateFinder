@@ -97,11 +97,8 @@ endif
 # Installs npm dependencies
 .PHONY: npm
 npm:
-ifeq (,$(wildcard $(CURDIR)/package.json))
-	cd js && $(npm) run build
-else
+	npm install
 	npm run build
-endif
 
 # Removes the appstore build
 .PHONY: clean
@@ -169,8 +166,8 @@ test: xmllint phpcbf phpcs phpstan phpunit
 
 .PHONY: phpunit
 phpunit: composer
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml --coverage-clover=coverage-result.xml --log-junit=execution-result.xml
+	sed -i 's@$(CURDIR)/@@' coverage-result.xml
 
 .PHONY: phpcbf
 phpcbf: composer

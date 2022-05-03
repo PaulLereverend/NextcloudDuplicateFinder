@@ -2,16 +2,29 @@
     "name": "paullereverend/nextcloudduplicatefinder",
     "description": "Find your duplicate files and remove them",
     "type": "project",
-    "license": "AGPL",
+    "license": "GPL-3.0-only",
     "authors": [
         {
             "name": "Paul Lereverend"
         }
     ],
-    "require": {},
+    "support": {
+      "issues": "https://github.com/PaulLereverend/NextcloudDuplicateFinder/issues",
+      "source": "https://github.com/PaulLereverend/NextcloudDuplicateFinder/"
+    },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
         "phpstan/phpstan": "^0.12.82",
-        "squizlabs/php_codesniffer": "^3.5"
+        "squizlabs/php_codesniffer": "^3.5",
+        "symfony/console": "^5.3"
+    },
+    "replace": {
+      "symfony/console": "*"
+    },
+    "autoload": {
+      "psr-4": {
+        "OCA\\DuplicateFinder\\": "lib/"
+      }
     }
+
 }

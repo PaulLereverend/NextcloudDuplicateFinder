@@ -5,21 +5,23 @@ namespace OCA\DuplicateFinder\Db;
  * @method void setOwner(string $s)
  * @method void setPath(string $s)
  * @method void setPathHash(string $s)
- * @method void setFileHash(string $s)
+ * @method void setFileHash(?string $s)
  * @method void setImageHash(string $s)
  * @method void setUpdatedAt(int|\DateTime $d)
  * @method void setNodeId(int $i)
  * @method void setMimetype(string $s)
  * @method void setSize(int $i)
+ * @method void setIgnored(bool $b)
  * @method string getOwner()
  * @method string getPath()
  * @method string getPathHash()
- * @method string getFileHash()
+ * @method ?string getFileHash()
  * @method string getImageHash()
  * @method \DateTime getUpdatedAt()
  * @method int getNodeId()
  * @method string getMimetype()
  * @method int getSize()
+ * @method bool isIgnored()
  */
 class FileInfo extends EEntity
 {
@@ -42,12 +44,15 @@ class FileInfo extends EEntity
     protected $mimetype;
     /** @var integer */
     protected $size;
+    /** @var boolean */
+    protected $ignored;
 
     public function __construct(?string $path = null, ?string $owner = null)
     {
         $this->addInternalType('updatedAt', 'date');
-        $this->addInternalProperty('nodId');
+        $this->addInternalProperty('nodeId');
         $this->addType('size', 'integer');
+        $this->addType('ignored', 'boolean');
 
         if (!is_null($path)) {
             $this->setPath($path);

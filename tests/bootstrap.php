@@ -12,7 +12,7 @@ require_once __DIR__.'/../../../lib/base.php';
 // Fix for "Autoload path not allowed: .../duplicatefinder/tests/testcase.php"
 \OC_App::loadApp('duplicatefinder');
 
-if(!class_exists('PHPUnit\Framework\TestCase')) {
+if (!class_exists('PHPUnit\Framework\TestCase')) {
     require_once('PHPUnit/Autoload.php');
 }
 

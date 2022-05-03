@@ -1,9 +1,10 @@
 <?php
 namespace OCA\DuplicateFinder\Listener;
 
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
+use OCA\DuplicateFinder\AppInfo\Application;
 use OCA\DuplicateFinder\Db\FileInfo;
 use OCA\DuplicateFinder\Event\CalculatedHashEvent;
 use OCA\DuplicateFinder\Service\FileInfoService;
@@ -20,13 +21,13 @@ class NewHashListener implements IEventListener
     private $fileInfoService;
     /** @var FileDuplicateService */
     private $fileDuplicateService;
-    /** @var Ilogger */
+    /** @var LoggerInterface */
     private $logger;
 
     public function __construct(
         FileInfoService $fileInfoService,
         FileDuplicateService $fileDuplicateService,
-        ILogger $logger
+        LoggerInterface $logger
     ) {
         $this->fileInfoService = $fileInfoService;
         $this->fileDuplicateService = $fileDuplicateService;
@@ -38,36 +39,31 @@ class NewHashListener implements IEventListener
         try {
             if ($event instanceof CalculatedHashEvent && $event->isChanged()) {
                 $fileInfo = $event->getFileInfo();
-                if (!$event->isNew()) {
-                    $this->fileDuplicateService->clearDuplicates($fileInfo->getId());
-                }
-                $this->updateDuplicates($fileInfo);
+                $this->updateDuplicates($fileInfo, $event->getOldHash());
             }
         } catch (\Throwable $e) {
             $this->logger->error('Failed to handle new hash event .', ['exception'=> $e]);
-            $this->logger->logException($e, ['app'=>'duplicatefinder']);
         }
     }
 
-    private function updateDuplicates(FileInfo $fileInfo, string $type = 'file_hash'): void
+    private function updateDuplicates(FileInfo $fileInfo, ?string $oldHash, string $type = 'file_hash'): void
     {
-        $count = $this->fileInfoService->countByHash($fileInfo->getFileHash(), $type);
+        $hash = $fileInfo->getFileHash();
+        if (is_null($hash)) {
+            if (is_null($oldHash)) {
+                return;
+            }
+            $hash = $oldHash;
+        }
+        $count = $this->fileInfoService->countByHash($hash, $type);
         if ($count > 1) {
             try {
-                $fileDuplicate = $this->fileDuplicateService->getOrCreate($fileInfo->getFileHash(), $type);
-                if ($count > 2) {
-                    $fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
-                } else {
-                    $files = $this->fileInfoService->findByHash($fileInfo->getFileHash(), $type);
-                    foreach ($files as $fileInfo) {
-                        $fileDuplicate->addDuplicate($fileInfo->getId(), $fileInfo->getOwner());
-                    }
-                    unset($fileInfo);
-                }
-                $this->fileDuplicateService->update($fileDuplicate);
+                $this->fileDuplicateService->getOrCreate($hash, $type);
             } catch (\Exception $e) {
-                $this->logger->logException($e, ['app' => 'duplicatefinder']);
+                $this->logger->error('A unknown exception occured', ['app' => Application::ID, 'exception' => $e]);
             }
+        } else {
+            $this->fileDuplicateService->delete($hash);
         }
     }
 }

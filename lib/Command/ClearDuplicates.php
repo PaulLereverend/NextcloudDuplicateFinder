@@ -2,33 +2,12 @@
 namespace OCA\DuplicateFinder\Command;
 
 use OC\Core\Command\Base;
-use OC\Files\Search\SearchQuery;
-use OC\Files\Search\SearchComparison;
-use OC\Files\Search\SearchOrder;
-use OC\Files\Utils\Scanner;
-use OCP\Encryption\IManager;
-use OCP\Files\File;
-use OCP\Files\Folder;
-use OCP\Files\NotFoundException;
-use OCP\Files\Search\ISearchComparison;
-use OCP\EventDispatcher\IEventDispatcher;
-use OCP\IConfig;
-use OCP\IDBConnection;
-use OCP\IPreview;
-use OCP\IUser;
-use OCP\IUserManager;
-use OCP\AppFramework\Http\DataResponse;
-use OCA\Files\Helper;
-use OC\Files\Filesystem;
-use Exception;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use OCA\DuplicateFinder\Service\FileInfoService;
 use OCA\DuplicateFinder\Service\FileDuplicateService;
-use OCA\DuplicateFinder\Utils\CMDUtils;
 
 class ClearDuplicates extends Base
 {

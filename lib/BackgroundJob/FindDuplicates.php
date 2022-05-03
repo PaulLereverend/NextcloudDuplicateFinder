@@ -3,11 +3,12 @@ namespace OCA\DuplicateFinder\BackgroundJob;
 
 use OC\Files\Utils\Scanner;
 use OCP\EventDispatcher\IEventDispatcher;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 use OCP\IUserManager;
 use OCP\IUser;
 use OCP\IDBConnection;
 use OCA\DuplicateFinder\Service\FileInfoService;
+use OCA\DuplicateFinder\Service\ConfigService;
 
 class FindDuplicates extends \OC\BackgroundJob\TimedJob
 {
@@ -15,7 +16,7 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
     private $userManager;
     /** @var IEventDispatcher */
     private $dispatcher;
-    /** @var ILogger */
+    /** @var LoggerInterface */
     private $logger;
     /** @var FileInfoService*/
     private $fileInfoService;
@@ -26,18 +27,18 @@ class FindDuplicates extends \OC\BackgroundJob\TimedJob
     /**
      * @param IUserManager $userManager
      * @param IEventDispatcher $dispatcher
-     * @param ILogger $logger
+     * @param LoggerInterface $logger
      * @param FileInfoService $fileInfoService
      */
     public function __construct(
         IUserManager $userManager,
         IEventDispatcher $dispatcher,
-        ILogger $logger,
+        LoggerInterface $logger,
         IDBConnection $connection,
-        FileInfoService $fileInfoService
+        FileInfoService $fileInfoService,
+        ConfigService $config
     ) {
-        // Run every 5 days a full scan
-        $this->setInterval(60*60*24*5);
+        $this->setInterval($config->getFindJobInterval());
         $this->userManager = $userManager;
         $this->dispatcher = $dispatcher;
         $this->logger = $logger;
