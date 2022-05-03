@@ -1,4 +1,9 @@
-## 0.0.13 
+## 0.0.14
+- Support NC24
+- Ignore files
+- Interval configuration
+- Add config
+## 0.0.13
 - Support NC23
 - Fix #52
 - Fix #54

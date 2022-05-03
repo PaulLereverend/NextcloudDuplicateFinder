@@ -17,7 +17,7 @@
   Die Erkennung funktioniert direkt nach dem Upload oder asynchron mittels CronJobs.
   Für mehr Informationen besuche das [GitHub Repository](https://github.com/PaulLereverend/NextcloudDuplicateFinder).
   </description>
-  <version>0.0.13</version>
+  <version>0.0.14</version>
   <licence>agpl</licence>
   <author mail="paulereverend@gmail.com" >Paul Lereverend</author>
   <namespace>DuplicateFinder</namespace>
@@ -27,7 +27,7 @@
   <bugs>https://github.com/PaulLereverend/NextcloudDuplicateFinder</bugs>
   <screenshot>https://raw.githubusercontent.com/PaulLereverend/NextcloudDuplicateFinder/master/img/preview.png</screenshot>
   <dependencies>
-    <nextcloud min-version="20" max-version="23"/>
+    <nextcloud min-version="20" max-version="24"/>
   </dependencies>
   <background-jobs>
     <job>OCA\DuplicateFinder\BackgroundJob\FindDuplicates</job>
