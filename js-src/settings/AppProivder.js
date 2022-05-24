@@ -45,7 +45,7 @@ export default function AppProivder (props) {
           subject='time'
           unit='second'
           defaultDisplayUnit='day'
-          hint={gettext('Interval in seconds in which the clean-up background job will be run.')}
+          hint={gettext('Interval in seconds in which the background job, to find duplicates, will be run.')}
           value={viewData.settings.backgroundjob_interval_find}
         >
           {gettext('Detection Interval')}
@@ -57,7 +57,7 @@ export default function AppProivder (props) {
           subject='time'
           unit='second'
           defaultDisplayUnit='day'
-          hint={gettext('Interval in seconds in which the background job, to find duplicates, will be run.')}
+          hint={gettext('Interval in seconds in which the clean-up background job will be run.')}
           value={viewData.settings.backgroundjob_interval_cleanup}
         >
           {gettext('Cleanup Interval')}
