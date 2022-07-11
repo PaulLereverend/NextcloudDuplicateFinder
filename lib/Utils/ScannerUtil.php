@@ -5,7 +5,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use OC\Files\Utils\Scanner;
 use OCP\IDBConnection;
-use OCP\ILogger;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\NotFoundException;
 
@@ -23,8 +22,6 @@ class ScannerUtil
     private $connection;
     /** @var IEventDispatcher */
     private $eventDispatcher;
-    /** @var ILogger */
-    private $ocLogger;
     /** @var LoggerInterface */
     private $logger;
     /** @var OutputInterface|null */
@@ -39,13 +36,11 @@ class ScannerUtil
     public function __construct(
         IDBConnection $connection,
         IEventDispatcher $eventDispatcher,
-        ILogger $ocLogger,
         LoggerInterface $logger,
         ShareService $shareService
     ) {
         $this->connection =$connection;
         $this->eventDispatcher = $eventDispatcher;
-        $this->ocLogger = $ocLogger;
         $this->logger = $logger;
         $this->shareService = $shareService;
     }
@@ -75,7 +70,7 @@ class ScannerUtil
 
     private function initializeScanner(string $user, bool $isShared = false) : Scanner
     {
-        $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->ocLogger);
+        $scanner = new Scanner($user, $this->connection, $this->eventDispatcher, $this->logger);
         $scanner->listen(
             '\OC\Files\Utils\Scanner',
             'postScanFile',
