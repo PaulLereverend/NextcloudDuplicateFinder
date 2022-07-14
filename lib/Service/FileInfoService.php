@@ -6,6 +6,7 @@ use OCP\IDBConnection;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
+use OC\User\NoUserException;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use OCA\DuplicateFinder\AppInfo\Application;
@@ -278,7 +279,7 @@ class FileInfoService
                     $fileInfo->setPath($path);
                     $result = $fileInfo;
                 }
-            } catch (NotFoundException $e) {
+            } catch (NoUserException | NotFoundException $e) {
                 $result = null;
             }
         }
