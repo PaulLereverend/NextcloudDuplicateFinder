@@ -1,3 +1,7 @@
+## 0.0.15
+- Fix #72 #80 #82 #84
+- Catch NoUserException from shared files from Talk
+- Fix mismatched setting descriptions for intervals
 ## 0.0.14
 - Support NC24
 - Ignore files
