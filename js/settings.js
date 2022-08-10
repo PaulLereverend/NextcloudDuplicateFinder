@@ -4432,7 +4432,7 @@ function AppProivder(props) {
         subject: "time",
         unit: "second",
         defaultDisplayUnit: "day",
-        hint: (0,nextcloud_react__WEBPACK_IMPORTED_MODULE_1__.gettext)('Interval in seconds in which the clean-up background job will be run.'),
+        hint: (0,nextcloud_react__WEBPACK_IMPORTED_MODULE_1__.gettext)('Interval in seconds in which the background job, to find duplicates, will be run.'),
         value: viewData.settings.backgroundjob_interval_find,
         children: (0,nextcloud_react__WEBPACK_IMPORTED_MODULE_1__.gettext)('Detection Interval')
       }), (0,_emotion_react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(nextcloud_react__WEBPACK_IMPORTED_MODULE_1__.Setting, {
@@ -4442,7 +4442,7 @@ function AppProivder(props) {
         subject: "time",
         unit: "second",
         defaultDisplayUnit: "day",
-        hint: (0,nextcloud_react__WEBPACK_IMPORTED_MODULE_1__.gettext)('Interval in seconds in which the background job, to find duplicates, will be run.'),
+        hint: (0,nextcloud_react__WEBPACK_IMPORTED_MODULE_1__.gettext)('Interval in seconds in which the clean-up background job will be run.'),
         value: viewData.settings.backgroundjob_interval_cleanup,
         children: (0,nextcloud_react__WEBPACK_IMPORTED_MODULE_1__.gettext)('Cleanup Interval')
       })]
